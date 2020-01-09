@@ -1,0 +1,2 @@
+# tfg-kazzpa
+bachelor thesis

@@ -38,3 +38,5 @@ IgnoreLexer.java~
 .DS_Store
 
 /verification
+
+**/__pycache__/

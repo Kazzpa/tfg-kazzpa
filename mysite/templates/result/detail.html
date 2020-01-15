@@ -1,0 +1,14 @@
+
+{% extends "base.html" %}
+
+{% block title %}Result- {{ result.id }}{% endblock %}
+{% block content %}
+    <h1>{{ result.user_run }}</h1>
+
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    {{ result.accuracy }}
+    {{ result.dataset_used }}
+    {{ result.percentage_done }}
+    {{ result.algorithm_used }}
+
+{% endblock %}

@@ -7,9 +7,9 @@ services:
     image: mysql
     restart: always
     environment:
-      MYSQL_DATABASE: "recomendadorTest"
-      MYSQL_USER: "recomendadorTest"
-      MYSQL_PASSWORD: "r3c0m3nd4d0rt35t"
+      MYSQL_DATABASE: "selatt-db"
+      MYSQL_USER: "selatt-db"
+      MYSQL_PASSWORD: "s3l4tt-db"
       MYSQL_ROOT_PASSWORD: "example"
     ports:
       - 3306:3306
@@ -39,5 +39,5 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_BASICAUTH_USERNAME: quini
-      ME_CONFIG_BASICAUTH_PASSWORD: quini
+      ME_CONFIG_BASICAUTH_USERNAME: kazzpa
+      ME_CONFIG_BASICAUTH_PASSWORD: kazzpa

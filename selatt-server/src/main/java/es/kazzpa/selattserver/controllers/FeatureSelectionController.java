@@ -2,40 +2,42 @@ package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.services.FeatureSelectionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(path = "/featureReduction")
 public class FeatureSelectionController {
 
 
     @Autowired
     private FeatureSelectionService featureSelectionService;
 
-    //TODO USE GETMAPPING OR POSTMAPPING
-    @RequestMapping(value = "/featureReduction/pca", method = {RequestMethod.GET})
+    //TODO USE JSON
+    @GetMapping(path = "/pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @RequestMapping(value = "/featureReduction/rp", method = {RequestMethod.GET})
+    @GetMapping(path = "/rp", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String handleRP() throws Exception {
         return featureSelectionService.handleRandomizedProjectionFeatures();
     }
 
 
-    @RequestMapping(value = "/featureReduction/cfs", method = {RequestMethod.GET})
+    @GetMapping(path = "/cfs", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String handleCfsSubsetEval() throws Exception {
         return featureSelectionService.handleCFSSubsetEval();
     }
 
-    @RequestMapping(value = "/featureReduction/rp/plot", method = {RequestMethod.GET})
+    @GetMapping(path = "/rp/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public void handlePlotRp() throws Exception {
         featureSelectionService.plotRP();
     }
 
-    @RequestMapping(value = "/featureReduction/pca/plot", method = {RequestMethod.GET})
+    @GetMapping(path = "/pca/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public void handlePlotPCA() throws Exception {
         featureSelectionService.plotPCA();
     }

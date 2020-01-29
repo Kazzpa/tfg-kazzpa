@@ -4,11 +4,16 @@ from django.urls import reverse
 from django.views import generic
 
 from result.models import Result
+from result import services
 
 
 class IndexView(generic.ListView):
     template_name = 'result/index.html'
     context_object_name = 'result_list'
+
+    def get(self, request):
+        results_list = services.get_results()
+        return render(request, 'result/index.html', results_list)
 
     def get_queryset(self):
         """Return the last five published questions."""

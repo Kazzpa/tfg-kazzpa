@@ -24,12 +24,15 @@ class Algorithm(models.Model):
         return self.name
 
 #TODO anyadir atributos seleccionados y numero de atributos utilizados para mostrar en vistas
+
 class Result(models.Model):
     user_run = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     algorithm_used = models.ForeignKey(Algorithm, on_delete=models.CASCADE)
     dataset_used = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     accuracy = models.FloatField(max_length=4)
     percentage_done = models.FloatField(max_length=4)
+    atr_new = models.IntegerField(default=3)
+    atr_old = models.IntegerField(default=10)
 
     def __str__(self):
         return self.user_run.get_username() + "" + self.algorithm_used.name +" " +self.dataset_used.name

@@ -10,6 +10,8 @@
             <th scope="col">Dataset</th>
             <th scope="col">Algorithm</th>
             <th scope="col">Accuracy</th>
+            <th scope="col">Number of Atributes</th>
+            <th scope="col">Number of Atributes filtered</th>
         </tr>
         </thead>
 
@@ -22,6 +24,8 @@
                 <td><a href="{% url 'result:detail' result.id %}">{{ result.dataset_used }}</a></td>
                 <td>{{ result.algorithm_used }}</td>
                 <td>{{ result.accuracy }}%</td>
+                <td>{{ result.atr_old }}</td>
+                <td>{{ result.atr_new }}</td>
             </tr>
             {% endif %}
         {% endfor %}

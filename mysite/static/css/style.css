@@ -1,11 +1,21 @@
 .bodyfree {
     margin: 0;
-    height:70px;
+    height: 70px;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
 }
-bg{
-    height:600px;
+
+
+.card {
+    margin: 30px;
+}
+
+#main-father {
+    background-repeat: no-repeat;
+    backgrond-position: center center;
+    background-size: cover;
+    padding-top: 20%;
+    padding-bottom: 15%;
 }

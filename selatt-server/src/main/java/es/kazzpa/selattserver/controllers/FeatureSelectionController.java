@@ -1,11 +1,14 @@
 package es.kazzpa.selattserver.controllers;
 
+import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.xml.transform.Result;
 
 @RestController
 @RequestMapping(path = "/featureReduction")
@@ -17,7 +20,7 @@ public class FeatureSelectionController {
 
     //TODO USE JSON
     @GetMapping(path = "/pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String handleFeatureReduction() throws Exception {
+    public ResultFilter handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 

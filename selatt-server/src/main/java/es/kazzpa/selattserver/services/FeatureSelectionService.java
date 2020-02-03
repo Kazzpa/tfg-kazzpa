@@ -3,6 +3,7 @@ package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.ML;
 import es.kazzpa.selattserver.models.Options;
+import es.kazzpa.selattserver.models.ResultFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import weka.attributeSelection.*;
@@ -21,10 +22,10 @@ public class FeatureSelectionService {
     @Autowired
     private FileFactory fileFactory;
 
-    public String handlePCAFeatures() throws Exception {
+    public ResultFilter handlePCAFeatures() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        return ApplyPCA("CAR", carTrainTest.train) + "\n \n \n \n \n" + ApplyPCA("CENSUS", censusTrainTest.train);
+        return ApplyPCA("CAR", carTrainTest.train);
     }
 
     public String handleRandomizedProjectionFeatures() throws Exception {
@@ -39,7 +40,7 @@ public class FeatureSelectionService {
         return applyCfsSubsetEval(carTrainTest.train) + " \n \n \n \n" + applyCfsSubsetEval(censusTrainTest.train);
     }
 
-    public String ApplyPCA(String name, Instances trainingData) throws Exception {
+    public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
         AttributeSelection selector = new AttributeSelection();
 
         PrincipalComponents principalComponents = new PrincipalComponents();
@@ -52,8 +53,11 @@ public class FeatureSelectionService {
         selector.setSearch(ranker);
         selector.setEvaluator(principalComponents);
         selector.SelectAttributes(trainingData);
-        return name + "\n \n \n \n \n \n \n Principal Components: \n \n "
-                + principalComponents.toString() + "\n \n Attribute Selection: \n \n" + selector.toResultsString();
+        ResultFilter rf = new ResultFilter();
+        rf.setFilterName(principalComponents.toString());
+        rf.setResultTest(selector.toResultsString());
+        rf.setSelectedAtr(selector.selectedAttributes());
+        return rf;
     }
 
     public Instances applyRP(Instances trainingData, int numAttributes) throws Exception {

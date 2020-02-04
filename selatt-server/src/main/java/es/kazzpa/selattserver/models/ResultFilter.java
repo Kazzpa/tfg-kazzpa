@@ -10,7 +10,7 @@ public class ResultFilter {
     public ResultFilter(){
         this.filterName = "Undefined";
         this.resultTest = "Undefined";
-        this.selectedAtr = new int[Integer.MAX_VALUE];
+        this.selectedAtr = new int[10];
     }
 
     public String getFilterName() {

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import weka.attributeSelection.*;
 import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
@@ -15,6 +16,7 @@ import weka.filters.unsupervised.attribute.RandomProjection;
 import weka.filters.unsupervised.attribute.Remove;
 
 import java.io.FileWriter;
+import java.util.Iterator;
 
 @Service
 public class FeatureSelectionService {
@@ -54,8 +56,8 @@ public class FeatureSelectionService {
         selector.setEvaluator(principalComponents);
         selector.SelectAttributes(trainingData);
         ResultFilter rf = new ResultFilter();
-        rf.setFilterName(principalComponents.toString());
-        rf.setResultTest(selector.toResultsString());
+        rf.setFilterName("PCA");
+        rf.setRankedAtr(selector.rankedAttributes());
         rf.setSelectedAtr(selector.selectedAttributes());
         return rf;
     }
@@ -67,11 +69,45 @@ public class FeatureSelectionService {
         return Filter.useFilter(trainingData, randomProjection);
     }
 
-    public Instances applyPCAFilter(Instances trainingData, int numAttributes) throws Exception {
+    public ResultFilter applyPCAFilter(Instances trainingData, int numAttributes) throws Exception {
         weka.filters.unsupervised.attribute.PrincipalComponents principalComponents = new weka.filters.unsupervised.attribute.PrincipalComponents();
         principalComponents.setMaximumAttributes(numAttributes);
         principalComponents.setInputFormat(trainingData);
-        return Filter.useFilter(trainingData, principalComponents);
+        Instances trainedData = Filter.useFilter(trainingData, principalComponents);
+        //Comparar los dataset una vez filtrado y sin filtrar
+        //Guardaremos la lista de los atributos
+
+        int ind = 0;
+        double[] ins1 = trainedData.get(1).toDoubleArray();
+        double[] ins2 = trainingData.get(1).toDoubleArray();
+        int size = trainingData.numAttributes();
+        int size2 = trainedData.numAttributes();
+        int[] list = new int[trainedData.numAttributes()];
+        int i = 0;
+        int j = 0;
+        while (i < size2) {
+            boolean enc = false;
+            while (j < size && !enc) {
+                if (ins1[i] == ins2[j]) {
+                    list[i] = j;
+                    i++;
+                    enc = true;
+                } else {
+                    System.out.println("Value "+i+": " + ins1[i]+ "\tValue "+j+": " + ins2[j]);
+                }
+                j++;
+            }
+
+            i++;
+        }
+
+
+        ResultFilter rf = new ResultFilter();
+        rf.setFilterName("PCA-Filter :" + trainedData.numAttributes());
+        rf.setSelectedAtr(list);
+        rf.setAuxdouble(ins1);
+        rf.setAuxdouble2(ins2);
+        return rf;
     }
 
     public String applyCfsSubsetEval(Instances data) throws Exception {
@@ -112,11 +148,12 @@ public class FeatureSelectionService {
         plotRP("RP_census", applyRP(censusTrainTest.train, 2));
     }
 
-    public void plotPCA() throws Exception {
+    public ResultFilter plotPCA() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
-        FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        plotRP("PCA_car", applyPCAFilter(carTrainTest.train, 2));
-        plotRP("PCA_census", applyPCAFilter(censusTrainTest.train, 2));
+        //FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
+        return applyPCAFilter(carTrainTest.train, 2);
+        //plotRP("PCA_car", applyPCAFilter(carTrainTest.train, 2));
+        //plotRP("PCA_census", applyPCAFilter(censusTrainTest.train, 2));
     }
 
 

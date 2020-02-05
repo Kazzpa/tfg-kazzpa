@@ -18,7 +18,6 @@ public class FeatureSelectionController {
     @Autowired
     private FeatureSelectionService featureSelectionService;
 
-    //TODO USE JSON
     @GetMapping(path = "/pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
@@ -41,8 +40,8 @@ public class FeatureSelectionController {
     }
 
     @GetMapping(path = "/pca/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void handlePlotPCA() throws Exception {
-        featureSelectionService.plotPCA();
+    public ResultFilter handlePlotPCA() throws Exception {
+        return featureSelectionService.plotPCA();
     }
 
 }

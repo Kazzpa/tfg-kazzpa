@@ -4,6 +4,7 @@ package es.kazzpa.selattserver.services;
 import es.kazzpa.selattserver.models.ML;
 import es.kazzpa.selattserver.models.Options;
 import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.repositories.ResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import weka.attributeSelection.*;
@@ -23,7 +24,7 @@ public class FeatureSelectionService {
 
     @Autowired
     private FileFactory fileFactory;
-
+    private ResultRepository resRepo;
     public ResultFilter handlePCAFeatures() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
@@ -82,6 +83,7 @@ public class FeatureSelectionService {
         double[] ins2 = trainingData.get(1).toDoubleArray();
         int size = trainingData.numAttributes();
         int size2 = trainedData.numAttributes();
+        System.out.println("Size training: "+size+"\nSize trained\n");
         int[] list = new int[trainedData.numAttributes()];
         int i = 0;
         int j = 0;
@@ -107,6 +109,7 @@ public class FeatureSelectionService {
         rf.setSelectedAtr(list);
         rf.setAuxdouble(ins1);
         rf.setAuxdouble2(ins2);
+        resRepo.save(rf);
         return rf;
     }
 

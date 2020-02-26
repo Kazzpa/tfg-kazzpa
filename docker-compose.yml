@@ -11,6 +11,9 @@ services:
       MYSQL_USER: "selatt-db"
       MYSQL_PASSWORD: "s3l4tt-db"
       MYSQL_ROOT_PASSWORD: "example"
+    volumes:
+      # Montamos un volumen para MySQL para no perder los datos de bd
+      - ./mysql:/var/lib/mysql
     ports:
       - 3306:3306
     expose:

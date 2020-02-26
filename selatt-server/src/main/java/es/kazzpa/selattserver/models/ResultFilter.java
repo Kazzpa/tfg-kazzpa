@@ -1,8 +1,16 @@
 package es.kazzpa.selattserver.models;
 
+import javax.persistence.Entity;
 import javax.xml.transform.Result;
-
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Entity;
+@Entity
 public class ResultFilter {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Integer id;
     private String filterName;
     private int[] selectedAtr;
     private double[][] rankedAtr;

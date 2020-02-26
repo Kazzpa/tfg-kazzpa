@@ -44,3 +44,5 @@ IgnoreLexer.java~
 miguelgt/project/testPGVNS/nbproject/
 
 *.properties
+
+mysql/

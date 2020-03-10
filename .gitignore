@@ -40,3 +40,9 @@ IgnoreLexer.java~
 /verification
 
 **/__pycache__/
+
+miguelgt/project/testPGVNS/nbproject/
+
+*.properties
+
+mysql/

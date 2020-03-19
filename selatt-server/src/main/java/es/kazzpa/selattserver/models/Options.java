@@ -2,13 +2,14 @@ package es.kazzpa.selattserver.models;
 
 public class Options {
 
-    public Options(){}
+    public Options() {
+    }
 
-    public Options(boolean featureSelection){
+    public Options(boolean featureSelection) {
         this.featureSelection = featureSelection;
     }
 
-    public Options(boolean featureSelection, boolean noClass){
+    public Options(boolean featureSelection, boolean noClass) {
         this.featureSelection = featureSelection;
         this.noClass = noClass;
     }

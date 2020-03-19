@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Table(name = "dataset")
 public class Dataset implements Serializable {
     @Id
-   // @GeneratedValue(strategy=GenerationType.AUTO)
+    // @GeneratedValue(strategy=GenerationType.AUTO)
     private String uuid;
 
     private String filePath;
@@ -17,9 +17,10 @@ public class Dataset implements Serializable {
     private int nrow;
     private int ncol;
 
-    public Dataset(){
+    public Dataset() {
 
     }
+
     public Dataset(Usuario uploader) {
         this.uploader = uploader;
     }

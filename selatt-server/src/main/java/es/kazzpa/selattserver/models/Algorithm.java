@@ -15,7 +15,8 @@ public class Algorithm implements Serializable {
 
     public Algorithm() {
     }
-    public Algorithm(String name){
+
+    public Algorithm(String name) {
         this.name = name;
     }
 

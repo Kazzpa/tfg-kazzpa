@@ -6,10 +6,12 @@ from django.conf import settings
 class Dataset(models.Model):
     name = models.CharField(max_length=250)
     user_uploaded = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    #Type of file
     file_type = models.CharField(max_length=5)
+    #Size in Kb
     size = models.FloatField()
+    file = models.FilePathField()
     hash = models.CharField(max_length=100)
-    #file = models.FilePathField()
     pub_date = models.DateTimeField()
 
     def __str__(self):

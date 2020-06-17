@@ -1,17 +1,22 @@
 package es.kazzpa.selattserver.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "attribute")
+@Table(name = "attributos")
 public class Attribute implements Serializable {
 
     @Id
-    private int index;
-    @ManyToOne
-    //@Id
-    private ResultFilter dataPerformed;
+    private String id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    public ResultFilter dataPerformed;
+
     private Double value;
 
     public Attribute() {
@@ -25,12 +30,12 @@ public class Attribute implements Serializable {
         this.dataPerformed = dataPerformed;
     }
 
-    public int getIndex() {
-        return index;
+    public String getIndex() {
+        return id;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setIndex(String id) {
+        this.id = id;
     }
 
     public Double getValue() {

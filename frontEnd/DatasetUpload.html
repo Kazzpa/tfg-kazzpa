@@ -1,0 +1,66 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hello Vue</title>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+    <link rel="stylesheet" href="static/css/vue-material_dist_theme_default.css">
+    <link rel="stylesheet" href="static/css/vue-material_dist_vue-material.css">
+
+</head>
+<body>
+<!-- CABECERA común a la pagina-->
+<div id="header">
+    <md-toolbar class="md-primary">
+
+        <div class="md-toolbar-section-start">
+            <md-button href="index.html"><img src="https://vuejs.org/images/logo.png" style="height:40px;"
+                                              alt="LogoVue">SeAtt
+            </md-button>
+        </div>
+        <div class="md-toolbar-section-end">
+            <md-button href="results.html">{{ about }}</md-button>
+            <md-button href="https://www.youtube.com">{{ login }}</md-button>
+        </div>
+    </md-toolbar>
+</div>
+<!-- CUERPO DE LA WEB-->
+<div class="md-layout md-gutter md-alignment-center">
+    <div class="md-layout-item md-size-20">Ey</div>
+    <form class="md-layout-item md-size-60" id="dataset_form">
+
+
+            <md-card class="md-layout-item">
+                <md-card-header>
+                    <div class="md-title">Dataset</div>
+                </md-card-header>
+                <md-field>
+                    <label for="name">Name</label>
+                    <md-input name="name" id="name"/>
+                    <span class="md-error">The first name is required</span>
+                    <span class="md-error">Invalid first name</span>
+                </md-field>
+                <md-field>
+                    <label>Single</label>
+                    <md-file v-model="single"/>
+                </md-field>
+
+                <!--<md-progress-bar md-mode="indeterminate" v-if="sending"/>-->
+
+                <md-card-actions>
+                    <md-button type="submit" :disabled="sending">Upload
+                        <md-icon></md-icon>
+                    </md-button>
+                </md-card-actions>
+            </md-card>
+        </form>
+    <div class="md-layout-item md-size-20">Ey</div>
+</div>
+<!-- VUE SCRIPTS-->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="static/js/vue-material.min.js"></script>
+<script src="datasetUpload.js"></script>
+
+
+</body>
+</html>

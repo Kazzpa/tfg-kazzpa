@@ -18,7 +18,26 @@ public class FileFactory {
 
     @Autowired
     public LoadData loadData;
-
+/** BEFORE
+    public TrainTest getInstancesFromFile(ML.Files file, Options options) throws Exception{
+        switch (file) {
+            case Census:
+                return handlePublicCensus(options);
+            case Car:
+                return new TrainTest(handleData("car_train"), handleData("car_test"));
+            case Boston:
+                return new TrainTest(handleData("boston"), handleData("boston"));
+            case CarBin:
+                return new TrainTest(handleData("car_bin", true), handleData("car_bin"));
+            case CensusBin:
+                return new TrainTest(handleData("census_bin", true), handleData("census_bin"));
+            case CensusEm:
+                return new TrainTest(handleData("census_em"), handleData("census_em"));
+            case CensusKm:
+                return new TrainTest(handleData("census_km"), handleData("census_km"));
+        }
+        return null;
+    }*/
     public TrainTest getInstancesFromFile(ML.Files file, Options options) throws Exception{
         switch (file) {
             case Census:
@@ -38,7 +57,6 @@ public class FileFactory {
         }
         return null;
     }
-
     private Instances filterClass(Instances data) throws Exception{
         Remove filter = new Remove();
         filter.setAttributeIndices("" + (data.classIndex() + 1));

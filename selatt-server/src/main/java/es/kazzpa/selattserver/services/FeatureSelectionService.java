@@ -1,30 +1,30 @@
 package es.kazzpa.selattserver.services;
 
 
-import es.kazzpa.selattserver.models.ML;
-import es.kazzpa.selattserver.models.Options;
-import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.*;
 import es.kazzpa.selattserver.repositories.ResultRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import weka.attributeSelection.*;
-import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
 import weka.filters.unsupervised.attribute.RandomProjection;
 import weka.filters.unsupervised.attribute.Remove;
 
+import javax.xml.crypto.Data;
 import java.io.FileWriter;
-import java.util.Iterator;
 
 @Service
 public class FeatureSelectionService {
 
-    @Autowired
-    private FileFactory fileFactory;
-    private ResultRepository resRepo;
+    private final FileFactory fileFactory;
+    private final ResultRepository resRepo;
+
+    public FeatureSelectionService(FileFactory fileFactory, ResultRepository resRepo) {
+        this.fileFactory = fileFactory;
+        this.resRepo = resRepo;
+    }
+
     public ResultFilter handlePCAFeatures() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
@@ -57,9 +57,10 @@ public class FeatureSelectionService {
         selector.setEvaluator(principalComponents);
         selector.SelectAttributes(trainingData);
         ResultFilter rf = new ResultFilter();
-        rf.setFilterName("PCA");
-        rf.setRankedAtr(selector.rankedAttributes());
-        rf.setSelectedAtr(selector.selectedAttributes());
+        Algorithm a = new Algorithm("PCA");
+        rf.setAlgorithm(a);
+        Usuario user = new Usuario("Default");
+        Dataset dat = new Dataset(user);
         return rf;
     }
 
@@ -105,10 +106,11 @@ public class FeatureSelectionService {
 
 
         ResultFilter rf = new ResultFilter();
-        rf.setFilterName("PCA-Filter :" + trainedData.numAttributes());
-        rf.setSelectedAtr(list);
-        rf.setAuxdouble(ins1);
-        rf.setAuxdouble2(ins2);
+        Algorithm a = new Algorithm("PCA-Filter");
+        rf.setAlgorithm(a);
+        Usuario user = new Usuario("Default");
+        Dataset dat = new Dataset(user);
+        dat.setNcol(trainedData.numAttributes());
         resRepo.save(rf);
         return rf;
     }

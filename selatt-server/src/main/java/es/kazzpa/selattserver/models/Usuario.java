@@ -5,10 +5,9 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "usuario")
-public class Usuario implements Serializable {
+public class Usuario extends EntityDatabase {
     private String nombre;
-    @Id
-    private String uuid;
+
 
     public Usuario() {
     }
@@ -16,4 +15,14 @@ public class Usuario implements Serializable {
     public Usuario(String nombre) {
         this.nombre = nombre;
     }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+
 }

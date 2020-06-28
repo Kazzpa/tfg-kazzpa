@@ -1,24 +1,45 @@
 package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.UploadFileResponse;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import es.kazzpa.selattserver.services.FileStorageService;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.xml.transform.Result;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/featureReduction")
 public class FeatureSelectionController {
 
 
-    @Autowired
-    private FeatureSelectionService featureSelectionService;
+    private final FeatureSelectionService featureSelectionService;
 
-    @GetMapping(path = "/pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public FeatureSelectionController(FeatureSelectionService featureSelectionService) {
+        this.featureSelectionService = featureSelectionService;
+    }
+
+
+    //TODO: quitar / al principio y crear metodo que cargue dataset de DB.
+    @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResultFilter handleFeatureReduction(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handlePCAFeatures();
+    }
+
+    @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
@@ -29,19 +50,27 @@ public class FeatureSelectionController {
     }
 
 
-    @GetMapping(path = "/cfs", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "cfs", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String handleCfsSubsetEval() throws Exception {
         return featureSelectionService.handleCFSSubsetEval();
     }
 
-    @GetMapping(path = "/rp/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "rp/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public void handlePlotRp() throws Exception {
         featureSelectionService.plotRP();
     }
 
-    @GetMapping(path = "/pca/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handlePlotPCA() throws Exception {
         return featureSelectionService.plotPCA();
     }
 
+
+    @Bean
+    @Profile("test")
+    CommandLineRunner clr(FeatureSelectionService featureSelectionService) {
+        return args -> {
+            featureSelectionService.handleLoadDefaultData();
+        };
+    }
 }

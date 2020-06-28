@@ -1,17 +1,19 @@
 package es.kazzpa.selattserver.models;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "dataset")
-public class Dataset implements Serializable {
-    @Id
-    // @GeneratedValue(strategy=GenerationType.AUTO)
-    private String uuid;
+public class Dataset extends EntityDatabase {
+
 
     private String filePath;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Usuario uploader;
     private String name;
     private int nrow;
@@ -24,14 +26,7 @@ public class Dataset implements Serializable {
     public Dataset(Usuario uploader) {
         this.uploader = uploader;
     }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    
 
     public String getFilePath() {
         return filePath;
@@ -40,6 +35,7 @@ public class Dataset implements Serializable {
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
+
 
     public Usuario getUploader() {
         return uploader;

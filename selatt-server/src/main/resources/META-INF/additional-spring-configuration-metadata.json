@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "dataset.upload-dir",
+      "type": "java.lang.String",
+      "description": "Directory where datasets will be stored."
+  }
+] }

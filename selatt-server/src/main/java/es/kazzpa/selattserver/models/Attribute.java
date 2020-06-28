@@ -7,11 +7,11 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "attributos")
-public class Attribute implements Serializable {
+@Table(name = "attribute")
+public class Attribute {
 
     @Id
-    private String id;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -30,11 +30,11 @@ public class Attribute implements Serializable {
         this.dataPerformed = dataPerformed;
     }
 
-    public String getIndex() {
+    public int getIndex() {
         return id;
     }
 
-    public void setIndex(String id) {
+    public void setIndex(int id) {
         this.id = id;
     }
 

@@ -12,30 +12,36 @@ import javax.persistence.Table;
 public class Dataset extends EntityDatabase {
 
 
-    private String filePath;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private String filename;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     private Usuario uploader;
     private String name;
-    private int nrow;
-    private int ncol;
+    private String fileDownloadUri;
+    private String fileType;
+    private long size;
 
-    public Dataset() {
+    public Dataset(){
 
+    }
+    public Dataset(String filename, String fileDownloadUri, String fileType, long size) {
+        this.filename = filename;
+        this.fileDownloadUri = fileDownloadUri;
+        this.fileType = fileType;
+        this.size = size;
     }
 
     public Dataset(Usuario uploader) {
         this.uploader = uploader;
     }
-    
 
-    public String getFilePath() {
-        return filePath;
+
+    public String getFileDownloadUri() {
+        return fileDownloadUri;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileDownloadUri(String fileDownloadUri) {
+        this.fileDownloadUri = fileDownloadUri;
     }
-
 
     public Usuario getUploader() {
         return uploader;
@@ -53,19 +59,27 @@ public class Dataset extends EntityDatabase {
         this.name = name;
     }
 
-    public int getNrow() {
-        return nrow;
+    public String getFilename() {
+        return filename;
     }
 
-    public void setNrow(int nrow) {
-        this.nrow = nrow;
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
-    public int getNcol() {
-        return ncol;
+    public String getFileType() {
+        return fileType;
     }
 
-    public void setNcol(int ncol) {
-        this.ncol = ncol;
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
     }
 }

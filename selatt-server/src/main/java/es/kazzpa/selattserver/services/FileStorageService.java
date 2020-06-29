@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface FileStorageService {
     String storeFile(MultipartFile file);
-    Resource loadFileAsResource(String fileName);
+    Resource loadFileAsResource(String fileName) throws Exception;
 
 
 }

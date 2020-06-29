@@ -35,9 +35,7 @@ public class LoadDataImpl implements LoadData {
 
         Dataset data = new Dataset();
         data.setName("Covid-19");
-        data.setNcol(500);
-        data.setNrow(20);
-        data.setFilePath("C:/hola.txt");
+        data.setFileDownloadUri("C:/hola.txt");
         data.setUploader(user);
         dataRepo.save(data);
 

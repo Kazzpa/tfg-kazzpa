@@ -50,7 +50,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Resource loadFileAsResource(String fileName) {
+    public Resource loadFileAsResource(String fileName) throws Exception {
         try {
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
@@ -60,8 +60,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                 throw new Exception("Resource not found " + fileName);
             }
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-            return null;
+            throw new Exception("Error: " + ex.getMessage());
         }
     }
 

@@ -5,7 +5,14 @@ import es.kazzpa.selattserver.models.*;
 import es.kazzpa.selattserver.repositories.DatasetRepository;
 import es.kazzpa.selattserver.repositories.ResultRepository;
 import org.springframework.stereotype.Service;
-import weka.attributeSelection.*;
+import weka.attributeSelection.AttributeSelection;
+import weka.attributeSelection.CfsSubsetEval;
+import weka.attributeSelection.GreedyStepwise;
+import weka.attributeSelection.PrincipalComponents;
+import weka.attributeSelection.Ranker;
+
+
+
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
@@ -15,14 +22,14 @@ import weka.filters.unsupervised.attribute.Remove;
 import java.io.FileWriter;
 
 @Service("featureSelectionService")
-public class FeatureSelectionServiceImpl implements FeatureSelectionService{
+public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     private final FileFactory fileFactory;
     private final ResultRepository resRepo;
     private final DatasetRepository dataRepo;
     private final LoadData loadData;
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, ResultRepository resRepo,DatasetRepository dataRepo, LoadData loadData) {
+    public FeatureSelectionServiceImpl(FileFactory fileFactory, ResultRepository resRepo, DatasetRepository dataRepo, LoadData loadData) {
         this.fileFactory = fileFactory;
         this.resRepo = resRepo;
         this.dataRepo = dataRepo;
@@ -38,12 +45,14 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService{
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
         return ApplyPCA("CAR", carTrainTest.train);
     }
+
     //Pca from database file
-    public ResultFilter handlePCAFeatures(String datasetName) throws Exception{
+    public ResultFilter handlePCAFeatures(String datasetName) throws Exception {
         Dataset data = dataRepo.findDatasetByName(datasetName);
-        FileFactory.TrainTest dataTrainTest= fileFactory.getInstancesFromFile(data.getFilePath(),data.getFilePath(),new Options());
-        return ApplyPCA("datasetName",dataTrainTest.train);
+        FileFactory.TrainTest dataTrainTest = fileFactory.getInstancesFromFile(data.getFilename(), data.getFileDownloadUri(), new Options());
+        return ApplyPCA("datasetName", dataTrainTest.train);
     }
+
     public String handleRandomizedProjectionFeatures() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
@@ -56,6 +65,12 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService{
         return applyCfsSubsetEval(carTrainTest.train) + " \n \n \n \n" + applyCfsSubsetEval(censusTrainTest.train);
     }
 
+    /** TODO: FIX IMPORT FCBF
+     * public ResultFilter ApplyFCBF(String name, Instances trainingData) throws Exception{
+     * AttributeSelection selector = new AttributeSelection();
+     * <p>
+     * }
+     */
     public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
         AttributeSelection selector = new AttributeSelection();
 
@@ -123,7 +138,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService{
         rf.setAlgorithm(a);
         Usuario user = new Usuario("Default");
         Dataset dat = new Dataset(user);
-        dat.setNcol(trainedData.numAttributes());
         resRepo.save(rf);
         return rf;
     }

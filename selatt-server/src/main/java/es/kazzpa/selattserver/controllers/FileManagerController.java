@@ -1,5 +1,6 @@
 package es.kazzpa.selattserver.controllers;
 
+import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.UploadFileResponse;
 import es.kazzpa.selattserver.services.FileStorageService;
 import org.springframework.core.io.Resource;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -28,18 +30,18 @@ public class FileManagerController {
     }
 
     @PostMapping(path = "uploadDataset", headers = ("content-type=multipart/form-data"))
-    public UploadFileResponse loadDataset(@RequestParam("file") MultipartFile file) {
+    public Dataset loadDataset(@RequestParam("file") MultipartFile file) {
         String filename = fileStorageService.storeFile(file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/downloadFile/")
                 .path(filename)
                 .toUriString();
-        return new UploadFileResponse(filename, fileDownloadUri, file.getContentType(), file.getSize());
+        return new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize());
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+    public List<Dataset> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
         return Arrays.asList(files)
                 .stream()
                 .map(file -> loadDataset(file))
@@ -47,7 +49,7 @@ public class FileManagerController {
     }
 
     @GetMapping("/downloadFile/")
-    public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) {
+    public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) throws Exception {
         //load file as a resource
         Resource resource = fileStorageService.loadFileAsResource(filename);
 
@@ -56,7 +58,9 @@ public class FileManagerController {
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException ex) {
-            System.out.println("Could not determine file type");
+            throw new Exception("Could not determine file type" + filename + ex.getMessage());
+        }catch(NullPointerException ex){
+            throw new Exception("Couldn't locate the file " + filename + ex.getMessage());
         }
 
         if (contentType == null) {

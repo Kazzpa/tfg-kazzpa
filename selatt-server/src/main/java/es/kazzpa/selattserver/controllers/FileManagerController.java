@@ -1,7 +1,6 @@
 package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.UploadFileResponse;
 import es.kazzpa.selattserver.services.FileStorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -12,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +30,6 @@ public class FileManagerController {
     @PostMapping(path = "uploadDataset", headers = ("content-type=multipart/form-data"))
     public Dataset loadDataset(@RequestParam("file") MultipartFile file) {
         String filename = fileStorageService.storeFile(file);
-
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/downloadFile/")
                 .path(filename)

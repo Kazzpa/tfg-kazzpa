@@ -55,6 +55,17 @@
             <version>3.8.0</version>
         </dependency>
         -->
+        <!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/fastCorrBasedFS -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>fastCorrBasedFS</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>tabuAndScatterSearch</artifactId>
+            <version>1.0.2</version>
+        </dependency>
         <dependency>
             <groupId>nz.ac.waikato.cms.weka</groupId>
             <artifactId>weka-dev</artifactId>

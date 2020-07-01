@@ -10,6 +10,9 @@ import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
 import weka.attributeSelection.PrincipalComponents;
 import weka.attributeSelection.Ranker;
+import weka.attributeSelection.FCBFSearch;
+import weka.attributeSelection.ScatterSearchV1;
+
 
 
 

@@ -1,29 +1,35 @@
 package es.kazzpa.selattserver.services;
 
 
-import es.kazzpa.selattserver.models.*;
+import es.kazzpa.selattserver.models.Algorithm;
+import es.kazzpa.selattserver.models.Dataset;
+import es.kazzpa.selattserver.models.ML;
+import es.kazzpa.selattserver.models.Options;
+import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.Usuario;
 import es.kazzpa.selattserver.repositories.DatasetRepository;
 import es.kazzpa.selattserver.repositories.ResultRepository;
 import org.springframework.stereotype.Service;
-import weka.attributeSelection.AttributeSelection;
-import weka.attributeSelection.CfsSubsetEval;
-import weka.attributeSelection.GreedyStepwise;
-import weka.attributeSelection.PrincipalComponents;
-import weka.attributeSelection.Ranker;
-import weka.attributeSelection.FCBFSearch;
-import weka.attributeSelection.ScatterSearchV1;
 
 
-
-
+import weka.attributeSelection.*;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
 import weka.filters.unsupervised.attribute.RandomProjection;
 import weka.filters.unsupervised.attribute.Remove;
 
+import upo.jcu.math.data.dataset.DataType;
+import upo.jml.data.dataset.ClassificationDataset;
+import upo.jml.data.dataset.DatasetUtils;
+import upo.jml.prediction.classification.fss.algorithms.FSPredGroupsBasicVNS;
+import upo.jml.prediction.classification.fss.core.FSObjectiveFunction;
+import upo.jml.prediction.classification.fss.core.FSSolution;
+import upo.jml.prediction.classification.fss.evaluators.CfsEvaluator;
+
 import java.io.FileWriter;
 
+//TODO: getInstances from json/arff/csv
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
@@ -48,8 +54,26 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
         return ApplyPCA("CAR", carTrainTest.train);
     }
+    public String handleVNS(String datasetName) throws Exception{
+        ClassificationDataset dataset = loadData.getDatasetFromArff(datasetName);
+        if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
+            dataset = DatasetUtils.dicretizeViaFayyad(dataset);
+        }
 
-    //Pca from database file
+        return applyVNS(datasetName,dataset);
+    }
+
+    public void handleFCBF(String datasetName) throws Exception {
+        Instances trainingData = loadData.getDataFromArff(datasetName);
+        applyFCBF(datasetName, trainingData);
+    }
+
+    public void handleScatterSearch(String datasetName) throws Exception {
+        Instances trainingData = loadData.getDataFromArff(datasetName);
+        applyScatterSearch(datasetName, trainingData);
+    }
+
+
     public ResultFilter handlePCAFeatures(String datasetName) throws Exception {
         Dataset data = dataRepo.findDatasetByName(datasetName);
         FileFactory.TrainTest dataTrainTest = fileFactory.getInstancesFromFile(data.getFilename(), data.getFileDownloadUri(), new Options());
@@ -68,12 +92,56 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return applyCfsSubsetEval(carTrainTest.train) + " \n \n \n \n" + applyCfsSubsetEval(censusTrainTest.train);
     }
 
-    /** TODO: FIX IMPORT FCBF
-     * public ResultFilter ApplyFCBF(String name, Instances trainingData) throws Exception{
-     * AttributeSelection selector = new AttributeSelection();
-     * <p>
-     * }
-     */
+
+    //TODO: set an attribute set evaluator for fastcorrbassedFilter
+    public void applyFCBF(String name, Instances trainingData) throws Exception {
+        try {
+
+            CfsSubsetEval eval = new CfsSubsetEval();
+            eval.buildEvaluator(trainingData);
+
+            FCBFSearch fastcorrbasfs = new FCBFSearch();
+
+            int[] sol = fastcorrbasfs.search(eval, trainingData);
+            System.out.println(name + sol.toString());
+        } catch (Exception ex) {
+            throw new Exception("Error al aplicar fcbf\n" + ex.getMessage());
+        }
+    }
+
+    public void applyScatterSearch(String fileName, Instances trainingData) throws Exception {
+        try {
+
+            CfsSubsetEval eval = new CfsSubsetEval();
+            eval.buildEvaluator(trainingData);
+
+            ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
+            int[] sol = scatterSearchV1.search(eval, trainingData);
+            String aux;
+            aux = fileName;
+            for (int i = 0; i < sol.length; i++) {
+                if (i > 0) {
+                    aux = aux.concat(",");
+                }
+                aux = aux.concat(Integer.toString(sol[i]));
+
+            }
+            System.out.println(aux);
+        } catch (Exception ex) {
+            throw new Exception("Error al aplicar ScatterSearch\n" + ex.getMessage());
+        }
+    }
+    public String applyVNS(String datasetName,ClassificationDataset dataset) throws Exception{
+        //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
+        //logger.info(ddataset.toString());
+
+        FSObjectiveFunction of = new CfsEvaluator(dataset.getCategoricalData(), dataset.getLabels());
+        of.buildEvaluator();
+        FSPredGroupsBasicVNS bvns = new FSPredGroupsBasicVNS(dataset.getCategoricalData(), dataset.getLabels(), of, true);
+        FSSolution solution = bvns.search();
+        return solution.toString();
+    }
+
     public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
         AttributeSelection selector = new AttributeSelection();
 

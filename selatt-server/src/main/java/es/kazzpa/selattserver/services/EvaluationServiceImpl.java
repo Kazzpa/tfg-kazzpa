@@ -14,24 +14,29 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     @Autowired
     private final FileStorageService fileStorageService;
+    @Autowired
+    private final LoadData loadData;
 
-    public EvaluationServiceImpl(FileStorageService fileStorageService) {
+    public EvaluationServiceImpl(FileStorageService fileStorageService, LoadData loadData) {
         this.fileStorageService = fileStorageService;
+        this.loadData = loadData;
     }
 
-    public String naiveBayesProcess(String filename) throws Exception {
-        Resource resource;
+    @Override
+    public String handleNaiveBayes(String fileName) throws Exception {
+        Instances trainingData = loadData.getDataFromArff(fileName);
+        return applyNaiveBayes(fileName, trainingData);
+    }
+
+
+    public String applyNaiveBayes(String filename, Instances trainingData) throws Exception {
         try {
-            resource = fileStorageService.loadFileAsResource(filename);
-            JSONLoader loader = new JSONLoader();
-            loader.setSource(resource.getFile());
-            Instances training = loader.getDataSet();
             Classifier classifier = new NaiveBayes();
 
-            classifier.buildClassifier(training);
+            classifier.buildClassifier(trainingData);
 
-            Evaluation eval = new Evaluation(training);
-            eval.evaluateModel(classifier, training);
+            Evaluation eval = new Evaluation(trainingData);
+            eval.evaluateModel(classifier, trainingData);
             return eval.toSummaryString();
         } catch (Exception ex) {
             throw new Exception("Archivo no pudo ser  cargado como resource");

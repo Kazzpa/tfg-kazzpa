@@ -2,6 +2,7 @@ package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.repositories.ResultRepository;
+import upo.jml.data.dataset.ClassificationDataset;
 import weka.core.Instances;
 
 public interface FeatureSelectionService {
@@ -13,6 +14,12 @@ public interface FeatureSelectionService {
 
     String handleCFSSubsetEval() throws Exception;
 
+    void handleFCBF(String datasetName) throws Exception;
+
+    void handleScatterSearch(String datasetName) throws Exception;
+
+    String handleVNS(String datasetName) throws Exception;
+
     ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception;
 
     Instances applyRP(Instances trainingData, int numAttributes) throws Exception;
@@ -20,6 +27,12 @@ public interface FeatureSelectionService {
     ResultFilter applyPCAFilter(Instances trainingData, int numAttributes) throws Exception;
 
     String applyCfsSubsetEval(Instances data) throws Exception;
+
+    void applyFCBF(String name, Instances trainingData) throws Exception;
+
+    void applyScatterSearch(String fileName, Instances trainingData) throws Exception;
+
+    String applyVNS(String filename, ClassificationDataset dataset) throws Exception;
 
     ResultFilter plotPCA() throws Exception;
 

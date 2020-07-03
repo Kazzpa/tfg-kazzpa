@@ -1,25 +1,13 @@
 package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.models.ResultFilter;
-import es.kazzpa.selattserver.models.UploadFileResponse;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
-import es.kazzpa.selattserver.services.FileStorageService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/featureReduction")
@@ -37,6 +25,21 @@ public class FeatureSelectionController {
     @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handlePCAFeatures();
+    }
+
+    @GetMapping(path = "scattersearch/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void handleScatterSearch(@PathVariable String datasetName) throws Exception {
+        featureSelectionService.handleScatterSearch(datasetName);
+    }
+
+    @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void handleFCBF(@PathVariable String datasetName) throws Exception {
+        featureSelectionService.handleFCBF(datasetName);
+    }
+
+    @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public String handleVNS(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleVNS(datasetName);
     }
 
     @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

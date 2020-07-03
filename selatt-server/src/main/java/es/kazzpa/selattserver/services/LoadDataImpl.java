@@ -1,18 +1,25 @@
 package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.*;
+import es.kazzpa.selattserver.properties.Properties;
 import es.kazzpa.selattserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Attr;
+import upo.jml.data.dataset.ClassificationDataset;
+import upo.jml.data.dataset.DatasetUtils;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVLoader;
+import weka.core.converters.JSONLoader;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service("loadData")
 public class LoadDataImpl implements LoadData {
@@ -27,8 +34,23 @@ public class LoadDataImpl implements LoadData {
     @Autowired
     private UserRepository userRepo;
 
+    private final Path fileStorageLocation;
+
+    @Autowired
+    public LoadDataImpl(Properties properties) {
+        this.fileStorageLocation = Paths.get(properties.getUploadDir())
+                .toAbsolutePath()
+                .normalize();
+        try {
+            Files.createDirectories(this.fileStorageLocation);
+
+        } catch (Exception ex) {
+            System.out.println("Error al crear el directorio" + fileStorageLocation);
+        }
+    }
+
     //this method is run for test purposes
-    public void loadDefaultDataBase(){
+    public void loadDefaultDataBase() {
         Usuario user = new Usuario();
         user.setNombre("Andres");
         userRepo.save(user);
@@ -78,41 +100,59 @@ public class LoadDataImpl implements LoadData {
     }
 
     public Instances getDataFromArff(String fileName) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/arffs/" + fileName));
+        BufferedReader reader = new BufferedReader(new FileReader(fileStorageLocation + "/" + fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
         data.setClassIndex(data.numAttributes() - 1);
         Instance inst;
-        while ((inst = arff.readInstance(data)) != null){
+        while ((inst = arff.readInstance(data)) != null) {
             data.add(inst);
         }
         return data;
     }
 
+
     public Instances getDataFromArff(String fileName, boolean noClass) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/arffs/" + fileName));
+        BufferedReader reader = new BufferedReader(new FileReader(fileStorageLocation + "/" + fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
-        if (!noClass){
+        if (!noClass) {
             data.setClassIndex(data.numAttributes() - 1);
         }
         Instance inst;
-        while ((inst = arff.readInstance(data)) != null){
+        while ((inst = arff.readInstance(data)) != null) {
             data.add(inst);
         }
         return data;
     }
 
-    public void saveModel(Classifier cls, String name) throws Exception{
+    public Instances getDataFromJson(String filename) throws Exception {
+        try {
+            JSONLoader jsonLoader = new JSONLoader();
+            jsonLoader.setSource(new File(fileStorageLocation + "/" + filename));
+            return jsonLoader.getDataSet();
+        } catch (IOException ex) {
+            throw new Exception("Archivo no encontrado en:" + fileStorageLocation + "/" + filename + ex.getMessage());
+        } catch (Exception ex) {
+            throw new Exception("Error en " + ex.getMessage());
+        }
+    }
+
+    
+    public ClassificationDataset getDatasetFromArff(String filename) throws Exception {
+        return DatasetUtils.loadArffDataset(new File(fileStorageLocation + "/" +filename), -1);
+    }
+
+    public void saveModel(Classifier cls, String name) throws Exception {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("src/main/resources/models/" + name));
         objectOutputStream.writeObject(cls);
         objectOutputStream.flush();
         objectOutputStream.close();
     }
 
-    public Classifier getModel(String name) throws Exception{
+    public Classifier getModel(String name) throws Exception {
         ObjectInputStream oos = new ObjectInputStream(new FileInputStream("src/main/resources/models/" + name));
-        Classifier cls = (Classifier)oos.readObject();
+        Classifier cls = (Classifier) oos.readObject();
         oos.close();
         return cls;
 

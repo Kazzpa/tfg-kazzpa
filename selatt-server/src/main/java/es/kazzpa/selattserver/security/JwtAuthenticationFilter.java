@@ -1,97 +1,84 @@
 package es.kazzpa.selattserver.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import es.kazzpa.selattserver.models.JwtResponse;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.apache.commons.io.IOUtils;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
+import io.jsonwebtoken.*;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private final AuthenticationManager authenticationManager;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+@Bean
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        // 1. get the authentication header. Tokens are supposed to be passed in the authentication header
+        String header = request.getHeader(SecurityConfig.TOKEN_HEADER);
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+        // 2. validate the header and check the prefix
+        if (header == null || !header.startsWith(SecurityConfig.TOKEN_PREFIX)) {
+            filterChain.doFilter(request, response);        // If not valid, go to the next filter.
+            return;
+        }
 
-        this.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher(SecurityConfig.AUTH_LOGIN_URL, HttpMethod.POST.toString()));
+        try {    // exceptions might be thrown in creating the claims if for example the token is expired
+            UsernamePasswordAuthenticationToken auth = getAuthentication(request);
+
+            if (auth != null) {
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        } catch (Exception e) {
+            // In case of failure. Make sure it's clear; so guarantee user won't be authenticated
+            SecurityContextHolder.clearContext();
+        }
+
+        // go to the next filter in the filter chain
+        filterChain.doFilter(request, response);
     }
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        String username = null;
-        String password = null;
-        //String method = request.getMethod();
-        if (request.getMethod().equals(HttpMethod.POST.toString())) {
+    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) throws Exception {
+        String token = request.getHeader(SecurityConfig.TOKEN_HEADER);
+        if (token != null && !token.trim().isEmpty() && token.startsWith(SecurityConfig.TOKEN_PREFIX)) {
             try {
-                String requestBody = IOUtils.toString(request.getReader());
-                if (requestBody.trim().isEmpty()) {
-                    throw new Exception("Login data is empty");
+                byte[] signingKey = SecurityConfig.JWT_SECRET.getBytes();
+
+                Jws<Claims> parsedToken = Jwts.parser()
+                        .setSigningKey(signingKey)
+                        .parseClaimsJws(token.replace("Bearer ", ""));
+
+                String username = parsedToken
+                        .getBody()
+                        .getSubject();
+
+                List<SimpleGrantedAuthority> authorities = ((List<?>) parsedToken.getBody()
+                        .get("rol")).stream()
+                        .map(authority -> new SimpleGrantedAuthority((String) authority))
+                        .collect(Collectors.toList());
+
+                if (!username.trim().isEmpty()) {
+                    return new UsernamePasswordAuthenticationToken(username, null, authorities);
                 }
-                LoginRequest loginRequest = objectMapper.readValue(requestBody, LoginRequest.class);
-                username = loginRequest.getUsername();
-                password = loginRequest.getPassword();
-                System.out.println("attempted auth:" + username+password);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (ExpiredJwtException exception) {
+                throw new Exception("Request to parse expired JWT : " + token + " failed : " + exception.getMessage());
+            } catch (UnsupportedJwtException exception) {
+                throw new Exception("Request to parse unsupported JWT : " + token + " failed : " + exception.getMessage());
+            } catch (MalformedJwtException exception) {
+                throw new Exception("Request to parse invalid JWT : " + token + " failed : " + exception.getMessage());
+            } catch (SignatureException exception) {
+                throw new Exception("Request to parse JWT with invalid signature : " + token + " failed : " + exception.getMessage());
+            } catch (Exception exception) {
+                throw new Exception("Request to parse empty or null JWT : " + token + " failed : " + exception.getMessage());
             }
         }
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
-                password, Collections.emptyList());
-        System.out.println(authenticationManager.authenticate(authenticationToken));
-        System.out.println(authenticationToken.isAuthenticated());
-        return authenticationManager.authenticate(authenticationToken);
-    }
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain filterChain, Authentication authentication) throws IOException {
-        User user = ((User) authentication.getPrincipal());
-
-        List<String> roles = user.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        Long now = System.currentTimeMillis();
-
-        byte[] signingKey = SecurityConfig.JWT_SECRET.getBytes();
-        String token = Jwts.builder()
-                .signWith(Keys.hmacShaKeyFor(signingKey), SignatureAlgorithm.HS512)
-                .setHeaderParam("typ", SecurityConfig.TOKEN_TYPE)
-                .setIssuer(SecurityConfig.TOKEN_ISSUER)
-                .setAudience(SecurityConfig.TOKEN_AUDIENCE)
-                .setSubject(user.getUsername())
-                .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + SecurityConfig.EXPIRATION_TIME * 1000))  // in milliseconds
-
-                .claim("rol", roles)
-                .compact();
-        //response.addHeader(SecurityConstants.TOKEN_HEADER, SecurityConstants.TOKEN_PREFIX + token);
-        PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        String res = objectMapper.writeValueAsString(new JwtResponse(token));
-        out.print(res);
-        out.flush();
+        return null;
     }
 }

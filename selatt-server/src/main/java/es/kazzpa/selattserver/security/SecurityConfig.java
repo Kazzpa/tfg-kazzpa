@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
@@ -27,6 +28,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     //public static final String AUTH_LOGIN_URL = "/authenticate";
     public static final String AUTH_LOGIN_URL = "/auth/**";
 
@@ -57,9 +62,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // What's the authenticationManager()?
                 // An object provided by WebSecurityConfigurerAdapter, used to authenticate the user passing user's credentials
                 // The filter needs this auth manager to authenticate the user.
-                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+                .addFilter(new JwtAuthentication(authenticationManager()))
                 .authorizeRequests()
+                .and()
+                // Add a filter to validate the tokens with every request
+                .addFilterAfter(jwtAuthenticationFilter, JwtAuthenticationFilter.class)
                 // allow all POST requests
+                .authorizeRequests()
                 .antMatchers(HttpMethod.POST, SecurityConfig.AUTH_LOGIN_URL).permitAll()
                 // any other requests must be authenticated
                 .anyRequest().authenticated()

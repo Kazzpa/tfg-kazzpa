@@ -33,6 +33,8 @@ public class LoadDataImpl implements LoadData {
     private AttributeRepository attRepo;
     @Autowired
     private DatasetRepository dataRepo;
+    @Autowired
+    private AppUserRepository appUserRepository;
 
     private final Path fileStorageLocation;
 
@@ -77,6 +79,12 @@ public class LoadDataImpl implements LoadData {
         dos.setIndex(5);
         dos.setValue(1.2);
         attRepo.save(dos);
+
+        AppUser kazzpa = new AppUser("kazzpa", "kazzpa", "USER");
+        appUserRepository.save(kazzpa);
+
+        AppUser admin = new AppUser("admin", "admin", "ADMIN");
+        appUserRepository.save(admin);
 
     }
 

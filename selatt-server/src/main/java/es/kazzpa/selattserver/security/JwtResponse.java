@@ -1,4 +1,4 @@
-package es.kazzpa.selattserver.models;
+package es.kazzpa.selattserver.security;
 
 public class JwtResponse {
     private String token;

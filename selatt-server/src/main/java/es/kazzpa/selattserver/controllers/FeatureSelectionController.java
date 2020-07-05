@@ -28,8 +28,8 @@ public class FeatureSelectionController {
     }
 
     @GetMapping(path = "scattersearch/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void handleScatterSearch(@PathVariable String datasetName) throws Exception {
-        featureSelectionService.handleScatterSearch(datasetName);
+    public String handleScatterSearch(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleScatterSearch(datasetName);
     }
 
     @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

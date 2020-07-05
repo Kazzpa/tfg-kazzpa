@@ -6,7 +6,6 @@ import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.ML;
 import es.kazzpa.selattserver.models.Options;
 import es.kazzpa.selattserver.models.ResultFilter;
-import es.kazzpa.selattserver.models.Usuario;
 import es.kazzpa.selattserver.repositories.DatasetRepository;
 import es.kazzpa.selattserver.repositories.ResultRepository;
 import org.springframework.stereotype.Service;
@@ -55,7 +54,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return ApplyPCA("CAR", carTrainTest.train);
     }
     public String handleVNS(String datasetName) throws Exception{
-        ClassificationDataset dataset = loadData.getDatasetFromArff(datasetName);
+        ClassificationDataset dataset = loadData.getClassDatasetFromArff(datasetName);
         if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
             dataset = DatasetUtils.dicretizeViaFayyad(dataset);
         }
@@ -64,13 +63,13 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
     public void handleFCBF(String datasetName) throws Exception {
-        Instances trainingData = loadData.getDataFromArff(datasetName);
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         applyFCBF(datasetName, trainingData);
     }
 
-    public void handleScatterSearch(String datasetName) throws Exception {
-        Instances trainingData = loadData.getDataFromArff(datasetName);
-        applyScatterSearch(datasetName, trainingData);
+    public String handleScatterSearch(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        return applyScatterSearch(datasetName, trainingData);
     }
 
 
@@ -109,7 +108,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         }
     }
 
-    public void applyScatterSearch(String fileName, Instances trainingData) throws Exception {
+    public String applyScatterSearch(String fileName, Instances trainingData) throws Exception {
         try {
 
             CfsSubsetEval eval = new CfsSubsetEval();
@@ -126,7 +125,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
                 aux = aux.concat(Integer.toString(sol[i]));
 
             }
-            System.out.println(aux);
+            return aux;
         } catch (Exception ex) {
             throw new Exception("Error al aplicar ScatterSearch\n" + ex.getMessage());
         }
@@ -158,8 +157,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         ResultFilter rf = new ResultFilter();
         Algorithm a = new Algorithm("PCA");
         rf.setAlgorithm(a);
-        Usuario user = new Usuario("Default");
-        Dataset dat = new Dataset(user);
         return rf;
     }
 
@@ -207,8 +204,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         ResultFilter rf = new ResultFilter();
         Algorithm a = new Algorithm("PCA-Filter");
         rf.setAlgorithm(a);
-        Usuario user = new Usuario("Default");
-        Dataset dat = new Dataset(user);
         resRepo.save(rf);
         return rf;
     }

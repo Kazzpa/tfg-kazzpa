@@ -1,13 +1,11 @@
 package es.kazzpa.selattserver.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
-import weka.core.converters.JSONLoader;
 
 @Service
 public class EvaluationServiceImpl implements EvaluationService {
@@ -24,7 +22,7 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     @Override
     public String handleNaiveBayes(String fileName) throws Exception {
-        Instances trainingData = loadData.getDataFromArff(fileName);
+        Instances trainingData = loadData.getInstancesFromAnyFile(fileName);
         return applyNaiveBayes(fileName, trainingData);
     }
 

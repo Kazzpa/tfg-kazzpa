@@ -16,7 +16,7 @@ public interface FeatureSelectionService {
 
     void handleFCBF(String datasetName) throws Exception;
 
-    void handleScatterSearch(String datasetName) throws Exception;
+    String handleScatterSearch(String datasetName) throws Exception;
 
     String handleVNS(String datasetName) throws Exception;
 
@@ -30,7 +30,7 @@ public interface FeatureSelectionService {
 
     void applyFCBF(String name, Instances trainingData) throws Exception;
 
-    void applyScatterSearch(String fileName, Instances trainingData) throws Exception;
+    String applyScatterSearch(String fileName, Instances trainingData) throws Exception;
 
     String applyVNS(String filename, ClassificationDataset dataset) throws Exception;
 

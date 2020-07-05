@@ -1,6 +1,6 @@
 package es.kazzpa.selattserver.models;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.security.core.userdetails.User;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,25 +13,20 @@ public class Dataset extends EntityDatabase {
 
 
     private String filename;
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    private Usuario uploader;
     private String name;
     private String fileDownloadUri;
     private String fileType;
     private long size;
 
-    public Dataset(){
+    public Dataset() {
 
     }
+
     public Dataset(String filename, String fileDownloadUri, String fileType, long size) {
         this.filename = filename;
         this.fileDownloadUri = fileDownloadUri;
         this.fileType = fileType;
         this.size = size;
-    }
-
-    public Dataset(Usuario uploader) {
-        this.uploader = uploader;
     }
 
 
@@ -41,14 +36,6 @@ public class Dataset extends EntityDatabase {
 
     public void setFileDownloadUri(String fileDownloadUri) {
         this.fileDownloadUri = fileDownloadUri;
-    }
-
-    public Usuario getUploader() {
-        return uploader;
-    }
-
-    public void setUploader(Usuario uploader) {
-        this.uploader = uploader;
     }
 
     public String getName() {

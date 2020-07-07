@@ -5,8 +5,8 @@
                 color="primary"
                 dark
         >
-            <div class="d-flex align-center" >
-               <v-icon @click="goToHome">mdi-home</v-icon>
+            <div class="d-flex align-center">
+                <v-icon @click="goToHome">mdi-home</v-icon>
                 SelAtt
             </div>
 
@@ -27,14 +27,22 @@
     import Vue from 'vue';
     import VueRouter from 'vue-router';
     import HelloWorld from '@/components/HomeView';
-    import UserView from "@/components/UserView";
+    import RegisterView from "@/components/RegisterView";
+    import LoginView from "@/components/LoginView";
+    import ProfileView from "@/components/ProfileView";
 
     Vue.use(VueRouter);
+    const profile_path =process.env.VUE_APP_PROFILE_PATH;
+    const register_path =process.env.VUE_APP_REGISTER_PATH;
+    const home_path = process.env.VUE_APP_HOME_PATH;
+    const login_path = process.env.VUE_APP_LOGIN_PATH;
     const router = new VueRouter({
         routes: [
             // dynamic segments start with a colon
-            {path: '/User', component: UserView},
-            {path: '/', component: HelloWorld}
+            {path: login_path, component: LoginView},
+            {path: profile_path, component: ProfileView},
+            {path: home_path, component: HelloWorld},
+            {path: register_path, component: RegisterView}
         ]
     })
     export default {
@@ -46,10 +54,10 @@
         }),
         methods: {
             goToLogin() {
-                router.push("/User");
+                router.push(login_path);
             },
             goToHome() {
-                router.push("/");
+                router.push(home_path);
             }
         }
     };

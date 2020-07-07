@@ -30,15 +30,23 @@
     import axios from 'axios';
     import Papa from 'papaparse';
     import streamSaver from 'streamsaver';
-    import UserView from "@/components/UserView";
     import Vue from 'vue';
     import VueRouter from 'vue-router';
+    import RegisterView from "@/components/RegisterView";
+    import ProfileView from "@/components/ProfileView";
 
     Vue.use(VueRouter);
+
+
+    const server_url = process.env.VUE_APP_API_SERVER_URL;
+    const profile_path =process.env.VUE_APP_PROFILE_PATH;
+    const register_path =process.env.VUE_APP_REGISTER_PATH;
+
     const router = new VueRouter({
         routes: [
             // dynamic segments start with a colon
-            {path: '/User', component: UserView}
+            {path: profile_path, component: ProfileView},
+            {path: register_path, component: RegisterView}
         ]
     })
     require('axios-debug-log');
@@ -78,7 +86,7 @@
                 });
                 //sets the blob content to the file content as parsed with papaparse and the name of the file
                 obj.append("file", blob, this.inputFile[i].name);
-                let url = "http://localhost:8082/fileManager/uploadDataset";
+                let url = server_url + "/fileManager/uploadDataset";
                 axios.post(url,
                     obj,
                     {
@@ -97,7 +105,7 @@
                     });
             },
             retrieveFile() {
-                let url = "http://localhost:8082/fileManager/downloadFile/";
+                let url = server_url + "/fileManager/downloadFile/";
                 console.log(url);
                 axios.get(url, {
                     params: {
@@ -119,7 +127,7 @@
                     });
             },
             retrieveNaiveBayes() {
-                let url = "http://localhost:8082/" + "/evaluate/naiveBayes";
+                let url = server_url + "/evaluate/naiveBayes";
                 console.log(url);
                 axios.get(url, {
                     params: {

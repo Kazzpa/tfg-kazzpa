@@ -41,10 +41,11 @@ IgnoreLexer.java~
 
 **/__pycache__/
 
-miguelgt/project/testPGVNS/nbproject/
 
 *.properties
 
 mysql/
 
 selatt-server/Users/uploads/
+# vue app production env values.
+frontend/.env.production

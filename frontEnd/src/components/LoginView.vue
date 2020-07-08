@@ -30,7 +30,7 @@
                             role="alert"
                     >Password is required!
                     </div>
-                    <v-btn class="btn btn-primary btn-block" :disabled="loading">
+                    <v-btn color="primary" type="submit" :disabled="loading">
                         <span v-show="loading" class="spinner-border spinner-border-sm"></span>
                         <span>Login</span>
                     </v-btn>
@@ -54,7 +54,6 @@
     Vue.use(VueRouter);
     Vue.use(VeeValidate);
 
-    const api_auth = process.env.VUE_APP_API_AUTH;
     const profile_path = process.env.VUE_APP_PROFILE_PATH;
     const home_path = process.env.VUE_APP_HOME_PATH;
     const register_path = process.env.VUE_APP_REGISTER_PATH;
@@ -87,6 +86,7 @@
         },
         methods: {
             handleLogin() {
+                console.log("Prueba login");
                 console.log(this.user.username, this.user.password);
                 this.loading = true;
                 this.$validator.validateAll().then(isValid => {
@@ -98,7 +98,7 @@
 
                     console.log("Es valido el formulario");
                     if (this.user.username && this.user.password) {
-                        this.$store.dispatch(api_auth, this.user).then(
+                        this.$store.dispatch("auth/login", this.user).then(
                             () => {
                                 this.$router.push(profile_path);
                             },

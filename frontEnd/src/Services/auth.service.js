@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8082/api/auth/';
+const auth_path = process.env.VUE_APP_API_AUTH;
+const API_URL = process.env.VUE_APP_API_SERVER_URL;
 
 class AuthService {
     login(user) {
         return axios
-            .post(API_URL + 'signin', {
+            .post(API_URL + auth_path, {
                 username: user.username,
                 password: user.password
             })
@@ -23,11 +24,16 @@ class AuthService {
     }
 
     register(user) {
-        return axios.post(API_URL + 'signup', {
+        //TODO: Create method in server
+        console.log(user + " tried to register but is unavailable");
+        return null;
+        /**
+         return axios.post(API_URL + 'signup', {
             username: user.username,
             email: user.email,
             password: user.password
         });
+         */
     }
 }
 

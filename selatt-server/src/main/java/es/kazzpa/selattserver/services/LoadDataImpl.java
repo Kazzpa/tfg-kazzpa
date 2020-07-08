@@ -81,10 +81,17 @@ public class LoadDataImpl implements LoadData {
         attRepo.save(dos);
 
         AppUser kazzpa = new AppUser("kazzpa", "kazzpa", "USER");
-        appUserRepository.save(kazzpa);
-
+        AppUser user = appUserRepository.findByUsername(kazzpa.getUsername());
+        if (user == null) {
+            appUserRepository.save(kazzpa);
+        }
         AppUser admin = new AppUser("admin", "admin", "ADMIN");
-        appUserRepository.save(admin);
+
+        user = appUserRepository.findByUsername(admin.getUsername());
+
+        if (user == null) {
+            appUserRepository.save(admin);
+        }
 
     }
 

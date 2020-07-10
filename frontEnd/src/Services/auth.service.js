@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-const auth_path = process.env.VUE_APP_API_AUTH;
-const API_URL = process.env.VUE_APP_API_SERVER_URL;
 
 class AuthService {
+
     login(user) {
+        var auth_path = process.env.VUE_APP_API_AUTH;
+        var API_URL = process.env.VUE_APP_API_SERVER_URL;
         return axios
             .post(API_URL + auth_path, {
                 username: user.username,

@@ -4,19 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -28,6 +27,7 @@ import java.util.stream.Collectors;
 
 
 public class JwtAuthentication extends UsernamePasswordAuthenticationFilter {
+    @Autowired
     private final AuthenticationManager authenticationManager;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -38,7 +38,6 @@ public class JwtAuthentication extends UsernamePasswordAuthenticationFilter {
     }
 
 
-
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         String username = null;
@@ -47,21 +46,22 @@ public class JwtAuthentication extends UsernamePasswordAuthenticationFilter {
         if (request.getMethod().equals(HttpMethod.POST.toString())) {
             try {
                 String requestBody = IOUtils.toString(request.getReader());
-                if (requestBody.trim().isEmpty()) {
-                    throw new Exception("Login data is empty");
-                }
+                /**if (requestBody.trim().isEmpty()) {
+                 throw new Exception("Login data is empty");
+                 }
+                 */
                 LoginRequest loginRequest = objectMapper.readValue(requestBody, LoginRequest.class);
                 username = loginRequest.getUsername();
                 password = loginRequest.getPassword();
-                System.out.println("attempted auth:" + username + password);
+                System.out.println("attempted auth: " + username + ", " + password);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
                 password, Collections.emptyList());
-        System.out.println(authenticationManager.authenticate(authenticationToken));
-        System.out.println(authenticationToken.isAuthenticated());
+        //System.out.println(authenticationManager.authenticate(authenticationToken));
+        System.out.println("autenticado:" + authenticationToken.isAuthenticated());
         return authenticationManager.authenticate(authenticationToken);
     }
 

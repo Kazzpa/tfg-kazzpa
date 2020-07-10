@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -16,6 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,15 +33,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsService userDetailsService;
-
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
 
     //public static final String AUTH_LOGIN_URL = "/authenticate";
     public static final String AUTH_LOGIN_URL = "/auth/**";
 
     // Signing key for HS512 algorithm
     // You can use the page http://www.allkeysgenerator.com/ to generate all kinds of keys
+
     public static final String JWT_SECRET = "q3t6w9z$C&F)J@NcRfUjWnZr4u7x!A%D*G-KaPdSgVkYp2s5v8y/B?E(H+MbQeTh";
 
     // JWT token defaults
@@ -47,33 +53,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public static final String TOKEN_AUDIENCE = "secure-app";
     public static final int EXPIRATION_TIME = 24 * 60 * 60;
 
+
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
+                    .cors()
+                .and()
+                    .csrf().disable()
+                    .httpBasic().disable()
                 // make sure we use stateless session; session won't be used to store user's state.
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 // handle an authorized attempts
-                .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                    .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
                 .and()
-                // Add a filter to validate user credentials and add token in the response header
-
-                // What's the authenticationManager()?
-                // An object provided by WebSecurityConfigurerAdapter, used to authenticate the user passing user's credentials
-                // The filter needs this auth manager to authenticate the user.
-                .addFilter(new JwtAuthentication(authenticationManager()))
-                .authorizeRequests()
+                    .addFilter(new JwtAuthentication(authenticationManager()))
+                    .authorizeRequests()
                 .and()
                 // Add a filter to validate the tokens with every request
-                .addFilterAfter(jwtAuthenticationFilter, JwtAuthenticationFilter.class)
-                // allow all POST requests
-                .authorizeRequests()
-                .antMatchers(HttpMethod.POST, SecurityConfig.AUTH_LOGIN_URL).permitAll()
-                // any other requests must be authenticated
-                .anyRequest().authenticated()
-                .and()
-                .formLogin().disable();
+                    .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // authorization requests config
+                    .authorizeRequests()
+                // allow all who are accessing "auth" service
+                .antMatchers(HttpMethod.POST, AUTH_LOGIN_URL).permitAll()
+                .anyRequest().authenticated();
     }
 
     @Override
@@ -83,6 +87,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider());
+    }
+    @Bean(BeanIds.AUTHENTICATION_MANAGER)
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:8081");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 
     @Bean

@@ -53,13 +53,14 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
         return ApplyPCA("CAR", carTrainTest.train);
     }
-    public String handleVNS(String datasetName) throws Exception{
+
+    public String handleVNS(String datasetName) throws Exception {
         ClassificationDataset dataset = loadData.getClassDatasetFromArff(datasetName);
         if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
             dataset = DatasetUtils.dicretizeViaFayyad(dataset);
         }
 
-        return applyVNS(datasetName,dataset);
+        return applyVNS(datasetName, dataset);
     }
 
     public void handleFCBF(String datasetName) throws Exception {
@@ -96,11 +97,12 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     public void applyFCBF(String name, Instances trainingData) throws Exception {
         try {
 
-            CfsSubsetEval eval = new CfsSubsetEval();
+            //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
+            //utiliza: simuncertAttributeSetEval
+            SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
             eval.buildEvaluator(trainingData);
-
+            
             FCBFSearch fastcorrbasfs = new FCBFSearch();
-
             int[] sol = fastcorrbasfs.search(eval, trainingData);
             System.out.println(name + sol.toString());
         } catch (Exception ex) {
@@ -130,7 +132,8 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             throw new Exception("Error al aplicar ScatterSearch\n" + ex.getMessage());
         }
     }
-    public String applyVNS(String datasetName,ClassificationDataset dataset) throws Exception{
+
+    public String applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
         //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
         //logger.info(ddataset.toString());
 

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -15,8 +16,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Bean
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -50,8 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 byte[] signingKey = SecurityConfig.JWT_SECRET.getBytes();
 
-                Jws<Claims> parsedToken = Jwts.parser()
+                Jws<Claims> parsedToken = Jwts.parserBuilder()
                         .setSigningKey(signingKey)
+                        .build()
                         .parseClaimsJws(token.replace("Bearer ", ""));
 
                 String username = parsedToken
@@ -72,8 +75,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 throw new Exception("Request to parse unsupported JWT : " + token + " failed : " + exception.getMessage());
             } catch (MalformedJwtException exception) {
                 throw new Exception("Request to parse invalid JWT : " + token + " failed : " + exception.getMessage());
-            } catch (SignatureException exception) {
-                throw new Exception("Request to parse JWT with invalid signature : " + token + " failed : " + exception.getMessage());
             } catch (Exception exception) {
                 throw new Exception("Request to parse empty or null JWT : " + token + " failed : " + exception.getMessage());
             }

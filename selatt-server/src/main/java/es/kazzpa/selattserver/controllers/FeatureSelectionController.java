@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping(path = "/featureReduction")
+@RequestMapping(path = "/featureSelection")
 public class FeatureSelectionController {
 
 

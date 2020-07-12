@@ -9,11 +9,13 @@ export const auth = {
     namespaced: true,
     state: initialState,
     actions: {
-        login({ commit }, user) {
-            return AuthService.login(user).then(
+        login({ commit }, usuario) {
+            return AuthService.login(usuario).then(
                 user => {
-                    commit('loginSuccess', user);
-                    return Promise.resolve(user);
+                    usuario.token = user.token;
+                    delete usuario.password;
+                    commit('loginSuccess', usuario);
+                    return Promise.resolve(usuario);
                 },
                 error => {
                     commit('loginFailure');

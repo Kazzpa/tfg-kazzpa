@@ -4,8 +4,23 @@ import authHeader from './auth-header';
 const API_URL = 'http://localhost:8080/api/test/';
 
 class UserService {
-    getPublicContent() {
-        return axios.get(API_URL + 'all');
+    processRequest(process_url,filename,token) {
+        var url = API_URL + process_url;
+        axios.get(url, {
+            params: {
+                filename: filename,
+            },
+            headers: {
+                'Authorization': 'Bearer ' + token,
+            }
+        })
+            .then(response => {
+                console.log(response);
+                return response.data;
+            })
+            .catch(error => {
+                return error;
+            });
     }
 
     getUserBoard() {

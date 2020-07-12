@@ -26,23 +26,27 @@
 <script>
     import Vue from 'vue';
     import VueRouter from 'vue-router';
-    import HelloWorld from '@/components/HomeView';
+    import AlgorithmsView from '@/components/AlgorithmsView';
     import RegisterView from "@/components/RegisterView";
     import LoginView from "@/components/LoginView";
     import ProfileView from "@/components/ProfileView";
+    import LandingView from "@/components/LandingView";
 
     Vue.use(VueRouter);
-    const profile_path =process.env.VUE_APP_PROFILE_PATH;
-    const register_path =process.env.VUE_APP_REGISTER_PATH;
-    const home_path = process.env.VUE_APP_HOME_PATH;
+    const profile_path = process.env.VUE_APP_PROFILE_PATH;
+    const register_path = process.env.VUE_APP_REGISTER_PATH;
+    const algorithm_path = process.env.VUE_APP_ALGORITHM_PATH;
+    const landing_path = process.env.VUE_APP_LANDING_PATH;
     const login_path = process.env.VUE_APP_LOGIN_PATH;
+
     const router = new VueRouter({
         routes: [
             // dynamic segments start with a colon
             {path: login_path, component: LoginView},
             {path: profile_path, component: ProfileView},
-            {path: home_path, component: HelloWorld},
-            {path: register_path, component: RegisterView}
+            {path: algorithm_path, component: AlgorithmsView},
+            {path: register_path, component: RegisterView},
+            {path: landing_path, component: LandingView}
         ]
     })
     export default {
@@ -57,7 +61,7 @@
                 router.push(login_path);
             },
             goToHome() {
-                router.push(home_path);
+                router.push(landing_path);
             }
         }
     };

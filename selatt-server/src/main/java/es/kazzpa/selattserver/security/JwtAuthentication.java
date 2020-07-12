@@ -53,15 +53,12 @@ public class JwtAuthentication extends UsernamePasswordAuthenticationFilter {
                 LoginRequest loginRequest = objectMapper.readValue(requestBody, LoginRequest.class);
                 username = loginRequest.getUsername();
                 password = loginRequest.getPassword();
-                System.out.println("attempted auth: " + username + ", " + password);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
                 password, Collections.emptyList());
-        //System.out.println(authenticationManager.authenticate(authenticationToken));
-        System.out.println("autenticado:" + authenticationToken.isAuthenticated());
         return authenticationManager.authenticate(authenticationToken);
     }
 

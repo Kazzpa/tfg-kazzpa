@@ -47,27 +47,13 @@
     import VueRouter from 'vue-router';
     import User from '../models/user';
     import VeeValidate from 'vee-validate';
-    import HelloWorld from '@/components/HomeView';
-    import RegisterView from "@/components/RegisterView";
-    import ProfileView from "@/components/ProfileView";
 
     Vue.use(VueRouter);
     Vue.use(VeeValidate);
 
     const profile_path = process.env.VUE_APP_PROFILE_PATH;
-    const home_path = process.env.VUE_APP_HOME_PATH;
-    const register_path = process.env.VUE_APP_REGISTER_PATH;
-    const router = new VueRouter({
-        routes: [
-            // dynamic segments start with a colon
-            {path: home_path, component: HelloWorld},
-            {path: register_path, component: RegisterView},
-            {path: profile_path, component: ProfileView}
-        ]
-    })
     export default {
         name: "LoginView",
-        router,
         data() {
             return {
                 user: new User('', ''),
@@ -86,20 +72,18 @@
         },
         methods: {
             handleLogin() {
-                console.log("Prueba login");
-                console.log(this.user.username, this.user.password);
                 this.loading = true;
                 this.$validator.validateAll().then(isValid => {
                     if (!isValid) {
                         this.loading = false;
-                        console.log("No es valido el formulario");
                         return;
                     }
 
-                    console.log("Es valido el formulario");
                     if (this.user.username && this.user.password) {
+                        console.log(this.user);
                         this.$store.dispatch("auth/login", this.user).then(
                             () => {
+                                console.log("Login valido redireccionando")
                                 this.$router.push(profile_path);
                             },
                             error => {

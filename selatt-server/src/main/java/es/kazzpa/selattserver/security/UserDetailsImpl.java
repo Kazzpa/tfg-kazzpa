@@ -29,7 +29,6 @@ public class UserDetailsImpl implements UserDetailsService {
         AppUser appUser = appUserRepository.findByUsername(username);
 
         if (appUser != null) {
-            System.out.println("User found");
             // Remember that Spring needs roles to be in this format: "ROLE_" + userRole (i.e. "ROLE_ADMIN")
             // So, we need to set it to that format, so we can verify and compare roles (i.e. hasRole("ADMIN")).
             List<GrantedAuthority> grantedAuthorities = AuthorityUtils
@@ -40,7 +39,6 @@ public class UserDetailsImpl implements UserDetailsService {
             // And used by auth manager to verify and check user authentication.
             return new User(appUser.getUsername(), appUser.getPassword(), grantedAuthorities);
         }
-        System.out.println("User not found");
 
         // If user not found. Throw this exception.
         throw new UsernameNotFoundException("Username: " + username + " not found");

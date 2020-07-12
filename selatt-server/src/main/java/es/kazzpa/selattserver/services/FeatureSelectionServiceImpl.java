@@ -93,7 +93,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
 
-    //TODO: set an attribute set evaluator for fastcorrbassedFilter
     public void applyFCBF(String name, Instances trainingData) throws Exception {
         try {
 

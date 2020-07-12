@@ -7,6 +7,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import upo.jml.data.dataset.ClassificationDataset;
 import upo.jml.data.dataset.DatasetUtils;
@@ -35,6 +37,8 @@ public class LoadDataImpl implements LoadData {
     private DatasetRepository dataRepo;
     @Autowired
     private AppUserRepository appUserRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final Path fileStorageLocation;
 
@@ -80,12 +84,13 @@ public class LoadDataImpl implements LoadData {
         dos.setValue(1.2);
         attRepo.save(dos);
 
-        AppUser kazzpa = new AppUser("kazzpa", "kazzpa", "USER");
+
+        AppUser kazzpa = new AppUser("kazzpa", passwordEncoder.encode("kazzpa"), "USER");
         AppUser user = appUserRepository.findByUsername(kazzpa.getUsername());
         if (user == null) {
             appUserRepository.save(kazzpa);
         }
-        AppUser admin = new AppUser("admin", "admin", "ADMIN");
+        AppUser admin = new AppUser("admin", passwordEncoder.encode("kazzpa"), "ADMIN");
 
         user = appUserRepository.findByUsername(admin.getUsername());
 
@@ -181,6 +186,7 @@ public class LoadDataImpl implements LoadData {
 
 
     public ClassificationDataset getClassDatasetFromArff(String filename) throws Exception {
+        System.out.println(fileStorageLocation + "/" + filename);
         return DatasetUtils.loadArffDataset(new File(fileStorageLocation + "/" + filename), -1);
     }
 

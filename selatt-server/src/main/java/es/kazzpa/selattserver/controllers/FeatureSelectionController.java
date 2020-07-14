@@ -33,8 +33,8 @@ public class FeatureSelectionController {
     }
 
     @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void handleFCBF(@PathVariable String datasetName) throws Exception {
-        featureSelectionService.handleFCBF(datasetName);
+    public String handleFCBF(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleFCBF(datasetName);
     }
 
     @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

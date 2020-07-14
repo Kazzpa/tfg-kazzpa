@@ -14,7 +14,7 @@ public interface FeatureSelectionService {
 
     String handleCFSSubsetEval() throws Exception;
 
-    void handleFCBF(String datasetName) throws Exception;
+    String handleFCBF(String datasetName) throws Exception;
 
     String handleScatterSearch(String datasetName) throws Exception;
 
@@ -28,7 +28,7 @@ public interface FeatureSelectionService {
 
     String applyCfsSubsetEval(Instances data) throws Exception;
 
-    void applyFCBF(String name, Instances trainingData) throws Exception;
+    String applyFCBF(String name, Instances trainingData) throws Exception;
 
     String applyScatterSearch(String fileName, Instances trainingData) throws Exception;
 

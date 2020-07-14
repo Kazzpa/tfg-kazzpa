@@ -27,8 +27,8 @@ import upo.jml.prediction.classification.fss.core.FSSolution;
 import upo.jml.prediction.classification.fss.evaluators.CfsEvaluator;
 
 import java.io.FileWriter;
+import java.util.Arrays;
 
-//TODO: getInstances from json/arff/csv
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
@@ -63,9 +63,9 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return applyVNS(datasetName, dataset);
     }
 
-    public void handleFCBF(String datasetName) throws Exception {
+    public String handleFCBF(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
-        applyFCBF(datasetName, trainingData);
+        return applyFCBF(datasetName, trainingData);
     }
 
     public String handleScatterSearch(String datasetName) throws Exception {
@@ -93,7 +93,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
 
-    public void applyFCBF(String name, Instances trainingData) throws Exception {
+    public String applyFCBF(String name, Instances trainingData) throws Exception {
         try {
 
             //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
@@ -103,7 +103,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             
             FCBFSearch fastcorrbasfs = new FCBFSearch();
             int[] sol = fastcorrbasfs.search(eval, trainingData);
-            System.out.println(name + sol.toString());
+            return Arrays.toString(sol);
         } catch (Exception ex) {
             throw new Exception("Error al aplicar fcbf\n" + ex.getMessage());
         }

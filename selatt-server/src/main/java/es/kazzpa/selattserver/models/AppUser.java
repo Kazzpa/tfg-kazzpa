@@ -4,12 +4,15 @@ package es.kazzpa.selattserver.models;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "User")
-public class AppUser extends EntityDatabase{
+@Table(name = "User", uniqueConstraints = @UniqueConstraint(columnNames = {"username"}))
+public class AppUser extends EntityDatabase {
 
-    private String username, password;
+
+    private String username;
+    private String password;
     private String role;
 
     public AppUser() {

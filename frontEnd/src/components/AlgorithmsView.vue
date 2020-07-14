@@ -12,8 +12,9 @@
                     <v-alert type="info" v-if="responseFileUpload" dense>{{responseFileUpload}}</v-alert>
                 </v-form>
                 Working on it: Descargar dataset filtrado
-                <v-form v-on:submit.prevent="retrieveFile">
-                    <v-text-field dense v-model="inputFileName" label="filename"></v-text-field>
+                <v-form disabled v-on:submit.prevent="retrieveFile">
+                    <v-text-field dense prepend-icon="mdi-file"
+                                  label="Dataset a procesar" v-model="inputFileName"></v-text-field>
                     <v-btn v-if="inputFileName != null" type="submit" rounded>Descargar</v-btn>
                     <v-alert v-if="responseFileDownload" type="info" dense>{{responseFileDownload}}</v-alert>
                 </v-form>
@@ -49,6 +50,7 @@
     Vue.use(VueRouter);
 
 
+    const login_path = process.env.VUE_APP_LOGIN_PATH;
     const server_url = process.env.VUE_APP_API_SERVER_URL;
 
     require('axios-debug-log');
@@ -72,7 +74,16 @@
 
                  */
             ]
-        }),
+        }), computed: {
+            loggedIn() {
+                return this.$store.state.auth.status.loggedIn;
+            }
+        },
+        created() {
+            if (!this.loggedIn) {
+                this.$router.push(login_path);
+            }
+        },
         methods: {
             uploadFile() {
 
@@ -155,9 +166,24 @@
                     default:
                         return null;
                 }
+                console.log("algorithm.view");
                 let url = server_url + process_path;
                 console.log(url);
-                console.log(this.$store.state.user.token);
+                let usuario = this.$store.state.auth.user;
+                let filename = this.inputFileNameProcess;
+                console.log(usuario,filename);
+                this.$store.dispatch("process/sendRequest",{usuario,filename,url} ).then(
+                    () => {
+
+                    },
+                    error => {
+                        this.loading = false;
+                        this.message =
+                            (error.response && error.response.data) ||
+                            error.message ||
+                            error.toString();
+                    }
+                );
 
             }
         }

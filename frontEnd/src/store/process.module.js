@@ -1,16 +1,18 @@
-import UserService from '../services/user.service';
+import ProcessService from '../services/process.service';
 
-const user = JSON.parse(localStorage.getItem('user'));
-const initialState = response
-    ? { status: { processed: true }, response }
-    : { status: { processed: false }, response: null };
+const response = false;
+const processState = response
+    ? {status: {processed: true}, response}
+    : {status: {processed: false}, response: null};
 
-export const auth = {
+export const process = {
     namespaced: true,
-    state: initialState,
+    state: processState,
     actions: {
-        sendRequest({ commit }, usuario) {
-            return UserService.processRequest(usuario).then(
+        sendRequest({commit}, payload) {
+            console.log("module:");
+            console.log(payload);
+            return ProcessService.sendRequest(payload).then(
                 response => {
                     commit('requestSuccess');
                     return Promise.resolve(response);
@@ -21,7 +23,6 @@ export const auth = {
                 }
             );
         },
-        }
     },
     mutations: {
         requestSuccess(state) {
@@ -32,5 +33,5 @@ export const auth = {
             state.status.loggedIn = false;
             state.user = null;
         },
-    }
+    },
 };

@@ -22,6 +22,7 @@
         <ul>
             <li v-for="(role,index) in currentUser.roles" :key="index">{{role}}</li>
         </ul>
+        <v-btn v-on:click="goToAlgorithm">Algoritmos</v-btn>
     </v-main>
 </template>
 
@@ -32,6 +33,7 @@
 
 
     const login_path = process.env.VUE_APP_LOGIN_PATH;
+    const algorithm_path = process.env.VUE_APP_ALGORITHM_PATH;
     console.log(login_path);
 
     export default {
@@ -45,6 +47,11 @@
         mounted() {
             if (!this.currentUser) {
                 this.$router.push(login_path);
+            }
+        },
+        methods: {
+            goToAlgorithm(){
+                this.$router.push(algorithm_path);
             }
         }
     }

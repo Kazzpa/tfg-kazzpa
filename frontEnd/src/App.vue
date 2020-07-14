@@ -40,6 +40,7 @@
     const login_path = process.env.VUE_APP_LOGIN_PATH;
 
     const router = new VueRouter({
+        mode: "history",
         routes: [
             // dynamic segments start with a colon
             {path: login_path, component: LoginView},

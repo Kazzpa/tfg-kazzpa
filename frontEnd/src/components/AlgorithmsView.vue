@@ -20,15 +20,16 @@
                 </v-form>
                 Algoritmos de seleccion de atributos:
                 <v-form v-on:submit.prevent="processAlgorithm">
-                    <v-text-field
+                    <v-combobox
+                            :items="datasets"
                             prepend-icon="mdi-file" dense v-model="inputFileNameProcess"
                             label="Dataset a procesar"/>
 
                     <div v-if="inputFileNameProcess">
 
                         Seleccion de atributos:
-                        <v-select v-model="algorithm"
-                                  :items="algorithms"/>
+                        <v-combobox v-model="algorithm"
+                                    :items="algorithms"/>
                         <v-btn v-if="algorithm" type="submit" rounded>Evaluar</v-btn>
                     </div>
                     <v-alert type="info" v-if="responseProcess" dense>{{responseProcess}}</v-alert>
@@ -65,10 +66,11 @@
             responseFileDownload: null,
             responseProcess: null,
             algorithm: null,
+            datasets: null,
             algorithms: [
                 {text: "Fast Correlation Based Filter", value: "FCBF"},
                 {text: "Variable neighbourhood search", value: "VNS"},
-                {text: "Scatter Search", value: "ScS"},
+                {text: "Scatter Search", value: "Scs"},
                 {text: "Naive Bayes", value: "NvB"}
                 /**"FCBF","VNS","ScS","Nvb"
 
@@ -82,7 +84,30 @@
         created() {
             if (!this.loggedIn) {
                 this.$router.push(login_path);
+            } else {
+                let url = server_url + "/fileManager/filesByUser/";
+                axios.get(url,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            "Authorization": "Bearer " + this.$store.state.auth.user.token,
+                        }
+                    })
+                    .then(response => {
+                        response.data.forEach(elem => {
+                            elem.value = elem.filename;
+                            elem.text = elem.filename;
+                        });
+                        this.datasets = response.data;
+
+
+                    })
+                    .catch(error => {
+                        console.log(error);
+
+                    });
             }
+
         },
         methods: {
             uploadFile() {
@@ -113,8 +138,8 @@
                     obj,
                     {
                         headers: {
-                            "Access-Control-Allow-Origin": "*",
-                            "Content-Type": "multipart/form-data"
+                            "Content-Type": "multipart/form-data",
+                            "Authorization": "Bearer " + this.$store.state.auth.user.token,
                         }
                     })
                     .then(response => {
@@ -150,7 +175,7 @@
             },
             processAlgorithm() {
                 let process_path = null;
-                switch (this.algorithm) {
+                switch (this.algorithm.value) {
                     case "FCBF":
                         process_path = "/featureSelection/fcbf";
                         break;
@@ -161,18 +186,17 @@
                         process_path = "/featureSelection/Scs";
                         break;
                     case "NvB":
-                        process_path = "/evaluate/naiveBayes";
+                        process_path = "/evaluate/naivebayes";
                         break;
                     default:
                         return null;
                 }
-                console.log("algorithm.view");
                 let url = server_url + process_path;
                 console.log(url);
                 let usuario = this.$store.state.auth.user;
-                let filename = this.inputFileNameProcess;
-                console.log(usuario,filename);
-                this.$store.dispatch("process/sendRequest",{usuario,filename,url} ).then(
+                let filename = this.inputFileNameProcess.value;
+                let data = [usuario, filename, url];
+                this.$store.dispatch("process/sendRequest", data).then(
                     () => {
 
                     },

@@ -28,17 +28,18 @@ public class EvaluationServiceImpl implements EvaluationService {
 
 
     public String applyNaiveBayes(String filename, Instances trainingData) throws Exception {
-        try {
-            Classifier classifier = new NaiveBayes();
-
+        //try {
+            NaiveBayes classifier = new NaiveBayes();
+            trainingData.setClassIndex(trainingData.classIndex());
+        System.out.println(trainingData.classIndex());
             classifier.buildClassifier(trainingData);
 
             Evaluation eval = new Evaluation(trainingData);
             eval.evaluateModel(classifier, trainingData);
             return eval.toSummaryString();
-        } catch (Exception ex) {
-            throw new Exception("Archivo no pudo ser  cargado como resource");
-        }
+        //} catch (Exception ex) {
+         //   throw new Exception("Archivo no pudo ser  cargado como resource" + filename + ex.getMessage());
+        //}
 
 
     }

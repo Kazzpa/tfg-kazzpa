@@ -57,33 +57,6 @@ public class LoadDataImpl implements LoadData {
 
     //this method is run for test purposes
     public void loadDefaultDataBase() {
-        Dataset data = new Dataset();
-        data.setName("Covid-19");
-        data.setFileDownloadUri("C:/hola.txt");
-        dataRepo.save(data);
-
-        Algorithm pca = new Algorithm();
-        pca.setLanguage("Java");
-        pca.setName("Principal Componentes Analysis");
-        algoRepo.save(pca);
-
-        ResultFilter rf = new ResultFilter();
-        rf.setAlgorithm(pca);
-        rf.setPerformed(data);
-        resultRepo.save(rf);
-
-        Attribute uno = new Attribute();
-        uno.setDataPerformed(rf);
-        uno.setIndex(3);
-        uno.setValue(20.2);
-        attRepo.save(uno);
-
-        Attribute dos = new Attribute();
-        dos.setDataPerformed(rf);
-        dos.setIndex(5);
-        dos.setValue(1.2);
-        attRepo.save(dos);
-
 
         AppUser kazzpa = new AppUser("kazzpa", passwordEncoder.encode("kazzpa"), "USER");
         AppUser user = appUserRepository.findByUsername(kazzpa.getUsername());
@@ -159,7 +132,7 @@ public class LoadDataImpl implements LoadData {
 
     public Instances getInstancesFromAnyFile(String fileName) throws Exception {
         try {
-
+            //TODO: FIX LOADING FROM .JSON AND .ARFF
             File file = new File(fileStorageLocation + "/" + fileName);
             String mimeType = new Tika().detect(file);
             System.out.println(mimeType + " - " + fileName);

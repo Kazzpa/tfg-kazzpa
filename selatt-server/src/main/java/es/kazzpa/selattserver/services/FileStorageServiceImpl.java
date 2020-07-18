@@ -1,22 +1,34 @@
 package es.kazzpa.selattserver.services;
 
+import es.kazzpa.selattserver.models.AppUser;
+import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.properties.Properties;
+import es.kazzpa.selattserver.repositories.AppUserRepository;
+import es.kazzpa.selattserver.repositories.DatasetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
     private final Path fileStorageLocation;
+    @Autowired
+    private DatasetRepository datasetRepository;
+    @Autowired
+    private AppUserRepository appUserRepository;
 
     @Autowired
     public FileStorageServiceImpl(Properties properties) {
@@ -32,7 +44,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public String storeFile(MultipartFile file) {
+    public Dataset storeFile(Authentication authentication, MultipartFile file) {
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
 
         try {
@@ -41,8 +53,15 @@ public class FileStorageServiceImpl implements FileStorageService {
             }
             Path targetLocation = this.fileStorageLocation.resolve(filename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("guardado en:" + targetLocation.toAbsolutePath());
-            return filename;
+
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/downloadFile/")
+                    .path(filename)
+                    .toUriString();
+            AppUser appUser = appUserRepository.findByUsername(authentication.getName());
+            Dataset dataset = new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize(), appUser);
+            datasetRepository.save(dataset);
+            return dataset;
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return null;
@@ -64,6 +83,12 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
+    @Override
+    public List<Dataset> datasetsByUser(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        AppUser appUser = appUserRepository.findByUsername(username);
+        return datasetRepository.findDatasetByUserUploader(appUser);
+    }
 
 
 }

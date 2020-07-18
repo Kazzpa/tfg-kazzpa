@@ -4,13 +4,13 @@ import axios from 'axios';
 class ProcessService {
 
     sendRequest(payload) {
-        console.log("process service:");
-        console.log(payload.user,payload.file,payload.url);
+        let usuario = payload[0];
+        let filename = payload[1];
+        let url = payload[2];
         return axios
-            .get(payload.url, {
-                filename: payload.file,
+            .get(url+"/"+filename, {
                 headers: {
-                    "authorization": "Bearer " + payload.user.token,
+                    "Authorization": "Bearer " + usuario.token,
                 }
             })
             .then(response => {

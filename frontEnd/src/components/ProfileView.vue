@@ -34,13 +34,11 @@
 
     const login_path = process.env.VUE_APP_LOGIN_PATH;
     const algorithm_path = process.env.VUE_APP_ALGORITHM_PATH;
-    console.log(login_path);
 
     export default {
         name: "ProfileView",
         computed: {
             currentUser() {
-                console.log(this.$store.state.auth.user);
                 return this.$store.state.auth.user;
             }
         },

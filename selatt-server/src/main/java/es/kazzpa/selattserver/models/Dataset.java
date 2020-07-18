@@ -1,5 +1,7 @@
 package es.kazzpa.selattserver.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.userdetails.User;
 
 import javax.persistence.Entity;
@@ -16,17 +18,22 @@ public class Dataset extends EntityDatabase {
     private String name;
     private String fileDownloadUri;
     private String fileType;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private AppUser userUploader;
     private long size;
 
     public Dataset() {
 
     }
 
-    public Dataset(String filename, String fileDownloadUri, String fileType, long size) {
+    public Dataset(String filename, String fileDownloadUri, String fileType, long size, AppUser userUploader) {
         this.filename = filename;
         this.fileDownloadUri = fileDownloadUri;
         this.fileType = fileType;
         this.size = size;
+        this.userUploader = userUploader;
     }
 
 
@@ -69,4 +76,13 @@ public class Dataset extends EntityDatabase {
     public void setSize(long size) {
         this.size = size;
     }
+
+    public AppUser getUserUploader() {
+        return userUploader;
+    }
+
+    public void setUserUploader(AppUser userUploader) {
+        this.userUploader = userUploader;
+    }
+
 }

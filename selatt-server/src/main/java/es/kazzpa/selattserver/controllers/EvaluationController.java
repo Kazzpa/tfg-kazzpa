@@ -14,7 +14,7 @@ public class EvaluationController {
         this.evaluationService = evaluationService;
     }
 
-    @GetMapping(path = "naivebayes/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "naivebayes/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleNaiveBayesEvaluation(@PathVariable String datasetName) throws Exception {
         return evaluationService.handleNaiveBayes(datasetName);
     }

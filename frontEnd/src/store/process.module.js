@@ -1,21 +1,21 @@
 import ProcessService from '../services/process.service';
 
-const response = false;
-const processState = response
-    ? {status: {processed: true}, response}
-    : {status: {processed: false}, response: null};
+const responseProcess = null;
+const processState = responseProcess
+    ? {status: {processed: true}, responseProcess}
+    : {status: {processed: false}, responseProcess: null};
 
 export const process = {
     namespaced: true,
     state: processState,
     actions: {
         sendRequest({commit}, payload) {
-            console.log("module:");
-            console.log(payload);
             return ProcessService.sendRequest(payload).then(
                 response => {
                     commit('requestSuccess');
+                    console.log("ha llegado",response);
                     return Promise.resolve(response);
+
                 },
                 error => {
                     commit('requestFailure');
@@ -25,7 +25,8 @@ export const process = {
         },
     },
     mutations: {
-        requestSuccess(state) {
+        requestSuccess(state,response) {
+            console.log("Request success:"+response);
             state.status.processed = true;
             state.responseProcess = response;
         },

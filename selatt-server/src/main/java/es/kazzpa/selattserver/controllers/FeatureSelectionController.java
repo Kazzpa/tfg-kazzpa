@@ -22,48 +22,48 @@ public class FeatureSelectionController {
 
 
     //TODO: quitar / al principio y crear metodo que cargue dataset de DB.
-    @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleScatterSearch(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleScatterSearch(datasetName);
     }
 
-    @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleFCBF(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleFCBF(datasetName);
     }
 
-    @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleVNS(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleVNS(datasetName);
     }
 
-    @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @GetMapping(path = "/rp", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/rp", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleRP() throws Exception {
         return featureSelectionService.handleRandomizedProjectionFeatures();
     }
 
 
-    @GetMapping(path = "cfs", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "cfs", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleCfsSubsetEval() throws Exception {
         return featureSelectionService.handleCFSSubsetEval();
     }
 
-    @GetMapping(path = "rp/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "rp/plot", produces = MediaType.APPLICATION_JSON_VALUE)
     public void handlePlotRp() throws Exception {
         featureSelectionService.plotRP();
     }
 
-    @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handlePlotPCA() throws Exception {
         return featureSelectionService.plotPCA();
     }

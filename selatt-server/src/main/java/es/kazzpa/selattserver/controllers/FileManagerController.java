@@ -6,6 +6,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -27,24 +28,24 @@ public class FileManagerController {
         this.fileStorageService = fileStorageService;
     }
 
+
     @PostMapping(path = "uploadDataset", headers = ("content-type=multipart/form-data"))
-    public Dataset loadDataset(@RequestParam("file") MultipartFile file) {
-        String filename = fileStorageService.storeFile(file);
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(filename)
-                .toUriString();
-        return new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize());
+    public Dataset loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) {
+        return fileStorageService.storeFile(authentication,file);
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<Dataset> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+    public List<Dataset> uploadMultipleFiles(Authentication authentication,@RequestParam("files") MultipartFile[] files) {
         return Arrays.asList(files)
                 .stream()
-                .map(file -> loadDataset(file))
+                .map(file -> loadDataset(authentication,file))
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/filesByUser")
+    public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception{
+        return fileStorageService.datasetsByUser(authentication);
+    }
     @GetMapping("/downloadFile/")
     public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) throws Exception {
         //load file as a resource
@@ -56,7 +57,7 @@ public class FileManagerController {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException ex) {
             throw new Exception("Could not determine file type" + filename + ex.getMessage());
-        }catch(NullPointerException ex){
+        } catch (NullPointerException ex) {
             throw new Exception("Couldn't locate the file " + filename + ex.getMessage());
         }
 

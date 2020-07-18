@@ -83,7 +83,6 @@
                         console.log(this.user);
                         this.$store.dispatch("auth/login", this.user).then(
                             () => {
-                                console.log("Login valido redireccionando")
                                 this.$router.push(profile_path);
                             },
                             error => {

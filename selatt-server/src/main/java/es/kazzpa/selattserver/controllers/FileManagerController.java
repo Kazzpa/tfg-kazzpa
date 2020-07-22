@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -29,23 +28,27 @@ public class FileManagerController {
     }
 
 
-    @PostMapping(path = "uploadDataset", headers = ("content-type=multipart/form-data"))
-    public Dataset loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) {
-        return fileStorageService.storeFile(authentication,file);
+    @PostMapping(path = "uploadDataset", consumes = "multipart/form-data")
+    public String loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) {
+        Dataset dataset = fileStorageService.storeFile(authentication, file);
+        return dataset.getFileDownloadUri();
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<Dataset> uploadMultipleFiles(Authentication authentication,@RequestParam("files") MultipartFile[] files) {
+    public List<String> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) {
         return Arrays.asList(files)
                 .stream()
-                .map(file -> loadDataset(authentication,file))
+                .map(file -> loadDataset(authentication, file))
                 .collect(Collectors.toList());
+
     }
 
     @GetMapping("/filesByUser")
-    public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception{
+    public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
         return fileStorageService.datasetsByUser(authentication);
+
     }
+
     @GetMapping("/downloadFile/")
     public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) throws Exception {
         //load file as a resource

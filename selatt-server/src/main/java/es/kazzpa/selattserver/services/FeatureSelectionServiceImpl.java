@@ -1,13 +1,12 @@
 package es.kazzpa.selattserver.services;
 
 
-import es.kazzpa.selattserver.models.Algorithm;
-import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.ML;
-import es.kazzpa.selattserver.models.Options;
-import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.*;
+import es.kazzpa.selattserver.repositories.AlgorithmRepository;
+import es.kazzpa.selattserver.repositories.AttributeRepository;
 import es.kazzpa.selattserver.repositories.DatasetRepository;
 import es.kazzpa.selattserver.repositories.ResultRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -33,15 +32,23 @@ import java.util.Arrays;
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     private final FileFactory fileFactory;
+    @Autowired
     private final ResultRepository resRepo;
+    @Autowired
     private final DatasetRepository dataRepo;
+    @Autowired
+    private final AlgorithmRepository algoRepo;
+    @Autowired
+    private final AttributeRepository attRepo;
     private final LoadData loadData;
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, ResultRepository resRepo, DatasetRepository dataRepo, LoadData loadData) {
+    public FeatureSelectionServiceImpl(FileFactory fileFactory, ResultRepository resRepo, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AttributeRepository attRepo) {
         this.fileFactory = fileFactory;
         this.resRepo = resRepo;
         this.dataRepo = dataRepo;
         this.loadData = loadData;
+        this.algoRepo = algoRepo;
+        this.attRepo = attRepo;
     }
 
     public void handleLoadDefaultData() {
@@ -75,7 +82,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
 
     public ResultFilter handlePCAFeatures(String datasetName) throws Exception {
-        Dataset data = dataRepo.findDatasetByName(datasetName);
+        Dataset data = dataRepo.findDatasetByFilename(datasetName);
         FileFactory.TrainTest dataTrainTest = fileFactory.getInstancesFromFile(data.getFilename(), data.getFileDownloadUri(), new Options());
         return ApplyPCA("datasetName", dataTrainTest.train);
     }
@@ -93,16 +100,37 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
 
-    public String applyFCBF(String name, Instances trainingData) throws Exception {
+    public String applyFCBF(String datasetName, Instances trainingData) throws Exception {
         try {
 
             //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
             //utiliza: simuncertAttributeSetEval
             SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
             eval.buildEvaluator(trainingData);
-            
+            Algorithm fcbf = algoRepo.findAlgorithmByName("FastCorrelationBasedFilter");
+            if (fcbf == null) {
+                fcbf = new Algorithm();
+                fcbf.setLanguage("Weka package");
+                fcbf.setName("FastCorrelationBasedFilter");
+                algoRepo.save(fcbf);
+            }
+            Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
+            if (dataset == null) {
+                System.out.println(datasetName+ " Not found in DB");
+                return null;
+            }
+
             FCBFSearch fastcorrbasfs = new FCBFSearch();
             int[] sol = fastcorrbasfs.search(eval, trainingData);
+            ResultFilter rf = new ResultFilter();
+            rf.setAlgorithm(fcbf);
+            rf.setPerformed(dataset);
+            for (int i = 0; i < sol.length; i++) {
+                Attribute n = new Attribute();
+                n.setDataPerformed(rf);
+                n.setIndex(sol[i]);
+                attRepo.save(n);
+            }
             return Arrays.toString(sol);
         } catch (Exception ex) {
             throw new Exception("Error al aplicar fcbf\n" + ex.getMessage());

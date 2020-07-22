@@ -43,7 +43,6 @@
 
 <script>
     import axios from 'axios';
-    import Papa from 'papaparse';
     import streamSaver from 'streamsaver';
     import Vue from 'vue';
     import VueRouter from 'vue-router';
@@ -53,6 +52,30 @@
 
     const login_path = process.env.VUE_APP_LOGIN_PATH;
     const server_url = process.env.VUE_APP_API_SERVER_URL;
+
+    function updateDatasets() {
+        let url = server_url + "/fileManager/filesByUser/";
+        axios.get(url,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "Authorization": "Bearer " + this.$store.state.auth.user.token,
+                }
+            })
+            .then(response => {
+                response.data.forEach(elem => {
+                    elem.value = elem.filename;
+                    elem.text = elem.filename;
+                });
+                this.datasets = response.data;
+
+
+            })
+            .catch(error => {
+                console.log(error);
+
+            });
+    }
 
     require('axios-debug-log');
     localStorage.debug = "axios";
@@ -85,27 +108,7 @@
             if (!this.loggedIn) {
                 this.$router.push(login_path);
             } else {
-                let url = server_url + "/fileManager/filesByUser/";
-                axios.get(url,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            "Authorization": "Bearer " + this.$store.state.auth.user.token,
-                        }
-                    })
-                    .then(response => {
-                        response.data.forEach(elem => {
-                            elem.value = elem.filename;
-                            elem.text = elem.filename;
-                        });
-                        this.datasets = response.data;
-
-
-                    })
-                    .catch(error => {
-                        console.log(error);
-
-                    });
+                updateDatasets();
             }
 
         },
@@ -114,24 +117,13 @@
 
 
                 let i = 0;
-                Papa.parse(this.inputFile[i],
-                    {
-                        complete: (results) => {
-                            this.loadedData(results, i);
-                        },
-                    },
-                    {
-                        delimiter: "\n"
-                    });
 
-
-            },
-            loadedData(json, i) {
                 let obj = new FormData();
-                const blob = new Blob([json.data], {
-                    type: 'application/json'
+                console.log(this.inputFile[i]);
+                const blob = new Blob([this.inputFile[i]], {
+                    //type: 'application/json'
+                    type: 'multipart/form-data'
                 });
-                //sets the blob content to the file content as parsed with papaparse and the name of the file
                 obj.append("file", blob, this.inputFile[i].name);
                 let url = server_url + "/fileManager/uploadDataset";
                 axios.post(url,

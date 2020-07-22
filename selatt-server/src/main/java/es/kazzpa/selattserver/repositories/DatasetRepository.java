@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface DatasetRepository extends CrudRepository<Dataset, String> {
-    Dataset findDatasetByName(String name);
+    Dataset findDatasetByFilename(String name);
     List<Dataset> findDatasetByUserUploader(AppUser appUser);
 }

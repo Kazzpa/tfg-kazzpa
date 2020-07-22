@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AlgorithmRepository extends CrudRepository<Algorithm, String> {
+    Algorithm findAlgorithmByName(String name);
 }

@@ -1,8 +1,9 @@
 <template>
-    <v-row>
-        <v-col></v-col>
-        <v-col>
-            <v-main>
+    <v-main>
+        <v-row>
+            <v-col></v-col>
+            <v-col>
+                <v-btn v-on:click="goToResults">Check Results</v-btn><br/>
                 Subir un dataset
                 <v-form v-on:submit.prevent="uploadFile">
                     <v-file-input v-model="inputFile" type="file" dense multiple label="uploadDataset">
@@ -11,6 +12,7 @@
                     <v-btn v-if="inputFile != null" type="submit" rounded>Subir</v-btn>
                     <v-alert type="info" v-if="responseFileUpload" dense>{{responseFileUpload}}</v-alert>
                 </v-form>
+                <!-- DISABLED ATM-->
                 Working on it: Descargar dataset filtrado
                 <v-form disabled v-on:submit.prevent="retrieveFile">
                     <v-text-field dense prepend-icon="mdi-file"
@@ -18,6 +20,7 @@
                     <v-btn v-if="inputFileName != null" type="submit" rounded>Descargar</v-btn>
                     <v-alert v-if="responseFileDownload" type="info" dense>{{responseFileDownload}}</v-alert>
                 </v-form>
+                <!-- FINISH OF DISABLED ELEMENT-->
                 Algoritmos de seleccion de atributos:
                 <v-form v-on:submit.prevent="processAlgorithm">
                     <v-combobox
@@ -32,13 +35,14 @@
                                     :items="algorithms"/>
                         <v-btn v-if="algorithm" type="submit" rounded>Evaluar</v-btn>
                     </div>
-                    <v-alert type="info" v-if="responseProcess" dense>{{responseProcess}}</v-alert>
+                    <v-alert v-bind:type="responseProcessStatus" v-if="responseProcess" dense>{{responseProcess}}
+                    </v-alert>
                 </v-form>
 
-            </v-main>
-        </v-col>
-        <v-col></v-col>
-    </v-row>
+            </v-col>
+            <v-col></v-col>
+        </v-row>
+    </v-main>
 </template>
 
 <script>
@@ -51,31 +55,9 @@
 
 
     const login_path = process.env.VUE_APP_LOGIN_PATH;
+    const result_path = process.env.VUE_APP_RESULTS_PATH;
     const server_url = process.env.VUE_APP_API_SERVER_URL;
 
-    function updateDatasets() {
-        let url = server_url + "/fileManager/filesByUser/";
-        axios.get(url,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "Authorization": "Bearer " + this.$store.state.auth.user.token,
-                }
-            })
-            .then(response => {
-                response.data.forEach(elem => {
-                    elem.value = elem.filename;
-                    elem.text = elem.filename;
-                });
-                this.datasets = response.data;
-
-
-            })
-            .catch(error => {
-                console.log(error);
-
-            });
-    }
 
     require('axios-debug-log');
     localStorage.debug = "axios";
@@ -88,6 +70,7 @@
             responseFileUpload: null,
             responseFileDownload: null,
             responseProcess: null,
+            responseProcessStatus: "success",
             algorithm: null,
             datasets: null,
             algorithms: [
@@ -108,11 +91,34 @@
             if (!this.loggedIn) {
                 this.$router.push(login_path);
             } else {
-                updateDatasets();
+                let url = server_url + "/featureSelection/filesByUser/";
+                return axios.get(url,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            "Authorization": "Bearer " + this.$store.state.auth.user.token,
+                        }
+                    })
+                    .then(response => {
+                        response.data.forEach(elem => {
+                            elem.value = elem.filename;
+                            elem.text = elem.filename;
+                        });
+                        this.datasets = response.data;
+
+
+                    })
+                    .catch(error => {
+                        console.log(error);
+
+                    });
             }
 
         },
         methods: {
+            goToResults() {
+                this.$router.push(result_path);
+            },
             uploadFile() {
 
 
@@ -135,13 +141,23 @@
                         }
                     })
                     .then(response => {
-                        this.responseFileUpload = response.data;
+                        this.responseFileUpload = "Success download url: " + response.data;
+                        this.datasets[this.datasets.size] = {
+                            "value": this.inputFile[i].name,
+                            "text": this.inputFile[i].name
+                        };
+                        console.log(this.datasets);
+                        console.log({
+                            "value": this.inputFile[i].name,
+                            "text": this.inputFile[i].name
+                        });
+                        console.log(this.datasets.size);
 
                     })
                     .catch(error => {
                         this.responseFileUpload = error;
-
                     });
+
             },
             retrieveFile() {
                 let url = server_url + "/fileManager/downloadFile/";
@@ -189,12 +205,14 @@
                 let filename = this.inputFileNameProcess.value;
                 let data = [usuario, filename, url];
                 this.$store.dispatch("process/sendRequest", data).then(
-                    () => {
-
+                    (response) => {
+                        this.responseProcess = "Ejecucion finalizada " + response;
+                        this.responseProcessStatus = "success";
                     },
                     error => {
                         this.loading = false;
-                        this.message =
+                        this.responseProcessStatus = "warning";
+                        this.responseProcess =
                             (error.response && error.response.data) ||
                             error.message ||
                             error.toString();

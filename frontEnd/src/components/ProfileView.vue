@@ -2,7 +2,7 @@
     <v-main>
         <v-card>
             <v-card-title>
-                <strong>{{currentUser.username}}</strong> Profile
+                <strong>{{currentUser.username}}</strong> <v-spacer/>Profile
             </v-card-title>
         </v-card>
         <p>

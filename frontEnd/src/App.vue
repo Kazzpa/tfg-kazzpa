@@ -31,6 +31,7 @@
     import LoginView from "@/components/LoginView";
     import ProfileView from "@/components/ProfileView";
     import LandingView from "@/components/LandingView";
+    import ResultsView from "@/components/ResultsView";
 
     Vue.use(VueRouter);
     const profile_path = process.env.VUE_APP_PROFILE_PATH;
@@ -38,6 +39,7 @@
     const algorithm_path = process.env.VUE_APP_ALGORITHM_PATH;
     const landing_path = process.env.VUE_APP_LANDING_PATH;
     const login_path = process.env.VUE_APP_LOGIN_PATH;
+    const result_path = process.env.VUE_APP_RESULTS_PATH;
 
     const router = new VueRouter({
         mode: "history",
@@ -47,7 +49,8 @@
             {path: profile_path, component: ProfileView},
             {path: algorithm_path, component: AlgorithmsView},
             {path: register_path, component: RegisterView},
-            {path: landing_path, component: LandingView}
+            {path: result_path, component: ResultsView},
+            {path: landing_path, component: LandingView},
         ]
     })
     export default {

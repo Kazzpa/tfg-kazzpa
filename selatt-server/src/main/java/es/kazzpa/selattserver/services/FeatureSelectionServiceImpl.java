@@ -2,14 +2,13 @@ package es.kazzpa.selattserver.services;
 
 
 import es.kazzpa.selattserver.models.*;
-import es.kazzpa.selattserver.repositories.AlgorithmRepository;
-import es.kazzpa.selattserver.repositories.AttributeRepository;
-import es.kazzpa.selattserver.repositories.DatasetRepository;
-import es.kazzpa.selattserver.repositories.ResultRepository;
+import es.kazzpa.selattserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 
+import upo.jcu.math.set.Subset;
 import weka.attributeSelection.*;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -26,7 +25,10 @@ import upo.jml.prediction.classification.fss.core.FSSolution;
 import upo.jml.prediction.classification.fss.evaluators.CfsEvaluator;
 
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
@@ -40,15 +42,18 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     private final AlgorithmRepository algoRepo;
     @Autowired
     private final AttributeRepository attRepo;
+    @Autowired
+    private final AppUserRepository userRepo;
     private final LoadData loadData;
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, ResultRepository resRepo, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AttributeRepository attRepo) {
+    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AttributeRepository attRepo,AppUserRepository userRepo, ResultRepository resRepo) {
         this.fileFactory = fileFactory;
         this.resRepo = resRepo;
         this.dataRepo = dataRepo;
         this.loadData = loadData;
         this.algoRepo = algoRepo;
         this.attRepo = attRepo;
+        this.userRepo = userRepo;
     }
 
     public void handleLoadDefaultData() {
@@ -61,7 +66,8 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return ApplyPCA("CAR", carTrainTest.train);
     }
 
-    public String handleVNS(String datasetName) throws Exception {
+    public ResultFilter handleVNS(String datasetName) throws Exception {
+
         ClassificationDataset dataset = loadData.getClassDatasetFromArff(datasetName);
         if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
             dataset = DatasetUtils.dicretizeViaFayyad(dataset);
@@ -70,16 +76,40 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return applyVNS(datasetName, dataset);
     }
 
-    public String handleFCBF(String datasetName) throws Exception {
+    public ResultFilter handleFCBF(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyFCBF(datasetName, trainingData);
     }
 
-    public String handleScatterSearch(String datasetName) throws Exception {
+    public ResultFilter handleScatterSearch(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyScatterSearch(datasetName, trainingData);
     }
 
+    @Override
+    public List<ResultFilter> resultsByUser(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        AppUser appUser = userRepo.findByUsername(username);
+        List<ResultFilter> ret = resRepo.findResultFilterByPerformed_UserUploader(appUser);
+        for (ResultFilter r : ret
+        ) {
+            r.getPerformed().setUserUploader(null);
+        }
+        return ret;
+    }
+
+    @Override
+    public List<Dataset> datasetsByUser(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        AppUser appUser = userRepo.findByUsername(username);
+        List<Dataset> ret = dataRepo.findDatasetByUserUploader(appUser);
+        //this is to save the user information in frontend
+        for (Dataset d : ret
+        ) {
+            d.setUserUploader(null);
+        }
+        return ret;
+    }
 
     public ResultFilter handlePCAFeatures(String datasetName) throws Exception {
         Dataset data = dataRepo.findDatasetByFilename(datasetName);
@@ -100,67 +130,49 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
 
-    public String applyFCBF(String datasetName, Instances trainingData) throws Exception {
+    public ResultFilter applyFCBF(String datasetName, Instances trainingData) throws Exception {
         try {
 
             //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
             //utiliza: simuncertAttributeSetEval
             SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
+            //default class index to last att if undefined
+            //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+            if(trainingData.classIndex()<0){
+                trainingData.setClassIndex(trainingData.numAttributes()-1);
+            }
             eval.buildEvaluator(trainingData);
-            Algorithm fcbf = algoRepo.findAlgorithmByName("FastCorrelationBasedFilter");
-            if (fcbf == null) {
-                fcbf = new Algorithm();
-                fcbf.setLanguage("Weka package");
-                fcbf.setName("FastCorrelationBasedFilter");
-                algoRepo.save(fcbf);
-            }
-            Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
-            if (dataset == null) {
-                System.out.println(datasetName+ " Not found in DB");
-                return null;
-            }
-
-            FCBFSearch fastcorrbasfs = new FCBFSearch();
-            int[] sol = fastcorrbasfs.search(eval, trainingData);
-            ResultFilter rf = new ResultFilter();
-            rf.setAlgorithm(fcbf);
-            rf.setPerformed(dataset);
-            for (int i = 0; i < sol.length; i++) {
-                Attribute n = new Attribute();
-                n.setDataPerformed(rf);
-                n.setIndex(sol[i]);
-                attRepo.save(n);
-            }
-            return Arrays.toString(sol);
+            FCBFSearch fcbfSearch = new FCBFSearch();
+            int[] sol = fcbfSearch.search(eval, trainingData);
+            ResultFilter rf = composeResultFilter(sol, "FastCorrelationBasedFilter", datasetName);
+            return rf;
         } catch (Exception ex) {
             throw new Exception("Error al aplicar fcbf\n" + ex.getMessage());
         }
     }
 
-    public String applyScatterSearch(String fileName, Instances trainingData) throws Exception {
+    public ResultFilter applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
         try {
 
             CfsSubsetEval eval = new CfsSubsetEval();
+            //default class index to last att if undefined
+            //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+            if(trainingData.classIndex()<0){
+                trainingData.setClassIndex(trainingData.numAttributes()-1);
+            }
             eval.buildEvaluator(trainingData);
 
             ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
             int[] sol = scatterSearchV1.search(eval, trainingData);
-            String aux;
-            aux = fileName;
-            for (int i = 0; i < sol.length; i++) {
-                if (i > 0) {
-                    aux = aux.concat(",");
-                }
-                aux = aux.concat(Integer.toString(sol[i]));
-
-            }
-            return aux;
+            System.out.println(Arrays.toString(sol));
+            ResultFilter rf = composeResultFilter(sol, "ScatterSearchV1", datasetName);
+            return rf;
         } catch (Exception ex) {
             throw new Exception("Error al aplicar ScatterSearch\n" + ex.getMessage());
         }
     }
 
-    public String applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
+    public ResultFilter applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
         //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
         //logger.info(ddataset.toString());
 
@@ -168,7 +180,20 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         of.buildEvaluator();
         FSPredGroupsBasicVNS bvns = new FSPredGroupsBasicVNS(dataset.getCategoricalData(), dataset.getLabels(), of, true);
         FSSolution solution = bvns.search();
-        return solution.toString();
+        Subset<Integer> sol = solution.getSubset();
+        Iterator it = sol.elements();
+        List<Integer> lista = new ArrayList<Integer>();
+
+        while (it.hasNext()) {
+            int next = (int) it.next();
+            lista.add(next);
+        }
+        int[] solArr = new int[lista.size()];
+        for (int i = 0; i < solArr.length; i++) {
+            solArr[i] = lista.get(i);
+        }
+        System.out.println(Arrays.toString(solArr));
+        return composeResultFilter(solArr, "VariableNeighbourhoodSearch", datasetName);
     }
 
     public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
@@ -210,7 +235,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         double[] ins2 = trainingData.get(1).toDoubleArray();
         int size = trainingData.numAttributes();
         int size2 = trainedData.numAttributes();
-        System.out.println("Size training: " + size + "\nSize trained\n");
         int[] list = new int[trainedData.numAttributes()];
         int i = 0;
         int j = 0;
@@ -222,7 +246,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
                     i++;
                     enc = true;
                 } else {
-                    System.out.println("Value " + i + ": " + ins1[i] + "\tValue " + j + ": " + ins2[j]);
                 }
                 j++;
             }
@@ -319,5 +342,37 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             newFirst.setClassIndex(newFirst.numAttributes() - 1);
         }
         return newFirst;
+    }
+
+    public ResultFilter composeResultFilter(int[] solution, String algorithm, String datasetName) throws Exception {
+        ResultFilter rf = new ResultFilter();
+        Algorithm fcbf = algoRepo.findAlgorithmByName(algorithm);
+        if (fcbf == null) {
+            fcbf = new Algorithm();
+            fcbf.setLanguage("Weka package");
+            fcbf.setName(algorithm);
+            algoRepo.save(fcbf);
+        }
+        Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
+        if (dataset == null) {
+            throw new Exception(datasetName + " Not found in DB");
+        }
+        rf.setAlgorithm(fcbf);
+        rf.setPerformed(dataset);
+        resRepo.save(rf);
+        //List<Attribute> attributesSelected = new ArrayList<Attribute>();
+        for (int value : solution) {
+            Attribute n = new Attribute();
+            n.setId(value);
+            n.setDataPerformed(rf);
+            //attributesSelected.add(n);
+
+            attRepo.save(n);
+
+        }
+        //rf.setAttributesSelected(attributesSelected);
+        resRepo.save(rf);
+        return rf;
+
     }
 }

@@ -1,11 +1,13 @@
 package es.kazzpa.selattserver.models;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.w3c.dom.Attr;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -42,4 +44,13 @@ public class ResultFilter extends EntityDatabase {
     public void setScoreVNS(long scoreVNS) {
         this.scoreVNS = scoreVNS;
     }
+
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public Dataset getPerformed() {
+        return performed;
+    }
+
 }

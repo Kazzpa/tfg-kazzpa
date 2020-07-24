@@ -1,12 +1,16 @@
 package es.kazzpa.selattserver.controllers;
 
+import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -28,17 +32,17 @@ public class FeatureSelectionController {
     }
 
     @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleScatterSearch(@PathVariable String datasetName) throws Exception {
+    public ResultFilter handleScatterSearch(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleScatterSearch(datasetName);
     }
 
     @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleFCBF(@PathVariable String datasetName) throws Exception {
+    public ResultFilter handleFCBF(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleFCBF(datasetName);
     }
 
     @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleVNS(@PathVariable String datasetName) throws Exception {
+    public ResultFilter handleVNS(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleVNS(datasetName);
     }
 
@@ -68,7 +72,16 @@ public class FeatureSelectionController {
         return featureSelectionService.plotPCA();
     }
 
+    @GetMapping("/resultsByUser")
+    public List<ResultFilter> getResultsByUser(Authentication authentication) throws Exception{
+        return featureSelectionService.resultsByUser(authentication);
+    }
 
+    @GetMapping("/filesByUser")
+    public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
+        return featureSelectionService.datasetsByUser(authentication);
+
+    }
     @Bean
     @Profile("test")
     CommandLineRunner clr(FeatureSelectionService featureSelectionService) {

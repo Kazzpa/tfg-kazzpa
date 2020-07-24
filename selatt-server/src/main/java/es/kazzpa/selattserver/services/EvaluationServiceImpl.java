@@ -11,12 +11,12 @@ import weka.core.Instances;
 public class EvaluationServiceImpl implements EvaluationService {
 
     @Autowired
-    private final FileStorageService fileStorageService;
+    private final FeatureSelectionService featureSelectionService;
     @Autowired
     private final LoadData loadData;
 
-    public EvaluationServiceImpl(FileStorageService fileStorageService, LoadData loadData) {
-        this.fileStorageService = fileStorageService;
+    public EvaluationServiceImpl(FeatureSelectionService featureSelectionService, LoadData loadData) {
+        this.featureSelectionService = featureSelectionService;
         this.loadData = loadData;
     }
 
@@ -29,17 +29,15 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     public String applyNaiveBayes(String filename, Instances trainingData) throws Exception {
         //try {
-            NaiveBayes classifier = new NaiveBayes();
-            trainingData.setClassIndex(trainingData.classIndex());
+        NaiveBayes classifier = new NaiveBayes();
+        trainingData.setClassIndex(trainingData.classIndex());
         System.out.println(trainingData.classIndex());
-            classifier.buildClassifier(trainingData);
+        classifier.buildClassifier(trainingData);
 
-            Evaluation eval = new Evaluation(trainingData);
-            eval.evaluateModel(classifier, trainingData);
-            return eval.toSummaryString();
-        //} catch (Exception ex) {
-         //   throw new Exception("Archivo no pudo ser  cargado como resource" + filename + ex.getMessage());
-        //}
+        Evaluation eval = new Evaluation(trainingData);
+        eval.evaluateModel(classifier, trainingData);
+        System.out.println(eval.numInstances());
+        return eval.toSummaryString();
 
 
     }

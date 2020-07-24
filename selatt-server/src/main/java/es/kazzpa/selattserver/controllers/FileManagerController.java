@@ -1,11 +1,13 @@
 package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.models.Dataset;
+import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.services.FileStorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,11 +45,6 @@ public class FileManagerController {
 
     }
 
-    @GetMapping("/filesByUser")
-    public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
-        return fileStorageService.datasetsByUser(authentication);
-
-    }
 
     @GetMapping("/downloadFile/")
     public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) throws Exception {

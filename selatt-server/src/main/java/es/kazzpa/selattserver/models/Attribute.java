@@ -8,33 +8,27 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "attribute")
-public class Attribute {
+public class Attribute implements Serializable{
 
     @Id
     private int id;
 
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     public ResultFilter dataPerformed;
+
 
     private Double value;
 
     public Attribute() {
     }
 
-    public ResultFilter getDataPerformed() {
-        return dataPerformed;
-    }
-
-    public void setDataPerformed(ResultFilter dataPerformed) {
-        this.dataPerformed = dataPerformed;
-    }
-
-    public int getIndex() {
+    public int getId() {
         return id;
     }
 
-    public void setIndex(int id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -46,4 +40,11 @@ public class Attribute {
         this.value = value;
     }
 
+    public ResultFilter getDataPerformed() {
+        return dataPerformed;
+    }
+
+    public void setDataPerformed(ResultFilter dataPerformed) {
+        this.dataPerformed = dataPerformed;
+    }
 }

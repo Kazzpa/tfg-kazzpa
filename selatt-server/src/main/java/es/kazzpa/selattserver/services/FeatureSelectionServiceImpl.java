@@ -3,6 +3,8 @@ package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.*;
 import es.kazzpa.selattserver.repositories.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -25,10 +27,7 @@ import upo.jml.prediction.classification.fss.core.FSSolution;
 import upo.jml.prediction.classification.fss.evaluators.CfsEvaluator;
 
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
@@ -41,18 +40,15 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     @Autowired
     private final AlgorithmRepository algoRepo;
     @Autowired
-    private final AttributeRepository attRepo;
-    @Autowired
     private final AppUserRepository userRepo;
     private final LoadData loadData;
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AttributeRepository attRepo,AppUserRepository userRepo, ResultRepository resRepo) {
+    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AppUserRepository userRepo, ResultRepository resRepo) {
         this.fileFactory = fileFactory;
         this.resRepo = resRepo;
         this.dataRepo = dataRepo;
         this.loadData = loadData;
         this.algoRepo = algoRepo;
-        this.attRepo = attRepo;
         this.userRepo = userRepo;
     }
 
@@ -131,24 +127,21 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
 
     public ResultFilter applyFCBF(String datasetName, Instances trainingData) throws Exception {
-        try {
 
-            //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
-            //utiliza: simuncertAttributeSetEval
-            SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
-            //default class index to last att if undefined
-            //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
-            if(trainingData.classIndex()<0){
-                trainingData.setClassIndex(trainingData.numAttributes()-1);
-            }
-            eval.buildEvaluator(trainingData);
-            FCBFSearch fcbfSearch = new FCBFSearch();
-            int[] sol = fcbfSearch.search(eval, trainingData);
-            ResultFilter rf = composeResultFilter(sol, "FastCorrelationBasedFilter", datasetName);
-            return rf;
-        } catch (Exception ex) {
-            throw new Exception("Error al aplicar fcbf\n" + ex.getMessage());
+        //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
+        //utiliza: simuncertAttributeSetEval
+        SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
         }
+        eval.buildEvaluator(trainingData);
+        FCBFSearch fcbfSearch = new FCBFSearch();
+        int[] sol = fcbfSearch.search(eval, trainingData);
+        ResultFilter rf = composeResultFilter(sol, "FastCorrelationBasedFilter", datasetName);
+        return rf;
+
     }
 
     public ResultFilter applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
@@ -157,8 +150,8 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             CfsSubsetEval eval = new CfsSubsetEval();
             //default class index to last att if undefined
             //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
-            if(trainingData.classIndex()<0){
-                trainingData.setClassIndex(trainingData.numAttributes()-1);
+            if (trainingData.classIndex() < 0) {
+                trainingData.setClassIndex(trainingData.numAttributes() - 1);
             }
             eval.buildEvaluator(trainingData);
 
@@ -192,7 +185,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         for (int i = 0; i < solArr.length; i++) {
             solArr[i] = lista.get(i);
         }
-        System.out.println(Arrays.toString(solArr));
         return composeResultFilter(solArr, "VariableNeighbourhoodSearch", datasetName);
     }
 
@@ -359,18 +351,16 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         }
         rf.setAlgorithm(fcbf);
         rf.setPerformed(dataset);
-        resRepo.save(rf);
-        //List<Attribute> attributesSelected = new ArrayList<Attribute>();
+
+        JSONArray array = new JSONArray();
         for (int value : solution) {
-            Attribute n = new Attribute();
-            n.setId(value);
-            n.setDataPerformed(rf);
-            //attributesSelected.add(n);
-
-            attRepo.save(n);
-
+            JSONObject json = new JSONObject();
+            json.put("id", value);
+            array.put(json);
         }
-        //rf.setAttributesSelected(attributesSelected);
+        rf.setJsonAttributes(array.toString());
+        Date now = new Date();
+        rf.setFinishedDate(now);
         resRepo.save(rf);
         return rf;
 

@@ -25,6 +25,18 @@
                     </v-icon>
                 </template>
             </v-data-table>
+            <v-dialog v-if="resultChosen" v-model="resultChosen">
+                <v-card>
+                    <v-card-text>
+                        {{ this.resultChosen.jsonAttributes }}
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn color="green darken-1" text @click="resultChosen = null">
+                            Cerrar
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-card>
     </v-main>
 </template>
@@ -49,11 +61,13 @@
             search: '',
             headers: [
                 {text: "Dataset", align: "start", value: "performed.filename"},
-                {text: "Algorithm", value: "algorithm.name"},
-                {text: "Dataset size (bytes)", value: "performed.size"},
-                {text: 'Actions', value: 'actions', sortable: false},
+                {text: "Algoritmo seleccionado", value: "algorithm.name"},
+                {text: "Tamaño del dataset(bytes)", value: "performed.size"},
+                {text: 'Finished Date', value:'finishedDate',sortable: true},
+                {text: 'Attributos seleccionados', value: 'actions', sortable: false},
             ],
             results: null,
+            resultChosen: null,
         }), computed: {
             loggedIn() {
                 return this.$store.state.auth.status.loggedIn;
@@ -61,32 +75,10 @@
         },
         methods: {
             viewItem(item) {
-                let url = server_url + "/featureSelection/result/" + item.id;
-                console.log(url);
-                axios.get(url,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            "Authorization": "Bearer " + this.$store.state.auth.user.token,
-                        }
-                    })
-                    .then(response => {
-                        response.data.forEach(elem => {
-                            elem.value = elem.filename;
-                            elem.text = elem.filename;
-                        });
-                        this.results = response.data;
-
-
-                    })
-                    .catch(error => {
-                        console.log(error);
-
-                    });
+                this.resultChosen = item;
             }
         },
         created() {
-            console.log("We are in");
             if (!this.loggedIn) {
                 this.$router.push(login_path);
             } else {
@@ -99,10 +91,17 @@
                         }
                     })
                     .then(response => {
-                        response.data.forEach(elem => {
-                            elem.value = elem.filename;
-                            elem.text = elem.filename;
-                        });
+                        var res = response.data;
+                        res.forEach(value => {
+                                value.jsonAttributes= JSON.parse(value.jsonAttributes);
+                                var arr = [];
+                                for (var i = 0; i < value.jsonAttributes.length; i++) {
+                                    arr[i] = value.jsonAttributes[i].id;
+                                }
+                                value.jsonAttributes = arr;
+                                console.log(arr);
+                            }
+                        );
                         this.results = response.data;
 
 

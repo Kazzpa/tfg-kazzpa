@@ -73,15 +73,17 @@ public class FeatureSelectionController {
     }
 
     @GetMapping("/resultsByUser")
-    public List<ResultFilter> getResultsByUser(Authentication authentication) throws Exception{
+    public List<ResultFilter> getResultsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.resultsByUser(authentication);
     }
+
 
     @GetMapping("/filesByUser")
     public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.datasetsByUser(authentication);
 
     }
+
     @Bean
     @Profile("test")
     CommandLineRunner clr(FeatureSelectionService featureSelectionService) {

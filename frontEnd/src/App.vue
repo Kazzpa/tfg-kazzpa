@@ -1,5 +1,6 @@
 <template>
     <v-app>
+
         <v-app-bar
                 app
                 color="primary"
@@ -10,12 +11,26 @@
                 SelAtt
             </div>
 
-            <v-spacer></v-spacer>
-            <v-spacer></v-spacer>
-            <v-btn v-on:click="goToLogin">
+            <v-spacer/>
+            <v-spacer/>
+            <v-btn v-if="this.$store.state.auth.user == null" v-on:click="goToLogin">
                 Login
                 <v-icon>mdi-login</v-icon>
             </v-btn>
+            <div v-else>
+                <v-btn class="mx-2" v-on:click="goToResult">
+                    <v-badge
+                            color="green"
+                            content="6">
+                        Results
+                    </v-badge>
+                </v-btn>
+                <v-btn class="mx-2" v-on:click="goToProfile">
+                    Profile
+                    <v-icon>mdi-profile</v-icon>
+                </v-btn>
+            </div>
+
         </v-app-bar>
 
 
@@ -64,9 +79,17 @@
             goToLogin() {
                 router.push(login_path);
             },
+            goToProfile() {
+                router.push(profile_path);
+            },
             goToHome() {
                 router.push(landing_path);
             }
+            ,
+            goToResult() {
+                router.push(result_path);
+            }
         }
-    };
+    }
+    ;
 </script>

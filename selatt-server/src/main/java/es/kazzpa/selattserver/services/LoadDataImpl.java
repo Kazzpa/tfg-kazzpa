@@ -30,8 +30,6 @@ public class LoadDataImpl implements LoadData {
     @Autowired
     private AlgorithmRepository algoRepo;
     @Autowired
-    private AttributeRepository attRepo;
-    @Autowired
     private DatasetRepository dataRepo;
     @Autowired
     private AppUserRepository appUserRepository;

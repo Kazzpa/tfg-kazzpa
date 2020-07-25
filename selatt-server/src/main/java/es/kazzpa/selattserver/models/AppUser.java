@@ -2,11 +2,14 @@ package es.kazzpa.selattserver.models;
 
 // A (temporary) class represent the user saved in the database.
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "User", uniqueConstraints = @UniqueConstraint(columnNames = {"username"}))
 public class AppUser extends EntityDatabase {
 

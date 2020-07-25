@@ -1,23 +1,24 @@
 package es.kazzpa.selattserver.models;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.w3c.dom.Attr;
-
 import javax.persistence.*;
 import javax.persistence.Entity;
-import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "result_filter")
-public class ResultFilter extends EntityDatabase {
+public class ResultFilter extends EntityDatabase{
+
 
     @ManyToOne
     private Algorithm algorithm;
     @ManyToOne
     private Dataset performed;
+
+    private Date finishedDate;
+
+    //TODO: HACER UN JSON A PARTIR DE LOS ATRIBUTOS PARSEARLO AL SACARLO DE LA DB Y DEMAS PARA TRABAJARLO.
+    private String jsonAttributes;
+
     private long scoreVNS;
 
 
@@ -27,6 +28,15 @@ public class ResultFilter extends EntityDatabase {
     public ResultFilter(Algorithm algorithm, Dataset performed) {
         this.algorithm = algorithm;
         this.performed = performed;
+    }
+
+
+    public String getJsonAttributes() {
+        return jsonAttributes;
+    }
+
+    public void setJsonAttributes(String jsonAtributes) {
+        this.jsonAttributes = jsonAtributes;
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -53,4 +63,11 @@ public class ResultFilter extends EntityDatabase {
         return performed;
     }
 
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
 }

@@ -5,23 +5,7 @@
                 <strong>{{currentUser.username}}</strong> <v-spacer/>Profile
             </v-card-title>
         </v-card>
-        <p>
-            <strong>Token:</strong>
-            {{currentUser.token.substring(0, 20)}} ...
-            {{currentUser.token.substr(currentUser.token.length - 20)}}
-        </p>
-        <p>
-            <strong>Id:</strong>
-            {{currentUser.id}}
-        </p>
-        <p>
-            <strong>Email:</strong>
-            {{currentUser.email}}
-        </p>
-        <strong>Authorities:</strong>
-        <ul>
-            <li v-for="(role,index) in currentUser.roles" :key="index">{{role}}</li>
-        </ul>
+
         <v-btn v-on:click="goToAlgorithm">Algoritmos</v-btn>
     </v-main>
 </template>

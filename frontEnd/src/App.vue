@@ -6,10 +6,10 @@
                 color="primary"
                 dark
         >
-            <div class="d-flex align-center">
+            <v-btn text class="d-flex align-center">
                 <v-icon @click="goToHome">mdi-home</v-icon>
                 SelAtt
-            </div>
+            </v-btn>
 
             <v-spacer/>
             <v-spacer/>

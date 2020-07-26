@@ -3,7 +3,8 @@
         <v-row>
             <v-col></v-col>
             <v-col>
-                <v-btn v-on:click="goToResults">Check Results</v-btn><br/>
+                <v-btn v-on:click="goToResults">Check Results</v-btn>
+                <br/>
                 Subir un dataset
                 <v-form v-on:submit.prevent="uploadFile">
                     <v-file-input v-model="inputFile" type="file" dense multiple label="uploadDataset">
@@ -211,11 +212,10 @@
                     },
                     error => {
                         this.loading = false;
+                        console.log(error);
                         this.responseProcessStatus = "warning";
                         this.responseProcess =
-                            (error.response && error.response.data) ||
-                            error.message ||
-                            error.toString();
+                            error.message;
                     }
                 );
 

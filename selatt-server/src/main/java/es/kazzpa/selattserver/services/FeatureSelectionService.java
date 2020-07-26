@@ -1,5 +1,6 @@
 package es.kazzpa.selattserver.services;
 
+import es.kazzpa.selattserver.models.Algorithm;
 import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.repositories.ResultRepository;
@@ -46,5 +47,11 @@ public interface FeatureSelectionService {
 
     List<Dataset> datasetsByUser(Authentication authentication) throws Exception;
 
-    ResultFilter composeResultFilter(int[] solution, String algorithm, String datasetName) throws Exception;
+    ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
+
+    Dataset getDataset(String datasetName) throws Exception;
+
+    Algorithm getAlgorithm(String algorithm, String language) throws Exception;
+
+    ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception;
 }

@@ -99,7 +99,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         String username = authentication.getName();
         AppUser appUser = userRepo.findByUsername(username);
         List<Dataset> ret = dataRepo.findDatasetByUserUploader(appUser);
-        //this is to save the user information in frontend
+        //make the user information not seen in frontend
         for (Dataset d : ret
         ) {
             d.setUserUploader(null);
@@ -128,6 +128,10 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     public ResultFilter applyFCBF(String datasetName, Instances trainingData) throws Exception {
 
+        //Check if the resultfilter has been processed before
+        Algorithm fcbf = getAlgorithm("FastCorrelationBasedFilter", "Weka package");
+        Dataset dataset = getDataset(datasetName);
+        ResultFilter rf = checkIfAlreadyExists(fcbf, dataset);
         //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
         //utiliza: simuncertAttributeSetEval
         SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
@@ -139,13 +143,16 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         eval.buildEvaluator(trainingData);
         FCBFSearch fcbfSearch = new FCBFSearch();
         int[] sol = fcbfSearch.search(eval, trainingData);
-        ResultFilter rf = composeResultFilter(sol, "FastCorrelationBasedFilter", datasetName);
-        return rf;
+        ResultFilter ret = saveResultFilter(sol, rf, fcbf, dataset);
+        return ret;
 
     }
 
     public ResultFilter applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
         try {
+            Algorithm scatterSearch = getAlgorithm("ScatterSearchV1", "Weka package");
+            Dataset dataset = getDataset(datasetName);
+            ResultFilter rf = checkIfAlreadyExists(scatterSearch, dataset);
 
             CfsSubsetEval eval = new CfsSubsetEval();
             //default class index to last att if undefined
@@ -158,8 +165,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
             int[] sol = scatterSearchV1.search(eval, trainingData);
             System.out.println(Arrays.toString(sol));
-            ResultFilter rf = composeResultFilter(sol, "ScatterSearchV1", datasetName);
-            return rf;
+            return saveResultFilter(sol, rf, scatterSearch,dataset);
         } catch (Exception ex) {
             throw new Exception("Error al aplicar ScatterSearch\n" + ex.getMessage());
         }
@@ -168,6 +174,10 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     public ResultFilter applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
         //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
         //logger.info(ddataset.toString());
+
+        Algorithm scatterSearch = getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
+        Dataset dataset1 = getDataset(dataset.getName());
+        ResultFilter rf = checkIfAlreadyExists(scatterSearch, dataset1);
 
         FSObjectiveFunction of = new CfsEvaluator(dataset.getCategoricalData(), dataset.getLabels());
         of.buildEvaluator();
@@ -185,7 +195,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         for (int i = 0; i < solArr.length; i++) {
             solArr[i] = lista.get(i);
         }
-        return composeResultFilter(solArr, "VariableNeighbourhoodSearch", datasetName);
+        return saveResultFilter(solArr, rf, scatterSearch,dataset1);
     }
 
     public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
@@ -336,21 +346,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return newFirst;
     }
 
-    public ResultFilter composeResultFilter(int[] solution, String algorithm, String datasetName) throws Exception {
-        ResultFilter rf = new ResultFilter();
-        Algorithm fcbf = algoRepo.findAlgorithmByName(algorithm);
-        if (fcbf == null) {
-            fcbf = new Algorithm();
-            fcbf.setLanguage("Weka package");
-            fcbf.setName(algorithm);
-            algoRepo.save(fcbf);
-        }
-        Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
-        if (dataset == null) {
-            throw new Exception(datasetName + " Not found in DB");
-        }
-        rf.setAlgorithm(fcbf);
-        rf.setPerformed(dataset);
+    public ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
 
         JSONArray array = new JSONArray();
         for (int value : solution) {
@@ -364,5 +360,36 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         resRepo.save(rf);
         return rf;
 
+    }
+
+    public ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
+        ResultFilter rf = new ResultFilter();
+        rf.setAlgorithm(algorithm);
+        rf.setPerformed(dataset);
+        ResultFilter alreadyPerformed = resRepo.findResultFilterByPerformedAndAlgorithm(dataset, algorithm);
+        if (alreadyPerformed != null) {
+            throw new Exception("Dataset: " + dataset.getFilename() + " on " + algorithm.getName() + " Has already been processed");
+        }
+        return rf;
+    }
+
+    public Dataset getDataset(String datasetName) throws Exception {
+
+        Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
+        if (dataset == null) {
+            throw new Exception(datasetName + " Not found in DB");
+        }
+        return dataset;
+    }
+
+    public Algorithm getAlgorithm(String algorithm, String language) throws Exception {
+        Algorithm algorithm1 = algoRepo.findAlgorithmByName(algorithm);
+        if (algorithm1 == null) {
+            algorithm1 = new Algorithm();
+            algorithm1.setLanguage(language);
+            algorithm1.setName(algorithm);
+            algoRepo.save(algorithm1);
+        }
+        return algorithm1;
     }
 }

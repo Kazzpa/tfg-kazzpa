@@ -1,48 +1,81 @@
 <template>
     <v-main>
-        <v-row>
-            <v-col></v-col>
-            <v-col>
-                <v-btn v-on:click="goToResults">Check Results</v-btn>
-                <br/>
-                Subir un dataset
+        <v-btn v-on:click="goToResults">Check Results</v-btn>
+        <v-stepper v-model="e1" vertical class="mx-12" >
+
+
+            <v-stepper-step editable :complete="e1 > 1" step="1">Selección de dataset</v-stepper-step>
+            <v-stepper-content step="1">
+                <h3>Subir un dataset:</h3>
                 <v-form v-on:submit.prevent="uploadFile">
                     <v-file-input v-model="inputFile" type="file" dense multiple label="uploadDataset">
 
                     </v-file-input>
                     <v-btn v-if="inputFile != null" type="submit" rounded>Subir</v-btn>
-                    <v-alert type="info" v-if="responseFileUpload" dense>{{responseFileUpload}}</v-alert>
+                    <v-alert type="info" v-if="responseFileUpload" dense>{{responseFileUpload}}
+                    </v-alert>
                 </v-form>
-                <!-- DISABLED ATM-->
-                Working on it: Descargar dataset filtrado
-                <v-form disabled v-on:submit.prevent="retrieveFile">
-                    <v-text-field dense prepend-icon="mdi-file"
-                                  label="Dataset a procesar" v-model="inputFileName"></v-text-field>
-                    <v-btn v-if="inputFileName != null" type="submit" rounded>Descargar</v-btn>
-                    <v-alert v-if="responseFileDownload" type="info" dense>{{responseFileDownload}}</v-alert>
-                </v-form>
-                <!-- FINISH OF DISABLED ELEMENT-->
-                Algoritmos de seleccion de atributos:
-                <v-form v-on:submit.prevent="processAlgorithm">
-                    <v-combobox
-                            :items="datasets"
-                            prepend-icon="mdi-file" dense v-model="inputFileNameProcess"
-                            label="Dataset a procesar"/>
+                <h3>Seleccionar un dataset cargado previamente:</h3>
+                <v-combobox
+                        :items="datasets"
+                        prepend-icon="mdi-file" dense v-model="inputFileNameProcess"
+                        label="Dataset a procesar"/>
+                <v-btn
+                        color="primary"
+                        @click="e1 = 2"
+                        :disabled="!(this.inputFileNameProcess)"
+                >
+                    Continue
+                </v-btn>
 
-                    <div v-if="inputFileNameProcess">
+            </v-stepper-content>
 
-                        Seleccion de atributos:
-                        <v-combobox v-model="algorithm"
-                                    :items="algorithms"/>
-                        <v-btn v-if="algorithm" type="submit" rounded>Evaluar</v-btn>
-                    </div>
-                    <v-alert v-bind:type="responseProcessStatus" v-if="responseProcess" dense>{{responseProcess}}
+            <v-stepper-step :complete="e1 > 2" step="2">Ejecución de algoritmo</v-stepper-step>
+            <v-stepper-content step="2">
+                <v-form v-if="inputFileNameProcess" v-on:submit.prevent="processAlgorithm">
+
+                    <v-tabs>
+                        <v-tab v-on:click="this.algorithm = null">
+                            Seleccion de atributos
+                        </v-tab>
+                        <v-tab-item>
+                            Seleccione un algoritmo
+                            <v-combobox v-model="algorithm"
+                                        :items="algorithms"/>
+                            <v-btn v-if="algorithm" type="submit" rounded>Evaluar</v-btn>
+                        </v-tab-item>
+                        <v-tab v-on:click="this.algorithm = null">
+                            Clasificadores
+                        </v-tab>
+                        <v-tab-item>
+                            Seleccione un algoritmo
+                            <v-combobox v-model="algorithm"
+                                        :items="classifierAlgorithms"/>
+                            <v-btn v-if="classifierAlgorithms" type="submit" rounded>Evaluar</v-btn>
+                        </v-tab-item>
+                    </v-tabs>
+                    <v-alert v-bind:type="responseProcessStatus" v-if="responseProcess" dense>
+                        {{responseProcess}}
                     </v-alert>
                 </v-form>
 
-            </v-col>
-            <v-col></v-col>
-        </v-row>
+
+                <v-btn text>Cancel</v-btn>
+            </v-stepper-content>
+
+        </v-stepper>
+        <br/>
+
+
+        <!-- DISABLED ATM-->
+        Working on it: Descargar dataset filtrado
+        <v-form disabled v-on:submit.prevent="retrieveFile">
+            <v-text-field dense prepend-icon="mdi-file"
+                          label="Dataset a procesar" v-model="inputFileName"></v-text-field>
+            <v-btn v-if="inputFileName != null" type="submit" rounded>Descargar</v-btn>
+            <v-alert v-if="responseFileDownload" type="info" dense>{{responseFileDownload}}</v-alert>
+        </v-form>
+        <!-- FINISH OF DISABLED ELEMENT-->
     </v-main>
 </template>
 
@@ -65,6 +98,7 @@
     export default {
         name: 'AlgorithmsView',
         data: () => ({
+            e1: 1,
             inputFile: null,
             inputFileName: null,
             inputFileNameProcess: null,
@@ -78,10 +112,13 @@
                 {text: "Fast Correlation Based Filter", value: "FCBF"},
                 {text: "Variable neighbourhood search", value: "VNS"},
                 {text: "Scatter Search", value: "Scs"},
-                {text: "Naive Bayes", value: "NvB"}
                 /**"FCBF","VNS","ScS","Nvb"
 
                  */
+            ],
+            classifierAlgorithms: [
+
+                {text: "Naive Bayes", value: "NvB"},
             ]
         }), computed: {
             loggedIn() {
@@ -126,7 +163,6 @@
                 let i = 0;
 
                 let obj = new FormData();
-                console.log(this.inputFile[i]);
                 const blob = new Blob([this.inputFile[i]], {
                     //type: 'application/json'
                     type: 'multipart/form-data'
@@ -172,7 +208,7 @@
                         console.log(response);
                         const fileStream = streamSaver.createWriteStream(this.inputFileName, {
                             size: response.data.size,
-                        })
+                        });
 
                         this.responseFileDownload = response.data;
                         new Response('StreamSaver is awesome').body
@@ -201,7 +237,6 @@
                         return null;
                 }
                 let url = server_url + process_path;
-                console.log(url);
                 let usuario = this.$store.state.auth.user;
                 let filename = this.inputFileNameProcess.value;
                 let data = [usuario, filename, url];
@@ -212,7 +247,6 @@
                     },
                     error => {
                         this.loading = false;
-                        console.log(error);
                         this.responseProcessStatus = "warning";
                         this.responseProcess =
                             error.message;

@@ -5,8 +5,7 @@
             <v-col>
                 <v-card>
                     <v-card-title>
-                        Registro
-                        <v-icon>mdi-account-box</v-icon>
+                        <v-icon>mdi-account-box</v-icon>Registro
                     </v-card-title>
                     <v-card-text>
                         <v-form name="form" @submit.prevent="handleRegister">
@@ -43,9 +42,7 @@
                                         class="form-control"
                                         name="password"
                                         label="Contraseña"
-                                        :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                                        :type="show1 ? 'text' : 'password'"
-                                        @click:append="show1 = !show1"
+                                        type="password"
                                 />
 
                                 <div
@@ -53,7 +50,7 @@
                                         class="alert-danger"
                                 >{{errors.first('password')}}
                                 </div>
-                                <v-btn color="primary">Sign Up</v-btn>
+                                <v-btn color="primary" type="submit">Sign Up</v-btn>
                             </div>
                         </v-form>
 
@@ -74,6 +71,8 @@
 <script>
     import User from "@/models/user";
 
+    const login_path = process.env.VUE_APP_LOGIN_PATH;
+    const profile_path = process.env.VUE_APP_PROFILE_PATH;
     export default {
         name: "RegisterView",
         data() {
@@ -91,10 +90,13 @@
         },
         mounted() {
             if (this.loggedIn) {
-                this.$router.push('/profile');
+                this.$router.push(profile_path);
             }
         },
         methods: {
+            goToLogin(){
+                this.$router.push(login_path);
+            },
             handleRegister() {
                 this.message = '';
                 this.submitted = true;
@@ -104,8 +106,9 @@
                         this.$store.dispatch('auth/register', this.user).then(
                             data => {
 
-                                this.message = data.message;
+                                this.message = "Registrado con exito" + data.username;
                                 this.successful = true;
+                                this.goToLogin();
                             },
                             error => {
                                 this.message =

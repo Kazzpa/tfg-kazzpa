@@ -1,7 +1,7 @@
 <template>
     <v-main>
         <v-btn v-on:click="goToResults">Check Results</v-btn>
-        <v-stepper v-model="e1" vertical class="mx-12" >
+        <v-stepper v-model="e1" vertical class="ma-12" >
 
 
             <v-stepper-step editable :complete="e1 > 1" step="1">Selección de dataset</v-stepper-step>

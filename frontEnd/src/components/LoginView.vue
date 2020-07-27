@@ -30,10 +30,11 @@
                             role="alert"
                     >Password is required!
                     </div>
-                    <v-btn color="primary" type="submit" :disabled="loading">
+                    <v-btn class="mx-2" color="primary" type="submit" :disabled="loading">
                         <span v-show="loading" class="spinner-border spinner-border-sm"></span>
                         <span>Login</span>
                     </v-btn>
+                    <v-btn class="mx-2" v-on:click="goToRegister">Registro</v-btn>
                     <v-alert v-if="message" class="alert alert-danger" role="alert">{{message}}</v-alert>
                 </v-form>
             </v-col>
@@ -52,6 +53,7 @@
     Vue.use(VeeValidate);
 
     const profile_path = process.env.VUE_APP_PROFILE_PATH;
+    const register_path = process.env.VUE_APP_REGISTER_PATH;
     export default {
         name: "LoginView",
         data() {
@@ -71,6 +73,9 @@
             }
         },
         methods: {
+            goToRegister(){
+                this.$router.push(register_path);
+            },
             handleLogin() {
                 this.loading = true;
                 this.$validator.validateAll().then(isValid => {

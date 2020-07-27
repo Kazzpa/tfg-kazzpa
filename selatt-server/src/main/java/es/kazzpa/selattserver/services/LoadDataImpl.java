@@ -131,7 +131,6 @@ public class LoadDataImpl implements LoadData {
             //TODO: FIX LOADING FROM .JSON AND .ARFF
             File file = new File(fileStorageLocation + "/" + fileName);
             String mimeType = new Tika().detect(file);
-            System.out.println(mimeType + " - " + fileName);
 
             switch (mimeType) {
                 case "text/csv":

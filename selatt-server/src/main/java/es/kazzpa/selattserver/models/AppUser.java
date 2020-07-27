@@ -5,8 +5,10 @@ package es.kazzpa.selattserver.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Entity;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.util.UUID;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -16,6 +18,7 @@ public class AppUser extends EntityDatabase {
 
     private String username;
     private String password;
+    private String email;
     private String role;
 
     public AppUser() {
@@ -51,4 +54,21 @@ public class AppUser extends EntityDatabase {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @PrePersist
+    public void setRoleOnSave(){
+        if(this.role == null || this.role.trim().isEmpty()){
+            this.role = "USER";
+        }
+
+    }
+
 }

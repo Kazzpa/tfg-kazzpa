@@ -7,6 +7,8 @@ import es.kazzpa.selattserver.properties.Properties;
 import es.kazzpa.selattserver.repositories.AppUserRepository;
 import es.kazzpa.selattserver.repositories.DatasetRepository;
 import es.kazzpa.selattserver.repositories.ResultRepository;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.xml.transform.Result;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,28 +52,40 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Dataset storeFile(Authentication authentication, MultipartFile file) {
+    public Dataset storeFile(Authentication authentication, MultipartFile file) throws Exception {
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
 
-        try {
-            if (filename.contains("..")) {
-                throw new Exception("Ruta de archivo invalida");
-            }
-            Path targetLocation = this.fileStorageLocation.resolve(filename);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/downloadFile/")
-                    .path(filename)
-                    .toUriString();
-            AppUser appUser = appUserRepository.findByUsername(authentication.getName());
-            Dataset dataset = new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize(), appUser);
-            datasetRepository.save(dataset);
-            return dataset;
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            return null;
+        if (filename.contains("..")) {
+            throw new Exception("Ruta de archivo invalida");
         }
+        Path targetLocation = this.fileStorageLocation.resolve(filename);
+        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        //TODO: FIX LOADING FROM .JSON
+        File fileTest = new File(targetLocation.toUri());
+        String mimeType = new Tika().detect(fileTest);
+
+        switch (mimeType) {
+            case "text/csv":
+                break;
+            case "application/json":
+                break;
+            default:
+                String ext = FilenameUtils.getExtension(fileTest.getName());
+                if (ext.equals("arff")) {
+                    break;
+                } else {
+                    fileTest.delete();
+                    throw new Exception("Unsupported File Type : " + fileTest.getName() + " Extension:" + ext);
+                }
+        }
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/downloadFile/")
+                .path(filename)
+                .toUriString();
+        AppUser appUser = appUserRepository.findByUsername(authentication.getName());
+        Dataset dataset = new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize(), appUser);
+        datasetRepository.save(dataset);
+        return dataset;
     }
 
     @Override
@@ -87,8 +102,6 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new Exception("Error: " + ex.getMessage());
         }
     }
-
-
 
 
 }

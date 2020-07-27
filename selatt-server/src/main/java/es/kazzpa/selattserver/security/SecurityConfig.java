@@ -38,7 +38,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
     //public static final String AUTH_LOGIN_URL = "/authenticate";
-    public static final String AUTH_LOGIN_URL = "/auth/**";
+    public static final String AUTH_LOGIN_URL = "/auth/login";
+    public static final String AUTH_URL = "/auth/**";
 
     // Signing key for HS512 algorithm
     // You can use the page http://www.allkeysgenerator.com/ to generate all kinds of keys
@@ -76,7 +77,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // authorization requests config
                     .authorizeRequests()
                 // allow all who are accessing "auth" service
-                .antMatchers(HttpMethod.POST, AUTH_LOGIN_URL).permitAll()
+                .antMatchers(HttpMethod.POST, AUTH_URL).permitAll()
                 .anyRequest().authenticated();
     }
 

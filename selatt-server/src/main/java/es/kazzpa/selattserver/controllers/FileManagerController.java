@@ -1,13 +1,11 @@
 package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.services.FileStorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,16 +29,23 @@ public class FileManagerController {
 
 
     @PostMapping(path = "uploadDataset", consumes = "multipart/form-data")
-    public String loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) {
+    public String loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) throws Exception{
         Dataset dataset = fileStorageService.storeFile(authentication, file);
         return dataset.getFileDownloadUri();
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<String> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) {
+    public List<String> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) throws Exception{
         return Arrays.asList(files)
                 .stream()
-                .map(file -> loadDataset(authentication, file))
+                .map(file -> {
+                    try {
+                        return loadDataset(authentication, file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
                 .collect(Collectors.toList());
 
     }

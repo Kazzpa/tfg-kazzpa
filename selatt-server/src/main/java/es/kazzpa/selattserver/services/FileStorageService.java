@@ -10,10 +10,9 @@ import java.util.List;
 
 
 public interface FileStorageService {
-    Dataset storeFile(Authentication authentication, MultipartFile file);
+    Dataset storeFile(Authentication authentication, MultipartFile file) throws Exception;
 
     Resource loadFileAsResource(String fileName) throws Exception;
-
 
 
 }

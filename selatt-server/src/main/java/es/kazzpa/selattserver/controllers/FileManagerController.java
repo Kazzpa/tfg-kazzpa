@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -29,13 +30,12 @@ public class FileManagerController {
 
 
     @PostMapping(path = "uploadDataset", consumes = "multipart/form-data")
-    public String loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) throws Exception{
-        Dataset dataset = fileStorageService.storeFile(authentication, file);
-        return dataset.getFileDownloadUri();
+    public ResponseEntity loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) throws Exception {
+        return fileStorageService.storeFile(authentication, file);
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<String> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) throws Exception{
+    public List<ResponseEntity> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) throws Exception {
         return Arrays.asList(files)
                 .stream()
                 .map(file -> {

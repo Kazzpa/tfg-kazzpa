@@ -1,6 +1,10 @@
 package es.kazzpa.selattserver.services;
 
+import es.kazzpa.selattserver.models.Algorithm;
+import es.kazzpa.selattserver.models.Dataset;
+import es.kazzpa.selattserver.models.ResultFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -21,14 +25,19 @@ public class EvaluationServiceImpl implements EvaluationService {
     }
 
     @Override
-    public String handleNaiveBayes(String fileName) throws Exception {
-        Instances trainingData = loadData.getInstancesFromAnyFile(fileName);
-        return applyNaiveBayes(fileName, trainingData);
+    public ResponseEntity<ResultFilter> handleNaiveBayes(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        return applyNaiveBayes(datasetName, trainingData);
     }
 
 
-    public String applyNaiveBayes(String filename, Instances trainingData) throws Exception {
-        //try {
+    public ResponseEntity<ResultFilter> applyNaiveBayes(String datasetName, Instances trainingData) throws Exception {
+        Algorithm naiveBayes = loadData.getAlgorithm("Naive Bayes", "Weka Package");
+        Dataset dataset = loadData.getDataset(datasetName);
+        ResultFilter rf = loadData.checkIfAlreadyExists(naiveBayes, dataset);
+        if (rf.getJsonAttributes() != null) {
+            return ResponseEntity.ok(rf);
+        }
         NaiveBayes classifier = new NaiveBayes();
         trainingData.setClassIndex(trainingData.classIndex());
         System.out.println(trainingData.classIndex());
@@ -37,7 +46,9 @@ public class EvaluationServiceImpl implements EvaluationService {
         Evaluation eval = new Evaluation(trainingData);
         eval.evaluateModel(classifier, trainingData);
         System.out.println(eval.numInstances());
-        return eval.toSummaryString();
+        String summary = eval.toSummaryString();
+        loadData.saveResultFilter(summary, rf, naiveBayes, dataset);
+        return ResponseEntity.ok(rf);
 
 
     }

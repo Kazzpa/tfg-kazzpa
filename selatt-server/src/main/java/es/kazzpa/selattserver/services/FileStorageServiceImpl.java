@@ -12,6 +12,7 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.xml.transform.Result;
+import javax.xml.ws.Response;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,11 +54,11 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Dataset storeFile(Authentication authentication, MultipartFile file) throws Exception {
+    public ResponseEntity storeFile(Authentication authentication, MultipartFile file) throws Exception {
         String filename = StringUtils.cleanPath(file.getOriginalFilename());
 
         if (filename.contains("..")) {
-            throw new Exception("Ruta de archivo invalida");
+            return ResponseEntity.badRequest().body("Ruta de archivo invalida");
         }
         Path targetLocation = this.fileStorageLocation.resolve(filename);
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
@@ -75,7 +77,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                     break;
                 } else {
                     fileTest.delete();
-                    throw new Exception("Unsupported File Type : " + fileTest.getName() + " Extension:" + ext);
+                    return ResponseEntity.badRequest().body("Unsupported File Type : " + fileTest.getName() + " Extension:" + ext);
                 }
         }
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -85,7 +87,8 @@ public class FileStorageServiceImpl implements FileStorageService {
         AppUser appUser = appUserRepository.findByUsername(authentication.getName());
         Dataset dataset = new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize(), appUser);
         datasetRepository.save(dataset);
-        return dataset;
+
+        return ResponseEntity.ok(dataset);
     }
 
     @Override

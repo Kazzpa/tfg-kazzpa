@@ -6,10 +6,12 @@ import es.kazzpa.selattserver.repositories.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 
+import org.springframework.util.StringUtils;
 import upo.jcu.math.set.Subset;
 import weka.attributeSelection.*;
 import weka.core.Instances;
@@ -28,6 +30,8 @@ import upo.jml.prediction.classification.fss.evaluators.CfsEvaluator;
 
 import java.io.FileWriter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
@@ -62,7 +66,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return ApplyPCA("CAR", carTrainTest.train);
     }
 
-    public ResultFilter handleVNS(String datasetName) throws Exception {
+    public ResponseEntity<ResultFilter> handleVNS(String datasetName) throws Exception {
 
         ClassificationDataset dataset = loadData.getClassDatasetFromArff(datasetName);
         if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
@@ -72,12 +76,12 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return applyVNS(datasetName, dataset);
     }
 
-    public ResultFilter handleFCBF(String datasetName) throws Exception {
+    public ResponseEntity<ResultFilter> handleFCBF(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyFCBF(datasetName, trainingData);
     }
 
-    public ResultFilter handleScatterSearch(String datasetName) throws Exception {
+    public ResponseEntity<ResultFilter> handleScatterSearch(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyScatterSearch(datasetName, trainingData);
     }
@@ -90,6 +94,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         for (ResultFilter r : ret
         ) {
             r.getPerformed().setUserUploader(null);
+            r.setSeen(true);
         }
         return ret;
     }
@@ -126,12 +131,15 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
 
-    public ResultFilter applyFCBF(String datasetName, Instances trainingData) throws Exception {
+    public ResponseEntity<ResultFilter> applyFCBF(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
-        Algorithm fcbf = getAlgorithm("FastCorrelationBasedFilter", "Weka package");
-        Dataset dataset = getDataset(datasetName);
-        ResultFilter rf = checkIfAlreadyExists(fcbf, dataset);
+        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package");
+        Dataset dataset = loadData.getDataset(datasetName);
+        ResultFilter rf = loadData.checkIfAlreadyExists(fcbf, dataset);
+        if (rf.getJsonAttributes() != null) {
+            return ResponseEntity.ok(rf);
+        }
         //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
         //utiliza: simuncertAttributeSetEval
         SymmetricalUncertAttributeSetEval eval = new SymmetricalUncertAttributeSetEval();
@@ -143,42 +151,46 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         eval.buildEvaluator(trainingData);
         FCBFSearch fcbfSearch = new FCBFSearch();
         int[] sol = fcbfSearch.search(eval, trainingData);
-        ResultFilter ret = saveResultFilter(sol, rf, fcbf, dataset);
-        return ret;
+        rf = loadData.saveResultFilter(sol, rf, fcbf, dataset);
+        return ResponseEntity.ok(rf);
 
     }
 
-    public ResultFilter applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
-        try {
-            Algorithm scatterSearch = getAlgorithm("ScatterSearchV1", "Weka package");
-            Dataset dataset = getDataset(datasetName);
-            ResultFilter rf = checkIfAlreadyExists(scatterSearch, dataset);
+    public ResponseEntity<ResultFilter> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
 
-            CfsSubsetEval eval = new CfsSubsetEval();
-            //default class index to last att if undefined
-            //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
-            if (trainingData.classIndex() < 0) {
-                trainingData.setClassIndex(trainingData.numAttributes() - 1);
-            }
-            eval.buildEvaluator(trainingData);
+        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package");
+        Dataset dataset = loadData.getDataset(datasetName);
+        ResultFilter rf = loadData.checkIfAlreadyExists(scatterSearch, dataset);
 
-            ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
-            int[] sol = scatterSearchV1.search(eval, trainingData);
-            System.out.println(Arrays.toString(sol));
-            return saveResultFilter(sol, rf, scatterSearch,dataset);
-        } catch (Exception ex) {
-            throw new Exception("Error al aplicar ScatterSearch\n" + ex.getMessage());
+        if (rf.getJsonAttributes() != null) {
+            return ResponseEntity.ok(rf);
         }
+
+        CfsSubsetEval eval = new CfsSubsetEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+
+        ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
+        int[] sol = scatterSearchV1.search(eval, trainingData);
+        System.out.println(Arrays.toString(sol));
+        rf = loadData.saveResultFilter(sol, rf, scatterSearch, dataset);
+        return ResponseEntity.ok(rf);
     }
 
-    public ResultFilter applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
+    public ResponseEntity<ResultFilter> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
         //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
         //logger.info(ddataset.toString());
 
-        Algorithm scatterSearch = getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
-        Dataset dataset1 = getDataset(dataset.getName());
-        ResultFilter rf = checkIfAlreadyExists(scatterSearch, dataset1);
-
+        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
+        Dataset dataset1 = loadData.getDataset(dataset.getName());
+        ResultFilter rf = loadData.checkIfAlreadyExists(vns, dataset1);
+        if (rf.getJsonAttributes() != null) {
+            return ResponseEntity.ok(rf);
+        }
         FSObjectiveFunction of = new CfsEvaluator(dataset.getCategoricalData(), dataset.getLabels());
         of.buildEvaluator();
         FSPredGroupsBasicVNS bvns = new FSPredGroupsBasicVNS(dataset.getCategoricalData(), dataset.getLabels(), of, true);
@@ -195,7 +207,8 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         for (int i = 0; i < solArr.length; i++) {
             solArr[i] = lista.get(i);
         }
-        return saveResultFilter(solArr, rf, scatterSearch,dataset1);
+        rf = loadData.saveResultFilter(solArr, rf, vns, dataset1);
+        return ResponseEntity.ok(rf);
     }
 
     public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
@@ -346,50 +359,8 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return newFirst;
     }
 
-    public ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
 
-        JSONArray array = new JSONArray();
-        for (int value : solution) {
-            JSONObject json = new JSONObject();
-            json.put("id", value);
-            array.put(json);
-        }
-        rf.setJsonAttributes(array.toString());
-        Date now = new Date();
-        rf.setFinishedDate(now);
-        resRepo.save(rf);
-        return rf;
 
-    }
 
-    public ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
-        ResultFilter rf = new ResultFilter();
-        rf.setAlgorithm(algorithm);
-        rf.setPerformed(dataset);
-        ResultFilter alreadyPerformed = resRepo.findResultFilterByPerformedAndAlgorithm(dataset, algorithm);
-        if (alreadyPerformed != null) {
-            throw new Exception("Dataset: " + dataset.getFilename() + " on " + algorithm.getName() + " Has already been processed");
-        }
-        return rf;
-    }
 
-    public Dataset getDataset(String datasetName) throws Exception {
-
-        Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
-        if (dataset == null) {
-            throw new Exception(datasetName + " Not found in DB");
-        }
-        return dataset;
-    }
-
-    public Algorithm getAlgorithm(String algorithm, String language) throws Exception {
-        Algorithm algorithm1 = algoRepo.findAlgorithmByName(algorithm);
-        if (algorithm1 == null) {
-            algorithm1 = new Algorithm();
-            algorithm1.setLanguage(language);
-            algorithm1.setName(algorithm);
-            algoRepo.save(algorithm1);
-        }
-        return algorithm1;
-    }
 }

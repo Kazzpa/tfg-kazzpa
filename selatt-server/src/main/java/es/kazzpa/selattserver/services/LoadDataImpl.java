@@ -22,6 +22,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service("loadData")
 public class LoadDataImpl implements LoadData {
@@ -31,6 +34,8 @@ public class LoadDataImpl implements LoadData {
     private AlgorithmRepository algoRepo;
     @Autowired
     private DatasetRepository dataRepo;
+    @Autowired
+    private ResultRepository resRepo;
     @Autowired
     private AppUserRepository appUserRepository;
     @Autowired
@@ -171,5 +176,55 @@ public class LoadDataImpl implements LoadData {
         oos.close();
         return cls;
 
+    }
+    public ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
+        ResultFilter rf = new ResultFilter();
+        rf.setAlgorithm(algorithm);
+        rf.setPerformed(dataset);
+        ResultFilter alreadyPerformed = resRepo.findResultFilterByPerformedAndAlgorithm(dataset, algorithm);
+        if (alreadyPerformed != null) {
+            return alreadyPerformed;
+        }
+        return rf;
+    }
+    public ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
+
+        String result = IntStream.of(solution)
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining(", "));
+        rf.setJsonAttributes(result);
+        Date now = new Date();
+        rf.setFinishedDate(now);
+        resRepo.save(rf);
+        return rf;
+
+    }
+    public ResultFilter saveResultFilter(String summary, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
+
+        rf.setJsonAttributes(summary);
+        Date now = new Date();
+        rf.setFinishedDate(now);
+        resRepo.save(rf);
+        return rf;
+
+    }
+    public Dataset getDataset(String datasetName) throws Exception {
+
+        Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
+        if (dataset == null) {
+            throw new Exception(datasetName + " Not found in DB");
+        }
+        return dataset;
+    }
+
+    public Algorithm getAlgorithm(String algorithm, String language) throws Exception {
+        Algorithm algorithm1 = algoRepo.findAlgorithmByName(algorithm);
+        if (algorithm1 == null) {
+            algorithm1 = new Algorithm();
+            algorithm1.setLanguage(language);
+            algorithm1.setName(algorithm);
+            algoRepo.save(algorithm1);
+        }
+        return algorithm1;
     }
 }

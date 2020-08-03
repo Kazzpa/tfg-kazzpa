@@ -1,38 +1,42 @@
 <template>
   <Page>
-    <StackLayout>
-      <Label><strong v-if="currentUser">{{ currentUser.username }}</strong> Perfil
-      </Label>
-      <Button class="nt-button" @tap="goToAlgorithm" v-model="message">Algoritmos</Button>
+    <ActionBar>
+      <GridLayout width="100%" columns="auto, *">
+        <Label text="MENU" @tap="$refs.drawer.nativeView.showDrawer()" col="0"/>
+        <Label class="title" text="Profile" col="1"/>
+      </GridLayout>
+    </ActionBar>
 
-    </StackLayout>
+    <RadSideDrawer ref="drawer">
+      <StackLayout ~drawerContent backgroundColor="#ffffff">
+        <Label class="drawer-header" text="Drawer"/>
+        <Label class="drawer-item" text="Item 2"/>
+        <Label class="drawer-item" text="Item 3"/>
+      </StackLayout>
+
+      <GridLayout ~mainContent columns="*" rows="*">
+        Logado como: <Label :text="getUser.username"></Label>
+        <Button text="Ejecuciones"></Button>
+      </GridLayout>
+    </RadSideDrawer>
   </Page>
 </template>
 <script>
-import {mapGetters, mapActions} from "vuex";
-
+import {mapActions, mapGetters} from 'vuex';
 
 export default {
   data() {
     return {
-      message: '',
+      message: ""
     }
   },
   computed: {
     ...mapGetters({
       getUser: 'auth/getUser'
     }),
-    currentUser() {
-      return this.getUser;
-    }
-  },
-  methods: {
-    goToAlgorithm() {
-      this.message = "Button works";
-      //do nothing for now
-    }
   }
 }
+
 </script>
 <style scoped>
 

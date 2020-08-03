@@ -44,7 +44,11 @@ export default {
   computed: {
     ...mapGetters({
       getUser: 'auth/getUser'
-    })
+    }),
+    mounted() {
+      this.user.username = this.getUser.username;
+      this.user.password = this.getUser.password;
+    }
   },
 
   methods: {

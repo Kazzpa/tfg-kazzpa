@@ -1,6 +1,6 @@
 # SelAtt
 
-> feature selection and classifier application
+> Feature selection and classifier mobile app
 
 ## Usage
 

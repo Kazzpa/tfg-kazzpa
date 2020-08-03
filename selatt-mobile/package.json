@@ -1,11 +1,18 @@
 {
-  "name": "frontendapp",
+  "name": "selatt-mobile",
   "version": "1.0.0",
-  "description": "feature selection and classifier application",
+  "description": "Feature selection and classifier mobile app",
   "author": "Kazzpa",
   "license": "MIT",
+  "scripts": {
+    "dev": "tns run android",
+    "debug:a": "tns run debug android",
+    "nohmr": "tns run android --no-hmr",
+    "ios": "tns run ios",
+    "debug:i": "tns run debug ios"
+  },
   "nativescript": {
-    "id": "es.kazzpa.selattfrontendapp",
+    "id": "es.kazzpa.selattmobile",
     "templateVersion": "v2",
     "tns-android": {
       "version": "6.5.0"
@@ -15,7 +22,7 @@
     }
   },
   "dependencies": {
-    "@nativescript/theme": "^2.3.3",
+    "@nativescript/theme": "^2.2.1",
     "@vue/devtools": "^5.3.3",
     "axios": "^0.19.2",
     "axios-debug-log": "^0.8.0",
@@ -25,8 +32,7 @@
     "nativescript-vue": "^2.6.1",
     "nativescript-vue-devtools": "^1.4.0",
     "tns-core-modules": "^6.5.1",
-    "vue": "^2.6.11",
-    "vuex": "^3.5.1"
+    "vuex": "^3.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

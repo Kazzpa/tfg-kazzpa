@@ -49,3 +49,5 @@ mysql/
 selatt-server/Users/uploads/
 # vue app production env values.
 frontend/.env.production
+
+selatt-server/Users/

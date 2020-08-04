@@ -14,15 +14,19 @@
         <Label class="drawer-item" text="Item 3"/>
       </StackLayout>
 
-      <GridLayout ~mainContent columns="*" rows="*">
-        Logado como: <Label :text="getUser.username"></Label>
-        <Button text="Ejecuciones"></Button>
-      </GridLayout>
+      <StackLayout ~mainContent columns="*" rows="*">
+        <Label text="Logado como:"/>
+        <Label class="h2" :text="getUser.username"></Label>
+        <Label text="Token:"/>
+        <Label class="h3" :text="getUser.token"></Label>
+        <Button text="Ejecuciones" @tap="goToAlgorithms"></Button>
+      </StackLayout>
     </RadSideDrawer>
   </Page>
 </template>
 <script>
 import {mapActions, mapGetters} from 'vuex';
+import routes from "./routes";
 
 export default {
   data() {
@@ -34,23 +38,22 @@ export default {
     ...mapGetters({
       getUser: 'auth/getUser'
     }),
+  },
+  methods: {
+    goToAlgorithms() {
+      this.$navigateTo(routes.AlgorithmsView);
+    }
   }
 }
 
 </script>
 <style scoped>
 
-.message {
-  vertical-align: center;
-  text-align: center;
-  font-size: 20;
-}
-
 .drawer-header {
   padding: 50 16 16 16;
   margin-bottom: 16;
   font-size: 24;
-  background: ""
+  background: #2196f3
 }
 
 .drawer-item {

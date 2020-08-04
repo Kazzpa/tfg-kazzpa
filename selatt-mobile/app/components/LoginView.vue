@@ -1,13 +1,11 @@
 <template>
-  <Page>
+  <Page @loaded="on_load">
     <StackLayout>
       <Image class="nt-form__logo" height="10%" src="~/assets/images/NativeScript-Vue.png"/>
       <StackLayout class="input-field">
         <TextField hint="Usuario" autocorrect="false" autocapitalizationType="none"
                    v-model="user.username"
                    class="input"
-                   type="text"
-                   name="username"
         />
       </StackLayout>
       <StackLayout class="input">
@@ -17,9 +15,9 @@
             class="input"
         />
       </StackLayout>
-      <Label v-if="message" class="alert alert-danger">{{ message }}</Label>
+      <Label v-if="message">{{ message }}</Label>
       <Button class="btn btn-primary -primary" @tap="handleLogin">
-        <span v-show="loading" class="spinner-border spinner-border-sm"></span>
+        <ActivityIndicator :busy="loading"></ActivityIndicator>
         <span>Login</span>
       </Button>
       <Button>Registro</Button>
@@ -28,11 +26,12 @@
 </template>
 <script>
 import User from "../models/user";
-import ProfileView from "./ProfileView";
-
+import routes from "./routes";
+import {ApplicationSettings} from "@nativescript/core"
 import axios from 'axios';
 import {mapGetters, mapActions} from 'vuex';
 
+import * as config from '../config.js';
 export default {
   data() {
     return {
@@ -44,25 +43,29 @@ export default {
   computed: {
     ...mapGetters({
       getUser: 'auth/getUser'
-    }),
-    mounted() {
-      this.user.username = this.getUser.username;
-      this.user.password = this.getUser.password;
-    }
+    })
   },
 
   methods: {
     ...mapActions({
       login: 'auth/login',
-      login_fail: 'auth/login_fail'
+      login_fail: 'auth/login_fail',
+      login_saved: 'auth/login_saved'
     }),
+    on_load() {
+      console.log("Datos precargados:");
+      console.log(ApplicationSettings.getString("userData"));
+      this.user.username = this.getUser.username;
+      this.user.password = this.getUser.password;
+
+    },
     handleLogin() {
       this.loading = true;
       this.message = '';
       console.log(this.user.username + " " + this.user.password);
       var user = this.user.username;
       var password = this.user.password;
-      var url = "http://10.0.2.2:8082" + "/auth/login"
+      var url = config.BACKEND + "/auth/login"
       console.log(url);
       try {
         axios.post(url, {
@@ -70,11 +73,14 @@ export default {
           password: password,
         }).then(response => {
           this.loading = false;
-          console.log(response);
-          console.log(response.data.accessToken);
-          this.login(this.user, response.data.accessToken);
+          this.user.token = response.data.token;
+          this.login(this.user);
+          ApplicationSettings.setString(
+              "userData",
+              JSON.stringify(this.user)
+          );
           this.message = "Acceso permitido";
-          this.$navigateTo(ProfileView);
+          this.$navigateTo(routes.ProfileView);
         }).catch(error => {
           console.log(error);
           this.loading = false;
@@ -104,6 +110,7 @@ export default {
   padding: 50 16 16 16;
   margin-bottom: 16;
   font-size: 24;
+  background: #2196f3
 }
 
 .drawer-item {

@@ -27,7 +27,7 @@
 
 <script>
 import {mapGetters, mapActions} from 'vuex'
-import LoginView from "./LoginView";
+import routes from "./routes";
 
 export default {
   data() {
@@ -48,7 +48,7 @@ export default {
       this.setText('vuex is working')
     },
     goToLogin() {
-      this.$navigateTo(LoginView);
+      this.$navigateTo(routes.LoginView);
     }
   }
 }
@@ -66,7 +66,7 @@ export default {
   padding: 50 16 16 16;
   margin-bottom: 16;
   font-size: 24;
-  background: ""
+  background: #2196f3
 }
 
 .drawer-item {

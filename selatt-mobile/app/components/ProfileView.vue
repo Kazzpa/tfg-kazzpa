@@ -16,10 +16,11 @@
 
       <StackLayout ~mainContent columns="*" rows="*">
         <Label text="Logado como:"/>
-        <Label class="h2" :text="getUser.username"></Label>
+        <Label class="h2" :text="getUsername"></Label>
         <Label text="Token:"/>
-        <Label class="h3" :text="getUser.token"></Label>
+        <Label class="h3" :text="getToken"></Label>
         <Button text="Ejecuciones" @tap="goToAlgorithms"></Button>
+        <Button class="h3" text="LogOut" @tap="log_out"></Button>
       </StackLayout>
     </RadSideDrawer>
   </Page>
@@ -27,6 +28,7 @@
 <script>
 import {mapActions, mapGetters} from 'vuex';
 import routes from "./routes";
+import {ApplicationSettings} from "@nativescript/core";
 
 export default {
   data() {
@@ -36,12 +38,36 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getUser: 'auth/getUser'
+      getUser: 'auth/getUser',
+      getUsername: 'auth/getUsername',
+      getToken: 'auth/getToken',
     }),
   },
   methods: {
+    ...mapActions({
+      logout: 'auth/logout'
+    }),
     goToAlgorithms() {
       this.$navigateTo(routes.AlgorithmsView);
+    },
+    log_out() {
+      this.logout();
+      try {
+
+        if (ApplicationSettings.hasKey("userData")) {
+          console.log("Removing appsettings");
+          ApplicationSettings.remove("userData");
+          console.log("Flushing appsettings");
+          ApplicationSettings.flush();
+          console.log("Navigating to App View");
+          this.$navigateTo(routes.App, {clearHistory: true}).catch(error => {
+
+            console.log(error);
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 }

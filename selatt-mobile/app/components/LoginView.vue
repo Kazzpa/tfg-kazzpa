@@ -27,11 +27,13 @@
 <script>
 import User from "../models/user";
 import routes from "./routes";
-import {ApplicationSettings} from "@nativescript/core"
+import {ApplicationSettings} from "@nativescript/core";
 import axios from 'axios';
 import {mapGetters, mapActions} from 'vuex';
 
 import * as config from '../config.js';
+import user from "../models/user";
+
 export default {
   data() {
     return {
@@ -42,7 +44,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getUser: 'auth/getUser'
+      getUser: 'auth/getUser',
+      getToken: 'auth/getToken'
     })
   },
 
@@ -53,8 +56,17 @@ export default {
       login_saved: 'auth/login_saved'
     }),
     on_load() {
-      console.log("Datos precargados:");
-      console.log(ApplicationSettings.getString("userData"));
+      var userData = ApplicationSettings.getString("userData");
+      if (userData != null) {
+        var parsed = JSON.parse(userData);
+        console.log("Datos precargados:");
+        console.log(parsed);
+
+        this.login_saved(parsed);
+        if (this.getToken != null) {
+          this.$navigateTo(routes.ProfileView);
+        }
+      }
       this.user.username = this.getUser.username;
       this.user.password = this.getUser.password;
 
@@ -79,7 +91,6 @@ export default {
               "userData",
               JSON.stringify(this.user)
           );
-          this.message = "Acceso permitido";
           this.$navigateTo(routes.ProfileView);
         }).catch(error => {
           console.log(error);

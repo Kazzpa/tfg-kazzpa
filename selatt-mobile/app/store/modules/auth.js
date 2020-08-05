@@ -22,8 +22,11 @@ export default {
         login_fail(store, user) {
             store.commit('login_failed', user);
         },
-        login_saved(store, user) {
-            store.commit('login_success', user);
+        login_saved(store, userData) {
+            store.commit('save_login', userData);
+        },
+        logout(store) {
+            store.commit('logout');
         }
 
     },
@@ -40,6 +43,15 @@ export default {
             delete (user.password);
             user.processStatus = 'Fallido';
 
+        },
+        save_login(state, userData) {
+            state.user = new User(userData.username, userData.email, '');
+            state.user.token = userData.token;
+            state.user.processStatus = userData.processStatus;
+        },
+        logout(state) {
+            state.user = new User('', '', '');
+            state.value = 'this is a text';
         }
     }
 };

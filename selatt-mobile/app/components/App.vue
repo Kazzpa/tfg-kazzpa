@@ -11,9 +11,10 @@
       <StackLayout ~drawerContent backgroundColor="#ffffff">
         <Label class="drawer-header" text="Drawer"/>
 
-        <Label class="drawer-item" text="Login" @tap="goToLogin"/>
-        <Label class="drawer-item" text="Item 2"/>
-        <Label class="drawer-item" text="Item 3"/>
+        <Label v-if="this.getUser!=null" class="drawer-item" text="Login" @tap="goToLogin"/>
+        <Label v-else class="drawer-item" text="Profile" @tap="goToProfile"/>
+        <Label v-else class="drawer-item" text="Algorithms" @tap="goToAlgorithms"/>
+        <Label v-else class="drawer-item" text="Results" @tap="goToResults"/>
       </StackLayout>
 
       <GridLayout ~mainContent columns="*" rows="*">
@@ -37,7 +38,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getText: 'auth/getText'
+      getText: 'auth/getText',
+      getUser: 'auth/getUser',
     })
   },
   methods: {
@@ -49,7 +51,16 @@ export default {
     },
     goToLogin() {
       this.$navigateTo(routes.LoginView);
-    }
+    },
+    goToProfile() {
+      this.$navigateTo(routes.ProfileView);
+    },
+    goToAlgorithms() {
+      this.$navigateTo(routes.AlgorithmsView);
+    },
+    goToResults() {
+      this.$navigateTo(routes.ResultsView);
+    },
   }
 }
 </script>

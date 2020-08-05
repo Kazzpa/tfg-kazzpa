@@ -10,8 +10,8 @@ export default {
         test(store, text) {
             store.commit('SET_TEXT', text);
         },
-        processed(store, text){
-            store.commit('processed',text)
+        processed(store, text) {
+            store.commit('processed', text)
         }
 
     },
@@ -19,5 +19,8 @@ export default {
         SET_TEXT(state, text) {
             state.value = text;
         },
+        processed(state, text) {
+            state.value = text;
+        }
     }
 };

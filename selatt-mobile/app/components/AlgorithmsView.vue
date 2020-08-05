@@ -11,28 +11,33 @@
       <StackLayout ~drawerContent backgroundColor="#ffffff">
         <Label class="drawer-header" text="Drawer"/>
 
+        <Label class="drawer-item" text="Home" @tap="goToApp"/>
         <Label class="drawer-item" text="Profile" @tap="goToProfile"/>
-        <Label class="drawer-item" text="Item 2"/>
-        <Label class="drawer-item" text="Item 3"/>
+        <Label class="drawer-item" text="Results" @tap="goToResults"/>
       </StackLayout>
 
       <GridLayout ~mainContent columns="*" rows="*">
         <StackLayout>
-          <Label class="h2" text="Seleccionar un dataset cargado previamente:"/>
+          <Label class="h2" text="Seleccionar un dataset:"/>
           <Label class="h3" text="Dataset a procesar"/>
-          <ListPicker :items="datasetArray" :selectedIndex="datasetIndex"
-                      @selectedIndexChange="selectedDatasetChanged"/>
+          <DropDown :items="datasetArray" :selectedIndex="datasetIndex"
+                    @selectedIndexChange="selectedDatasetChanged"/>
 
           <StackLayout v-if="selectedDataset">
-            <Label class="h3 font-weight-bold" text="Seleccion de atributos"/>
-            <ListPicker @selectedIndexChange="selectedAlgorithmChanged" :selectedIndex="algorithmIndex"
+            <Switch v-model="chooseAlgorithm"></Switch>
+            <StackLayout v-if="chooseAlgorithm">
+              <Label class="h3 font-weight-bold" text="Seleccion de atributos"/>
+              <DropDown @selectedIndexChange="selectedAlgorithmChanged" v-model="algorithm"
                         :items="algorithms"/>
-            <Label v-if="selectedAlgorithm" :text="this.algorithmsValue[this.algorithmIndex]"></Label>
-            <Label class="h3 font-weight-bold" text="Clasificadores"/>
-            <ListPicker @selectedIndexChange="selectedClassifierChanged" :selectedIndex="classifierIndex"
+              <Label v-if="selectedAlgorithm" :text="this.algorithmsValue[this.algorithmIndex]"></Label>
+            </StackLayout>
+            <StackLayout v-else>
+              <Label class="h3 font-weight-bold" text="Clasificadores"/>
+              <DropDown @selectedIndexChange="selectedClassifierChanged" :selectedIndex="classifierIndex"
                         :items="classifiers"/>
-            <Label v-if="selectedClassifier" :text="this.classifiersValue[this.classifierIndex]"></Label>
-            <Button v-if="selectedAlgorithm" @tap="processAlgorithm">Evaluar</Button>
+              <Label v-if="selectedClassifier" :text="this.classifiersValue[this.classifierIndex]"></Label>
+            </StackLayout>
+            <Button v-if="selectedAlgorithm||selectedClassifier" @tap="processAlgorithm">Evaluar</Button>
             <Label v-if="responseProcess">
               {{ responseProcess }}</Label>
 
@@ -48,6 +53,7 @@ import {mapGetters, mapActions} from 'vuex'
 import routes from "./routes";
 import axios from 'axios';
 import * as config from '../config.js';
+import {ApplicationSettings} from "@nativescript/core"
 
 
 export default {
@@ -63,9 +69,10 @@ export default {
       responseProcessStatus: "success",
       loading: true,
       datasets: null,
+      chooseAlgorithm: true,
       datasetArray: null,
       selectedDataset: false, selectedAlgorithm: false, selectedClassifier: false,
-      datasetIndex: 0, algorithmIndex: 0, classifierIndex: 0,
+      datasetIndex: 0, algorithm: null, classifierIndex: 0,
       algorithms: [
         "Fast Correlation Based Filter",
         "Variable neighbourhood search",
@@ -111,13 +118,22 @@ export default {
           })
           .catch(error => {
             console.log(error);
+            console.log(typeof error);
+            /*if (error.includes("401")) {
+              this.logout();
+              ApplicationSettings.remove("userData");
+              this.$navigateTo(routes.App);
+            }
+
+             */
 
           });
     }
   },
   methods: {
     ...mapActions({
-      process_algorithm: 'process/processed'
+      process_algorithm: 'process/processed',
+      logout: 'auth/logout',
     }),
     selectedDatasetChanged() {
       this.selectedDataset = true;
@@ -131,6 +147,12 @@ export default {
     goToProfile() {
       this.$navigateTo(routes.ProfileView);
     },
+    goToResults() {
+      this.$navigateTo(routes.ResultsView);
+    },
+    goToApp() {
+      this.$navigateTo(routes.App);
+    },
     loggedIn() {
       return this.getUser != null;
 
@@ -138,11 +160,14 @@ export default {
     },
     processAlgorithm() {
       let process_path;
-      if (this.selectedAlgorithm) {
-        process_path = this.algorithmsValue[this.selectedAlgorithm];
+      if (this.chooseAlgorithm && this.selectedAlgorithm) {
+        process_path = this.algorithmsValue[this.algorithm];
+      } else if (!this.chooseAlgorithm && this.selectedClassifier) {
+        process_path = this.classifiersValue[this.classifierIndex];
       }
       let url = config.BACKEND + process_path;
       let filename = this.datasetArray[this.datasetIndex];
+      console.log(url, filename);
       axios
           .get(url + "/" + filename, {
             headers: {
@@ -157,6 +182,11 @@ export default {
 
     }
   },
+  logout() {
+    this.logout();
+    ApplicationSettings.remove("userData");
+    this.$navigateTo(routes.LoginView);
+  }
 
 }
 
@@ -179,5 +209,15 @@ export default {
 .drawer-item {
   padding: 8 16;
   font-size: 16;
+}
+
+.item-drop-down {
+  font-size: 20;
+  padding: 4;
+  height: 50;
+  width: 100%;
+  border-width: 10;
+  border-color: #000000;
+  background-color: transparent;
 }
 </style>

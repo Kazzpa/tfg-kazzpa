@@ -10,8 +10,9 @@
     <RadSideDrawer ref="drawer">
       <StackLayout ~drawerContent backgroundColor="#ffffff">
         <Label class="drawer-header" text="Drawer"/>
-        <Label class="drawer-item" text="Item 2"/>
-        <Label class="drawer-item" text="Item 3"/>
+        <Label class="drawer-item" text="Login" @tap="goToLogin"/>
+        <Label class="drawer-item" text="Home" @tap="goToApp"/>
+        <Label class="drawer-item" text="Results" @tap="goToResults"/>
       </StackLayout>
 
       <StackLayout ~mainContent columns="*" rows="*">
@@ -47,8 +48,29 @@ export default {
     ...mapActions({
       logout: 'auth/logout'
     }),
+    goToLogin() {
+      this.$navigateTo(routes.LoginView, {clearHistory: true}).catch(error => {
+
+        console.log(error);
+      });
+    },
     goToAlgorithms() {
-      this.$navigateTo(routes.AlgorithmsView);
+      this.$navigateTo(routes.AlgorithmsView, {clearHistory: true}).catch(error => {
+
+        console.log(error);
+      });
+    },
+    goToResults() {
+      this.$navigateTo(routes.ResultsView, {clearHistory: true}).catch(error => {
+
+        console.log(error);
+      });
+    },
+    goToApp() {
+      this.$navigateTo(routes.App, {clearHistory: true}).catch(error => {
+
+        console.log(error);
+      });
     },
     log_out() {
       this.logout();
@@ -59,13 +81,14 @@ export default {
           ApplicationSettings.remove("userData");
           console.log("Flushing appsettings");
           ApplicationSettings.flush();
-          console.log("Navigating to App View");
-          this.$navigateTo(routes.App, {clearHistory: true}).catch(error => {
+          console.log("Navigating to Login View");
+          this.$navigateTo(routes.LoginView, {clearHistory: true}).catch(error => {
 
             console.log(error);
           });
         }
       } catch (error) {
+        console.log("check2error");
         console.log(error);
       }
     }

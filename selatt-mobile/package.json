@@ -14,11 +14,11 @@
   "nativescript": {
     "id": "es.kazzpa.selattmobile",
     "templateVersion": "v2",
-    "tns-android": {
-      "version": "6.5.0"
-    },
     "tns-ios": {
       "version": "6.5.0"
+    },
+    "tns-android": {
+      "version": "6.5.3"
     }
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "nativescript-drop-down": "^5.0.6",
     "nativescript-socketio": "^3.3.1",
     "nativescript-toasty": "^3.0.0-alpha.2",
+    "nativescript-ui-listview": "^9.0.0",
     "nativescript-ui-sidedrawer": "^8.0.1",
     "nativescript-vue": "^2.6.1",
     "nativescript-vue-devtools": "^1.4.0",
@@ -36,7 +37,7 @@
     "vuex": "^3.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0",
+    "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.1.0",
     "nativescript-dev-webpack": "^1.5.1",

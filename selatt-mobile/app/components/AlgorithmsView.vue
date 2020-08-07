@@ -1,5 +1,5 @@
 <template>
-  <Page>
+  <Page @loaded="on_load">
     <ActionBar>
       <GridLayout width="100%" columns="auto, *">
         <Label text="MENU" @tap="$refs.drawer.nativeView.showDrawer()" col="0"/>
@@ -17,26 +17,33 @@
       </StackLayout>
 
       <GridLayout ~mainContent columns="*" rows="*">
-        <StackLayout>
+        <StackLayout v-if="this.datasets">
           <Label class="h2" text="Seleccionar un dataset:"/>
           <Label class="h3" text="Dataset a procesar"/>
-          <DropDown :items="datasetArray" :selectedIndex="datasetIndex"
-                    @selectedIndexChange="selectedDatasetChanged"/>
+          <ListPicker :items="datasetArray" :selectedIndex="datasetIndex"
+                      @selectedIndexChange="selectedDatasetChanged"/>
+          <Button v-if="!selectedDataset" @tap="selectedDataset=true" text="Seleccionar"></Button>
 
           <StackLayout v-if="selectedDataset">
             <Switch v-model="chooseAlgorithm"></Switch>
+
             <StackLayout v-if="chooseAlgorithm">
               <Label class="h3 font-weight-bold" text="Seleccion de atributos"/>
-              <DropDown @selectedIndexChange="selectedAlgorithmChanged" v-model="algorithm"
+              <DropDown @selectedIndexChange="selectedAlgorithmChanged" v-model="algorithmIndex"
+                        :selectedIndex="this.algorithmIndex"
                         :items="algorithms"/>
+              <Button v-if="!selectedAlgorithm" @tap="selectedAlgorithm=true" text="Seleccionar"></Button>
               <Label v-if="selectedAlgorithm" :text="this.algorithmsValue[this.algorithmIndex]"></Label>
             </StackLayout>
+
             <StackLayout v-else>
               <Label class="h3 font-weight-bold" text="Clasificadores"/>
               <DropDown @selectedIndexChange="selectedClassifierChanged" :selectedIndex="classifierIndex"
                         :items="classifiers"/>
+              <Button v-if="!selectedClassifier" @tap="selectedClassifier=true" text="Seleccionar"></Button>
               <Label v-if="selectedClassifier" :text="this.classifiersValue[this.classifierIndex]"></Label>
             </StackLayout>
+            {{ this.datasetArray[this.datasetIndex] }}
             <Button v-if="selectedAlgorithm||selectedClassifier" @tap="processAlgorithm">Evaluar</Button>
             <Label v-if="responseProcess">
               {{ responseProcess }}</Label>
@@ -72,14 +79,14 @@ export default {
       chooseAlgorithm: true,
       datasetArray: null,
       selectedDataset: false, selectedAlgorithm: false, selectedClassifier: false,
-      datasetIndex: 0, algorithm: null, classifierIndex: 0,
+      datasetIndex: 0, algorithmIndex: 0, classifierIndex: 0,
       algorithms: [
         "Fast Correlation Based Filter",
         "Variable neighbourhood search",
         "Scatter Search",
       ],
       algorithmsValue: [
-        "FCBF", "VNS", "ScS", "Nvb"],
+        "fcbf", "vns", "Scs", "naivebayes"],
       classifiers: [
         "Naive Bayes",
       ],
@@ -92,66 +99,81 @@ export default {
     ...mapGetters({
       getUser: 'auth/getUser',
       getToken: 'auth/getToken',
+      getProcess: 'process/getProcess'
     })
-  },
-  created() {
-    if (this.loggedIn()) {
-      let url = config.BACKEND + "/featureSelection/filesByUser/";
-      return axios.get(url,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              "Authorization": "Bearer " + this.getToken,
-            }
-          })
-          .then(response => {
-            this.datasetArray = [];
-            response.data.forEach(elem => {
-              elem.value = elem.filename;
-              elem.text = elem.filename;
-              this.datasetArray.push(elem.filename);
-            });
-            this.datasets = response.data;
-            console.log(this.datasetArray);
-
-
-          })
-          .catch(error => {
-            console.log(error);
-            console.log(typeof error);
-            /*if (error.includes("401")) {
-              this.logout();
-              ApplicationSettings.remove("userData");
-              this.$navigateTo(routes.App);
-            }
-
-             */
-
-          });
-    }
   },
   methods: {
     ...mapActions({
       process_algorithm: 'process/processed',
       logout: 'auth/logout',
     }),
-    selectedDatasetChanged() {
-      this.selectedDataset = true;
+    on_load() {
+      this.selectedDataset = false;
+      this.selectedAlgorithm = false;
+      this.selectedClassifier = false;
+      if (this.loggedIn()) {
+        let url = config.BACKEND + "/featureSelection/filesByUser/";
+        return axios.get(url,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                "Authorization": "Bearer " + this.getToken,
+              }
+            })
+            .then(response => {
+              this.datasetArray = [];
+              response.data.forEach(elem => {
+                elem.value = elem.filename;
+                elem.text = elem.filename;
+                this.datasetArray.push(elem.filename);
+              });
+              this.datasets = response.data;
+              console.log(this.datasetArray);
+
+
+            })
+            .catch(error => {
+              console.log(this.getToken);
+              console.log(error);
+              console.log(typeof error);
+
+            });
+      }
     },
-    selectedAlgorithmChanged() {
-      this.selectedAlgorithm = true;
+    selectedDatasetChanged(args) {
+      let picker = args.object;
+      if (this.datasetIndex !== picker.selectedIndex) {
+        this.selectedDataset = true;
+        this.datasetIndex = picker.selectedIndex;
+        console.log("Indice cambiado:" + this.datasetIndex);
+      }
     },
-    selectedClassifierChanged() {
-      this.selectedClassifier = true;
+    selectedAlgorithmChanged(args) {
+
+      let picker = args.object;
+      if (this.algorithmIndex !== picker.selectedIndex) {
+        this.selectedAlgorithm = true;
+        this.selectedClassifier = false;
+        this.algorithmIndex = picker.selectedIndex;
+      }
+    },
+    selectedClassifierChanged(args) {
+
+      let picker = args.object;
+      if (this.classifierIndex !== picker.selectedIndex) {
+        this.selectedClassifier = true;
+        this.selectedAlgorithm = false;
+        this.classifierIndex = picker.selectedIndex;
+      }
     },
     goToProfile() {
-      this.$navigateTo(routes.ProfileView);
+      this.$navigateTo(routes.ProfileView, {clearHistory: true});
     },
     goToResults() {
-      this.$navigateTo(routes.ResultsView);
+      this.$navigateTo(routes.ResultsView, {clearHistory: true});
     },
     goToApp() {
-      this.$navigateTo(routes.App);
+      this.$navigateTo(routes.App, {clearHistory: true});
     },
     loggedIn() {
       return this.getUser != null;
@@ -161,9 +183,9 @@ export default {
     processAlgorithm() {
       let process_path;
       if (this.chooseAlgorithm && this.selectedAlgorithm) {
-        process_path = this.algorithmsValue[this.algorithm];
+        process_path = "/featureSelection/" + this.algorithmsValue[this.algorithmIndex];
       } else if (!this.chooseAlgorithm && this.selectedClassifier) {
-        process_path = this.classifiersValue[this.classifierIndex];
+        process_path = "/evaluate/" + this.classifiersValue[this.classifierIndex];
       }
       let url = config.BACKEND + process_path;
       let filename = this.datasetArray[this.datasetIndex];
@@ -177,6 +199,7 @@ export default {
           .then(response => {
             this.process_algorithm(response.data);
             this.responseProcess = "Ejecucion finalizada " + response;
+            console.log(JSON.stringify(response));
 
           });
 

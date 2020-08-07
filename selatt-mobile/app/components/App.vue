@@ -18,8 +18,6 @@
       </StackLayout>
 
       <GridLayout ~mainContent columns="*" rows="*">
-        <Label class="message" :text="msg" col="0" row="0"/>
-        <Button :text="getText" @tap="testFunction"/>
       </GridLayout>
     </RadSideDrawer>
 
@@ -38,28 +36,23 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getText: 'auth/getText',
       getUser: 'auth/getUser',
     })
   },
   methods: {
     ...mapActions({
-      setText: 'auth/test'
     }),
-    testFunction() {
-      this.setText('vuex is working')
-    },
     goToLogin() {
-      this.$navigateTo(routes.LoginView);
+      this.$navigateTo(routes.LoginView,{clearHistory: true});
     },
     goToProfile() {
-      this.$navigateTo(routes.ProfileView);
+      this.$navigateTo(routes.ProfileView,{clearHistory: true});
     },
     goToAlgorithms() {
-      this.$navigateTo(routes.AlgorithmsView);
+      this.$navigateTo(routes.AlgorithmsView,{clearHistory: true});
     },
     goToResults() {
-      this.$navigateTo(routes.ResultsView);
+      this.$navigateTo(routes.ResultsView,{clearHistory: true});
     },
   }
 }

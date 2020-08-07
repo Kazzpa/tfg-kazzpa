@@ -1,5 +1,5 @@
 <template>
-  <Page>
+  <Page @loaded="on_load">
     <ActionBar>
       <GridLayout width="100%" columns="auto, *">
         <Label text="MENU" @tap="$refs.drawer.nativeView.showDrawer()" col="0"/>
@@ -17,12 +17,27 @@
       </StackLayout>
 
       <GridLayout ~mainContent columns="*" rows="*">
-        <Label>
-          Resultados de ejecuciones previos
-        </Label>
-        <SearchBar
-            v-model="search"
-        />
+        <StackLayout>
+          <Label>
+            Resultados de ejecuciones previos
+          </Label>
+          <ListView v-if="resultsGrid != null" for="item in results">
+            <v-template>
+              <StackLayout orientation="horizontal">
+                <Label class="message" :text="item.performed.filename"/>
+                <Label class="message" :text="item.algorithm.name"/>
+                <!--@tap="itemButtonTapped(item)" -->
+                <Button class="btn" text="Hola"/>
+              </StackLayout>
+            </v-template>
+          </ListView>
+          <SearchBar
+              v-model="search"
+          />
+        </StackLayout>
+        <!--<GridLayout :columns="resultsGrid" rows="auto" backgroundColor="#d3d3d3">-->
+
+        <!-- </GridLayout>
         <ListView for="item in results">
           <v-template>
             <GridLayout columns="*, *, *">
@@ -38,6 +53,7 @@
         </ListView>
         <template v-slot:item.actions="{ item }">
         </template>
+        -->
         <Label v-if="resultChosen" v-model="resultChosen">
           <StackLayout>
             <Label>
@@ -73,6 +89,7 @@ export default {
       ],
       results: null,
       resultChosen: null,
+      resultsGrid: null,
     }
   }, computed: {
     ...mapGetters({
@@ -88,9 +105,9 @@ export default {
       this.resultChosen = item;
     },
     goToLogin() {
-      this.$navigateTo(routes.LoginView);
+      this.$navigateTo(routes.LoginView,{clearHistory: true});
     },
-    created() {
+    on_load() {
       if (!this.loggedIn) {
         this.$navigateTo(routes.LoginView);
       } else {
@@ -105,6 +122,7 @@ export default {
             .then(response => {
               console.log(response.data);
               this.results = response.data;
+              this.genColumnsData()
 
 
             })
@@ -113,7 +131,37 @@ export default {
 
             });
       }
+    },
+    genColumnsData() {
+      var aux = [];
+      var i = 0;
+      var j = 0;
+      this.results.forEach(elem => {
+        aux.push({label: elem.performed.filename, id: i--, row: j++, col: 0});
+      });
+      console.log(aux);
+      this.resultsGrid = aux;
     }
   },
 }
 </script>
+<style scoped>
+
+.message {
+  vertical-align: center;
+  text-align: center;
+  font-size: 20;
+}
+
+.drawer-header {
+  padding: 50 16 16 16;
+  margin-bottom: 16;
+  font-size: 24;
+  background: #2196f3
+}
+
+.drawer-item {
+  padding: 8 16;
+  font-size: 16;
+}
+</style>

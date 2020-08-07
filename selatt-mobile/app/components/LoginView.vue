@@ -16,7 +16,7 @@
         />
       </StackLayout>
       <Label v-if="message">{{ message }}</Label>
-      <Button class="btn btn-primary -primary" @tap="handleLogin">
+      <Button :isEnabled="!this.loading" class="btn btn-primary -primary" @tap="handleLogin">
         <ActivityIndicator :busy="loading"></ActivityIndicator>
         <span>Login</span>
       </Button>
@@ -56,6 +56,7 @@ export default {
       login_saved: 'auth/login_saved'
     }),
     on_load() {
+      /*
       var userData = ApplicationSettings.getString("userData");
       if (userData != null) {
         var parsed = JSON.parse(userData);
@@ -67,6 +68,7 @@ export default {
           this.$navigateTo(routes.ProfileView);
         }
       }
+       */
       this.user.username = this.getUser.username;
       this.user.password = this.getUser.password;
 
@@ -91,7 +93,7 @@ export default {
               "userData",
               JSON.stringify(this.user)
           );
-          this.$navigateTo(routes.ProfileView);
+          this.$navigateTo(routes.ProfileView,{clearHistory: true});
         }).catch(error => {
           console.log(error);
           this.loading = false;

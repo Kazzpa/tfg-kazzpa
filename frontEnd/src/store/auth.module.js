@@ -1,5 +1,6 @@
 import AuthService from '../services/auth.service';
 
+//it was like this but as localstorage doesnt work its like this
 const user = JSON.parse(localStorage.getItem('user'));
 const initialState = user
     ? {status: {loggedIn: true}, user}

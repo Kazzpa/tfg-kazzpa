@@ -20,7 +20,6 @@ public class ResultFilter extends EntityDatabase{
 
     @Column(length = 1024)
     private String jsonAttributes;
-
     private long scoreVNS;
 
 
@@ -37,8 +36,8 @@ public class ResultFilter extends EntityDatabase{
         return jsonAttributes;
     }
 
-    public void setJsonAttributes(String jsonAtributes) {
-        this.jsonAttributes = jsonAtributes;
+    public void setJsonAttributes(String jsonAttributes) {
+        this.jsonAttributes = jsonAttributes;
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -68,6 +67,7 @@ public class ResultFilter extends EntityDatabase{
     public Date getFinishedDate() {
         return finishedDate;
     }
+
 
     public void setFinishedDate(Date finishedDate) {
         this.finishedDate = finishedDate;

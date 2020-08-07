@@ -13,7 +13,6 @@ export const process = {
             return ProcessService.sendRequest(payload).then(
                 response => {
                     commit('requestSuccess');
-                    console.log("ha llegado",response);
                     return Promise.resolve(response);
 
                 },
@@ -25,14 +24,13 @@ export const process = {
         },
     },
     mutations: {
-        requestSuccess(state,response) {
-            console.log("Request success:"+response);
+        requestSuccess(state, response) {
             state.status.processed = true;
             state.responseProcess = response;
         },
         requestFailure(state) {
-            state.status.loggedIn = false;
-            state.user = null;
+            state.status.processed = false;
+            state.responseProcess = "Error en procesado";
         },
     },
 };

@@ -3,9 +3,11 @@ package es.kazzpa.selattserver.services;
 import es.kazzpa.selattserver.models.*;
 import es.kazzpa.selattserver.properties.Properties;
 import es.kazzpa.selattserver.repositories.*;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Attr;
 import upo.jml.data.dataset.ClassificationDataset;
 import upo.jml.data.dataset.DatasetUtils;
 import weka.classifiers.Classifier;
@@ -20,6 +22,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service("loadData")
 public class LoadDataImpl implements LoadData {
@@ -28,11 +33,13 @@ public class LoadDataImpl implements LoadData {
     @Autowired
     private AlgorithmRepository algoRepo;
     @Autowired
-    private AttributeRepository attRepo;
-    @Autowired
     private DatasetRepository dataRepo;
     @Autowired
-    private UserRepository userRepo;
+    private ResultRepository resRepo;
+    @Autowired
+    private AppUserRepository appUserRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final Path fileStorageLocation;
 
@@ -51,43 +58,25 @@ public class LoadDataImpl implements LoadData {
 
     //this method is run for test purposes
     public void loadDefaultDataBase() {
-        Usuario user = new Usuario();
-        user.setNombre("Andres");
-        userRepo.save(user);
 
-        Dataset data = new Dataset();
-        data.setName("Covid-19");
-        data.setFileDownloadUri("C:/hola.txt");
-        data.setUploader(user);
-        dataRepo.save(data);
+        AppUser kazzpa = new AppUser("kazzpa", passwordEncoder.encode("kazzpa"), "USER");
+        AppUser user = appUserRepository.findByUsername(kazzpa.getUsername());
+        if (user == null) {
+            appUserRepository.save(kazzpa);
+        }
+        AppUser admin = new AppUser("admin", passwordEncoder.encode("kazzpa"), "ADMIN");
 
-        Algorithm pca = new Algorithm();
-        pca.setLanguage("Java");
-        pca.setName("Principal Componentes Analysis");
-        algoRepo.save(pca);
+        user = appUserRepository.findByUsername(admin.getUsername());
 
-        ResultFilter rf = new ResultFilter();
-        rf.setAlgorithm(pca);
-        rf.setPerformed(data);
-        resultRepo.save(rf);
-
-        Attribute uno = new Attribute();
-        uno.setDataPerformed(rf);
-        uno.setIndex(3);
-        uno.setValue(20.2);
-        attRepo.save(uno);
-
-        Attribute dos = new Attribute();
-        dos.setDataPerformed(rf);
-        dos.setIndex(5);
-        dos.setValue(1.2);
-        attRepo.save(dos);
+        if (user == null) {
+            appUserRepository.save(admin);
+        }
 
     }
 
-    public Instances getDataFromCsvFile(String fileName) throws Exception {
+    public Instances getInstancesFromCsvFile(String fileName) throws Exception {
         CSVLoader loader = new CSVLoader();
-        loader.setSource(new File("src/main/resources/csv/" + fileName));
+        loader.setSource(new File(fileStorageLocation + "/" + fileName));
         return loader.getDataSet();
     }
 
@@ -99,7 +88,7 @@ public class LoadDataImpl implements LoadData {
         arffSaver.writeBatch();
     }
 
-    public Instances getDataFromArff(String fileName) throws IOException {
+    public Instances getInstancesFromArff(String fileName) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(fileStorageLocation + "/" + fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
@@ -112,7 +101,7 @@ public class LoadDataImpl implements LoadData {
     }
 
 
-    public Instances getDataFromArff(String fileName, boolean noClass) throws IOException {
+    public Instances getInstancesFromArff(String fileName, boolean noClass) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(fileStorageLocation + "/" + fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
@@ -126,21 +115,52 @@ public class LoadDataImpl implements LoadData {
         return data;
     }
 
-    public Instances getDataFromJson(String filename) throws Exception {
+    //TODO: Json loading fails java.lang.Exception: Can't recover from previous error(s)
+    public Instances getInstancesFromJson(String fileName) throws Exception {
         try {
             JSONLoader jsonLoader = new JSONLoader();
-            jsonLoader.setSource(new File(fileStorageLocation + "/" + filename));
+            File file = new File(fileStorageLocation + "/" + fileName);
+            jsonLoader.setSource(file);
             return jsonLoader.getDataSet();
         } catch (IOException ex) {
-            throw new Exception("Archivo no encontrado en:" + fileStorageLocation + "/" + filename + ex.getMessage());
+            throw new Exception("Archivo no encontrado en:" + fileStorageLocation + "/" + fileName + ex.getMessage());
+        } catch (NullPointerException ex) {
+            throw new Exception("Archivo not found" + ex.getMessage());
         } catch (Exception ex) {
             throw new Exception("Error en " + ex.getMessage());
         }
     }
 
-    
-    public ClassificationDataset getDatasetFromArff(String filename) throws Exception {
-        return DatasetUtils.loadArffDataset(new File(fileStorageLocation + "/" +filename), -1);
+    public Instances getInstancesFromAnyFile(String fileName) throws Exception {
+        try {
+            //TODO: FIX LOADING FROM .JSON AND .ARFF
+            File file = new File(fileStorageLocation + "/" + fileName);
+            String mimeType = new Tika().detect(file);
+
+            switch (mimeType) {
+                case "text/csv":
+                    return getInstancesFromCsvFile(fileName);
+                case "application/json":
+                    return getInstancesFromJson(fileName);
+                default:
+                    String ext = FilenameUtils.getExtension(fileName);
+                    if (ext.equals("arff")) {
+                        return getInstancesFromArff(fileName);
+                    } else {
+                        throw new Exception("Unsupported File Type : " + fileName + " Extension:" + ext);
+                    }
+            }
+        } catch (IOException ex) {
+            throw new Exception("File not found:" + fileName + " " + ex.getMessage());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+
+    public ClassificationDataset getClassDatasetFromArff(String filename) throws Exception {
+        System.out.println(fileStorageLocation + "/" + filename);
+        return DatasetUtils.loadArffDataset(new File(fileStorageLocation + "/" + filename), -1);
     }
 
     public void saveModel(Classifier cls, String name) throws Exception {
@@ -156,5 +176,55 @@ public class LoadDataImpl implements LoadData {
         oos.close();
         return cls;
 
+    }
+    public ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
+        ResultFilter rf = new ResultFilter();
+        rf.setAlgorithm(algorithm);
+        rf.setPerformed(dataset);
+        ResultFilter alreadyPerformed = resRepo.findResultFilterByPerformedAndAlgorithm(dataset, algorithm);
+        if (alreadyPerformed != null) {
+            return alreadyPerformed;
+        }
+        return rf;
+    }
+    public ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
+
+        String result = IntStream.of(solution)
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining(", "));
+        rf.setJsonAttributes(result);
+        Date now = new Date();
+        rf.setFinishedDate(now);
+        resRepo.save(rf);
+        return rf;
+
+    }
+    public ResultFilter saveResultFilter(String summary, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
+
+        rf.setJsonAttributes(summary);
+        Date now = new Date();
+        rf.setFinishedDate(now);
+        resRepo.save(rf);
+        return rf;
+
+    }
+    public Dataset getDataset(String datasetName) throws Exception {
+
+        Dataset dataset = dataRepo.findDatasetByFilename(datasetName);
+        if (dataset == null) {
+            throw new Exception(datasetName + " Not found in DB");
+        }
+        return dataset;
+    }
+
+    public Algorithm getAlgorithm(String algorithm, String language) throws Exception {
+        Algorithm algorithm1 = algoRepo.findAlgorithmByName(algorithm);
+        if (algorithm1 == null) {
+            algorithm1 = new Algorithm();
+            algorithm1.setLanguage(language);
+            algorithm1.setName(algorithm);
+            algoRepo.save(algorithm1);
+        }
+        return algorithm1;
     }
 }

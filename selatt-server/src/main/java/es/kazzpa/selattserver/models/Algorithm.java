@@ -2,7 +2,6 @@ package es.kazzpa.selattserver.models;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
 import javax.persistence.Table;
 import java.io.Serializable;
 
@@ -12,6 +11,8 @@ public class Algorithm implements Serializable {
     @Id
     private String name;
     private String language;
+
+    private String type;
 
     public Algorithm() {
     }
@@ -33,5 +34,13 @@ public class Algorithm implements Serializable {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

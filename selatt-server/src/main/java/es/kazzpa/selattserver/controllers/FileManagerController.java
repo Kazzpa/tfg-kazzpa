@@ -1,14 +1,13 @@
 package es.kazzpa.selattserver.controllers;
 
-import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.services.FileStorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -27,23 +26,28 @@ public class FileManagerController {
         this.fileStorageService = fileStorageService;
     }
 
-    @PostMapping(path = "uploadDataset", headers = ("content-type=multipart/form-data"))
-    public Dataset loadDataset(@RequestParam("file") MultipartFile file) {
-        String filename = fileStorageService.storeFile(file);
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(filename)
-                .toUriString();
-        return new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize());
+
+    @PostMapping(path = "uploadDataset", consumes = "multipart/form-data")
+    public ResponseEntity loadDataset(Authentication authentication, @RequestParam("file") MultipartFile file) throws Exception {
+        return fileStorageService.storeFile(authentication, file);
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<Dataset> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+    public List<ResponseEntity> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) throws Exception {
         return Arrays.asList(files)
                 .stream()
-                .map(file -> loadDataset(file))
+                .map(file -> {
+                    try {
+                        return loadDataset(authentication, file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
                 .collect(Collectors.toList());
+
     }
+
 
     @GetMapping("/downloadFile/")
     public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) throws Exception {
@@ -56,7 +60,7 @@ public class FileManagerController {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException ex) {
             throw new Exception("Could not determine file type" + filename + ex.getMessage());
-        }catch(NullPointerException ex){
+        } catch (NullPointerException ex) {
             throw new Exception("Couldn't locate the file " + filename + ex.getMessage());
         }
 

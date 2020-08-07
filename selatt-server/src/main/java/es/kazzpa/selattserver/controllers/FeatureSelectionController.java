@@ -1,16 +1,21 @@
 package es.kazzpa.selattserver.controllers;
 
+import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
-@RequestMapping(path = "/featureReduction")
+@RequestMapping(path = "/featureSelection")
 public class FeatureSelectionController {
 
 
@@ -22,52 +27,63 @@ public class FeatureSelectionController {
 
 
     //TODO: quitar / al principio y crear metodo que cargue dataset de DB.
-    @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @GetMapping(path = "scattersearch/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void handleScatterSearch(@PathVariable String datasetName) throws Exception {
-        featureSelectionService.handleScatterSearch(datasetName);
+    @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResultFilter> handleScatterSearch(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleScatterSearch(datasetName);
     }
 
-    @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void handleFCBF(@PathVariable String datasetName) throws Exception {
-        featureSelectionService.handleFCBF(datasetName);
+    @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResultFilter> handleFCBF(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleFCBF(datasetName);
     }
 
-    @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String handleVNS(@PathVariable String datasetName) throws Exception {
+    @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResultFilter> handleVNS(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleVNS(datasetName);
     }
 
-    @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @GetMapping(path = "/rp", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/rp", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleRP() throws Exception {
         return featureSelectionService.handleRandomizedProjectionFeatures();
     }
 
 
-    @GetMapping(path = "cfs", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "cfs", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleCfsSubsetEval() throws Exception {
         return featureSelectionService.handleCFSSubsetEval();
     }
 
-    @GetMapping(path = "rp/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "rp/plot", produces = MediaType.APPLICATION_JSON_VALUE)
     public void handlePlotRp() throws Exception {
         featureSelectionService.plotRP();
     }
 
-    @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultFilter handlePlotPCA() throws Exception {
         return featureSelectionService.plotPCA();
     }
 
+    @GetMapping("/resultsByUser")
+    public List<ResultFilter> getResultsByUser(Authentication authentication) throws Exception {
+        return featureSelectionService.resultsByUser(authentication);
+    }
+
+
+    @GetMapping("/filesByUser")
+    public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
+        return featureSelectionService.datasetsByUser(authentication);
+
+    }
 
     @Bean
     @Profile("test")

@@ -1,37 +1,34 @@
 package es.kazzpa.selattserver.models;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
-@Table(name = "dataset")
+@Table(name = "dataset", uniqueConstraints = @UniqueConstraint(columnNames = {"filename","fileDownloadUri"}))
 public class Dataset extends EntityDatabase {
 
-
     private String filename;
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    private Usuario uploader;
     private String name;
     private String fileDownloadUri;
     private String fileType;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private AppUser userUploader;
     private long size;
 
-    public Dataset(){
+    public Dataset() {
 
     }
-    public Dataset(String filename, String fileDownloadUri, String fileType, long size) {
+
+    public Dataset(String filename, String fileDownloadUri, String fileType, long size, AppUser userUploader) {
         this.filename = filename;
         this.fileDownloadUri = fileDownloadUri;
         this.fileType = fileType;
         this.size = size;
-    }
-
-    public Dataset(Usuario uploader) {
-        this.uploader = uploader;
+        this.userUploader = userUploader;
     }
 
 
@@ -41,14 +38,6 @@ public class Dataset extends EntityDatabase {
 
     public void setFileDownloadUri(String fileDownloadUri) {
         this.fileDownloadUri = fileDownloadUri;
-    }
-
-    public Usuario getUploader() {
-        return uploader;
-    }
-
-    public void setUploader(Usuario uploader) {
-        this.uploader = uploader;
     }
 
     public String getName() {
@@ -82,4 +71,13 @@ public class Dataset extends EntityDatabase {
     public void setSize(long size) {
         this.size = size;
     }
+
+    public AppUser getUserUploader() {
+        return userUploader;
+    }
+
+    public void setUserUploader(AppUser userUploader) {
+        this.userUploader = userUploader;
+    }
+
 }

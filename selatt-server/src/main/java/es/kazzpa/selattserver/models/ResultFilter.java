@@ -1,21 +1,25 @@
 package es.kazzpa.selattserver.models;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 import javax.persistence.*;
 import javax.persistence.Entity;
-import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "result_filter")
-public class ResultFilter extends EntityDatabase {
+public class ResultFilter extends EntityDatabase{
+
 
     @ManyToOne
     private Algorithm algorithm;
     @ManyToOne
     private Dataset performed;
+
+    private Date finishedDate;
+
+    private boolean seen;
+
+    @Column(length = 1024)
+    private String jsonAttributes;
     private long scoreVNS;
 
 
@@ -25,6 +29,15 @@ public class ResultFilter extends EntityDatabase {
     public ResultFilter(Algorithm algorithm, Dataset performed) {
         this.algorithm = algorithm;
         this.performed = performed;
+    }
+
+
+    public String getJsonAttributes() {
+        return jsonAttributes;
+    }
+
+    public void setJsonAttributes(String jsonAttributes) {
+        this.jsonAttributes = jsonAttributes;
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -41,5 +54,30 @@ public class ResultFilter extends EntityDatabase {
 
     public void setScoreVNS(long scoreVNS) {
         this.scoreVNS = scoreVNS;
+    }
+
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public Dataset getPerformed() {
+        return performed;
+    }
+
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 }

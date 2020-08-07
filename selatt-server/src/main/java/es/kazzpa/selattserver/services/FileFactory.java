@@ -64,17 +64,17 @@ public class FileFactory {
 
     private Instances handleData(String fileName) throws Exception {
         try {
-            return loadDataImpl.getDataFromArff(fileName + ".arff");
+            return loadDataImpl.getInstancesFromArff(fileName + ".arff");
         } catch (Exception e) {
-            return loadDataImpl.getDataFromCsvFile(fileName + ".csv");
+            return loadDataImpl.getInstancesFromCsvFile(fileName + ".csv");
         }
     }
 
     private Instances handleData(String fileName, boolean noClass) throws Exception {
         try {
-            return loadDataImpl.getDataFromArff(fileName + ".arff", noClass);
+            return loadDataImpl.getInstancesFromArff(fileName + ".arff", noClass);
         } catch (Exception e) {
-            return loadDataImpl.getDataFromCsvFile(fileName + ".csv");
+            return loadDataImpl.getInstancesFromCsvFile(fileName + ".csv");
         }
     }
 

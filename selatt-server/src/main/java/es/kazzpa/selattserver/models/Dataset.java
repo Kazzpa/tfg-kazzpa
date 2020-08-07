@@ -2,7 +2,6 @@ package es.kazzpa.selattserver.models;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.security.core.userdetails.User;
 
 import javax.persistence.*;
 

@@ -2,7 +2,6 @@ package es.kazzpa.selattserver.models;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
 import javax.persistence.Table;
 import java.io.Serializable;
 

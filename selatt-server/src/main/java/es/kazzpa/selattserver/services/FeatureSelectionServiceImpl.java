@@ -3,15 +3,12 @@ package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.*;
 import es.kazzpa.selattserver.repositories.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 
-import org.springframework.util.StringUtils;
 import upo.jcu.math.set.Subset;
 import weka.attributeSelection.*;
 import weka.core.Instances;
@@ -30,8 +27,6 @@ import upo.jml.prediction.classification.fss.evaluators.CfsEvaluator;
 
 import java.io.FileWriter;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {

@@ -4,6 +4,7 @@ import es.kazzpa.selattserver.models.Algorithm;
 import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.repositories.ResultRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import upo.jml.data.dataset.ClassificationDataset;
 import weka.core.Instances;
@@ -19,11 +20,11 @@ public interface FeatureSelectionService {
 
     String handleCFSSubsetEval() throws Exception;
 
-    ResultFilter handleFCBF(String datasetName) throws Exception;
+    ResponseEntity<ResultFilter> handleFCBF(String datasetName) throws Exception;
 
-    ResultFilter handleScatterSearch(String datasetName) throws Exception;
+    ResponseEntity<ResultFilter> handleScatterSearch(String datasetName) throws Exception;
 
-    ResultFilter handleVNS(String datasetName) throws Exception;
+    ResponseEntity<ResultFilter> handleVNS(String datasetName) throws Exception;
 
     ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception;
 
@@ -33,11 +34,11 @@ public interface FeatureSelectionService {
 
     String applyCfsSubsetEval(Instances data) throws Exception;
 
-    ResultFilter applyFCBF(String name, Instances trainingData) throws Exception;
+    ResponseEntity<ResultFilter> applyFCBF(String name, Instances trainingData) throws Exception;
 
-    ResultFilter applyScatterSearch(String fileName, Instances trainingData) throws Exception;
+    ResponseEntity<ResultFilter> applyScatterSearch(String fileName, Instances trainingData) throws Exception;
 
-    ResultFilter applyVNS(String filename, ClassificationDataset dataset) throws Exception;
+    ResponseEntity<ResultFilter> applyVNS(String filename, ClassificationDataset dataset) throws Exception;
 
     ResultFilter plotPCA() throws Exception;
 
@@ -47,11 +48,5 @@ public interface FeatureSelectionService {
 
     List<Dataset> datasetsByUser(Authentication authentication) throws Exception;
 
-    ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
 
-    Dataset getDataset(String datasetName) throws Exception;
-
-    Algorithm getAlgorithm(String algorithm, String language) throws Exception;
-
-    ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception;
 }

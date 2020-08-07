@@ -91,20 +91,7 @@
                         }
                     })
                     .then(response => {
-                        var res = response.data;
-                        res.forEach(value => {
-                                value.jsonAttributes= JSON.parse(value.jsonAttributes);
-                                var arr = [];
-                                for (var i = 0; i < value.jsonAttributes.length; i++) {
-                                    arr[i] = value.jsonAttributes[i].id;
-                                }
-                                value.jsonAttributes = arr;
-                                console.log(arr);
-                            }
-                        );
                         this.results = response.data;
-
-
                     })
                     .catch(error => {
                         console.log(error);

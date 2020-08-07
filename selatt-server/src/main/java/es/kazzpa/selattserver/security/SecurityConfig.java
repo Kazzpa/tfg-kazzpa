@@ -52,30 +52,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public static final String TOKEN_TYPE = "JWT";
     public static final String TOKEN_ISSUER = "secure-api";
     public static final String TOKEN_AUDIENCE = "secure-app";
-    public static final int EXPIRATION_TIME = 24 * 60 * 60;
-
+    public static final int EXPIRATION_TIME = 60;
 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                    .cors()
+                .cors()
                 .and()
-                    .csrf().disable()
-                    .httpBasic().disable()
+                .csrf().disable()
+                .httpBasic().disable()
                 // make sure we use stateless session; session won't be used to store user's state.
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 // handle an authorized attempts
-                    .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
+                .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
                 .and()
-                    .addFilter(new JwtAuthentication(authenticationManager()))
-                    .authorizeRequests()
+                .addFilter(new JwtAuthentication(authenticationManager()))
+                .authorizeRequests()
                 .and()
                 // Add a filter to validate the tokens with every request
-                    .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 // authorization requests config
-                    .authorizeRequests()
+                .authorizeRequests()
                 // allow all who are accessing "auth" service
                 .antMatchers(HttpMethod.POST, AUTH_URL).permitAll()
                 .anyRequest().authenticated();
@@ -89,11 +88,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider());
     }
+
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
+
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

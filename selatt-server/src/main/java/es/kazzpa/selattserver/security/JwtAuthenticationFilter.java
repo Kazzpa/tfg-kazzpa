@@ -1,7 +1,6 @@
 package es.kazzpa.selattserver.security;
 
 import io.jsonwebtoken.*;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;

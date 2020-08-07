@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,17 +33,17 @@ public class FeatureSelectionController {
     }
 
     @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultFilter handleScatterSearch(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<ResultFilter> handleScatterSearch(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleScatterSearch(datasetName);
     }
 
     @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultFilter handleFCBF(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<ResultFilter> handleFCBF(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleFCBF(datasetName);
     }
 
     @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultFilter handleVNS(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<ResultFilter> handleVNS(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleVNS(datasetName);
     }
 

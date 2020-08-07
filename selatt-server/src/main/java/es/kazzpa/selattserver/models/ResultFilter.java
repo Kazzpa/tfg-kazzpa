@@ -16,9 +16,10 @@ public class ResultFilter extends EntityDatabase{
 
     private Date finishedDate;
 
-    //TODO: HACER UN JSON A PARTIR DE LOS ATRIBUTOS PARSEARLO AL SACARLO DE LA DB Y DEMAS PARA TRABAJARLO.
-    private String jsonAttributes;
+    private boolean seen;
 
+    @Column(length = 1024)
+    private String jsonAttributes;
     private long scoreVNS;
 
 
@@ -35,8 +36,8 @@ public class ResultFilter extends EntityDatabase{
         return jsonAttributes;
     }
 
-    public void setJsonAttributes(String jsonAtributes) {
-        this.jsonAttributes = jsonAtributes;
+    public void setJsonAttributes(String jsonAttributes) {
+        this.jsonAttributes = jsonAttributes;
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -67,7 +68,16 @@ public class ResultFilter extends EntityDatabase{
         return finishedDate;
     }
 
+
     public void setFinishedDate(Date finishedDate) {
         this.finishedDate = finishedDate;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 }

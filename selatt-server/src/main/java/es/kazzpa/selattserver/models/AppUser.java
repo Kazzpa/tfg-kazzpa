@@ -8,8 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.util.UUID;
-
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "User", uniqueConstraints = @UniqueConstraint(columnNames = {"username"}))

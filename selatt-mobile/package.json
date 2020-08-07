@@ -1,0 +1,49 @@
+{
+  "name": "selatt-mobile",
+  "version": "1.0.0",
+  "description": "Feature selection and classifier mobile app",
+  "author": "Kazzpa",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tns run android",
+    "debug:a": "tns run debug android",
+    "nohmr": "tns run android --no-hmr",
+    "ios": "tns run ios",
+    "debug:i": "tns run debug ios"
+  },
+  "nativescript": {
+    "id": "es.kazzpa.selattmobile",
+    "templateVersion": "v2",
+    "tns-ios": {
+      "version": "6.5.0"
+    },
+    "tns-android": {
+      "version": "6.5.3"
+    }
+  },
+  "dependencies": {
+    "@nativescript/theme": "^2.2.1",
+    "@vue/devtools": "^5.3.3",
+    "axios": "^0.19.2",
+    "axios-debug-log": "^0.8.0",
+    "nativescript-drop-down": "^5.0.6",
+    "nativescript-socketio": "^3.3.1",
+    "nativescript-toasty": "^3.0.0-alpha.2",
+    "nativescript-ui-listview": "^9.0.0",
+    "nativescript-ui-sidedrawer": "^8.0.1",
+    "nativescript-vue": "^2.6.1",
+    "nativescript-vue-devtools": "^1.4.0",
+    "tns-core-modules": "^6.5.1",
+    "vuex": "^3.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.0.0",
+    "babel-loader": "^8.1.0",
+    "nativescript-dev-webpack": "^1.5.1",
+    "nativescript-vue-template-compiler": "^2.6.0",
+    "nativescript-worker-loader": "~0.11.0",
+    "node-sass": "^4.13.1",
+    "vue-loader": "^15.9.1"
+  }
+}

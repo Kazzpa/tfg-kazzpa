@@ -1,4 +1,5 @@
-runtime: nodejs10handlers:
+runtime: nodejs10
+handlers:
   # Serve all static files with urls ending with a file extension
 - url: /(.*\..+)$ 
   static_files: dist/\1
@@ -6,3 +7,5 @@ runtime: nodejs10handlers:
 - url: /.*
   static_files: dist/index.html
   upload: dist/index.html
+skip_files:
+- 

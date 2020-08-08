@@ -1,10 +1,13 @@
 steps:
-- name: node:12.18.3
+- name: node
   entrypoint: npm
-  args: ["install"]
-- name: node:12.18.3
+  args: ['install']
+- name: node
   entrypoint: npm
-  args: ["run", "build"]
-- name: "gcr.io/cloud-builders/gcloud"
-  args: ["app", "deploy"]
-timeout: "1600s"
+  args: ['install', '-g', '@vue/cli']
+- name: node
+  entrypoint: npm
+  args: ['test']
+- name: node
+  entrypoint: npm
+  args: ['run', 'build']

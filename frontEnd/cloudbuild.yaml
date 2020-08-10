@@ -1,13 +1,13 @@
 steps:
 - name: node
   entrypoint: npm
-  args: ['install']
+  args: ['install','--prefix','frontEnd']
 - name: node
   entrypoint: npm
   args: ['install', '-g', '@vue/cli']
 - name: node
   entrypoint: npm
-  args: ['test']
+  args: ['test','--prefix','frontEnd']
 - name: node
   entrypoint: npm
-  args: ['run', 'build']
+  args: ['run', 'build','--prefix','frontEnd']

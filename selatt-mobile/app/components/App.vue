@@ -10,11 +10,13 @@
     <RadSideDrawer ref="drawer">
       <StackLayout ~drawerContent backgroundColor="#ffffff">
         <Label class="drawer-header" text="Drawer"/>
-
         <Label v-if="this.getUser!=null" class="drawer-item" text="Login" @tap="goToLogin"/>
-        <Label v-else class="drawer-item" text="Profile" @tap="goToProfile"/>
-        <Label v-else class="drawer-item" text="Algorithms" @tap="goToAlgorithms"/>
-        <Label v-else class="drawer-item" text="Results" @tap="goToResults"/>
+        <template v-else>
+          <Label class="drawer-item" text="Profile" @tap="goToProfile"/>
+          <Label class="drawer-item" text="Algorithms" @tap="goToAlgorithms"/>
+          <Label class="drawer-item" text="Results" @tap="goToResults"/>
+
+        </template>
       </StackLayout>
 
       <GridLayout ~mainContent columns="*" rows="*">

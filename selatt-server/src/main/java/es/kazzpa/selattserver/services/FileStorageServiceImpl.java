@@ -2,11 +2,9 @@ package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.AppUser;
 import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.ResultFilter;
 import es.kazzpa.selattserver.properties.Properties;
 import es.kazzpa.selattserver.repositories.AppUserRepository;
 import es.kazzpa.selattserver.repositories.DatasetRepository;
-import es.kazzpa.selattserver.repositories.ResultRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,24 +22,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
 
     private final Path fileStorageLocation;
+    private final String uploadDir;
     @Autowired
     private DatasetRepository datasetRepository;
     @Autowired
     private AppUserRepository appUserRepository;
-    @Autowired
-    private ResultRepository resultRepository;
 
     @Autowired
     public FileStorageServiceImpl(Properties properties) {
         this.fileStorageLocation = Paths.get(properties.getUploadDir())
-                .toAbsolutePath()
                 .normalize();
+        this.uploadDir = properties.getUploadDir();
         try {
             Files.createDirectories(this.fileStorageLocation);
 
@@ -52,12 +51,18 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public ResponseEntity storeFile(Authentication authentication, MultipartFile file) throws Exception {
-        String filename = StringUtils.cleanPath(file.getOriginalFilename());
 
-        if (filename.contains("..")) {
+        Date now = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+        String path = uploadDir + "\\" + format.format(now) + "_" + file.getOriginalFilename();
+        String filePath = StringUtils.cleanPath(System.getProperty("user.dir") + path);
+        System.out.println(filePath);
+        System.out.println(path);
+
+        if (filePath.contains("..")) {
             return ResponseEntity.badRequest().body("Ruta de archivo invalida");
         }
-        Path targetLocation = this.fileStorageLocation.resolve(filename);
+        Path targetLocation = this.fileStorageLocation.resolve(filePath);
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
         //TODO: FIX LOADING FROM .JSON
         File fileTest = new File(targetLocation.toUri());
@@ -70,6 +75,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                 break;
             default:
                 String ext = FilenameUtils.getExtension(fileTest.getName());
+                mimeType = ext;
                 if (ext.equals("arff")) {
                     break;
                 } else {
@@ -77,12 +83,11 @@ public class FileStorageServiceImpl implements FileStorageService {
                     return ResponseEntity.badRequest().body("Unsupported File Type : " + fileTest.getName() + " Extension:" + ext);
                 }
         }
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(filename)
-                .toUriString();
+
+        String fileDownloadUri = path;
+        System.out.println(filePath);
         AppUser appUser = appUserRepository.findByUsername(authentication.getName());
-        Dataset dataset = new Dataset(filename, fileDownloadUri, file.getContentType(), file.getSize(), appUser);
+        Dataset dataset = new Dataset(file.getOriginalFilename(), fileDownloadUri, mimeType, file.getSize(), appUser);
         datasetRepository.save(dataset);
 
         return ResponseEntity.ok(dataset);

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
+import weka.core.UnassignedClassException;
 
 @Service
 public class EvaluationServiceImpl implements EvaluationService {
@@ -38,14 +39,34 @@ public class EvaluationServiceImpl implements EvaluationService {
             return ResponseEntity.ok(rf);
         }
         NaiveBayes classifier = new NaiveBayes();
-        trainingData.setClassIndex(trainingData.classIndex());
+        try {
+            if (trainingData.classIndex() == -1) {
+                trainingData.setClassIndex(trainingData.numAttributes() - 1);
+            }
+
+        } catch (UnassignedClassException ex) {
+            System.out.println(trainingData.classIndex());
+            System.out.println(trainingData.numClasses());
+            throw new Exception(ex.getMessage());
+        }
         System.out.println(trainingData.classIndex());
         classifier.buildClassifier(trainingData);
 
         Evaluation eval = new Evaluation(trainingData);
         eval.evaluateModel(classifier, trainingData);
-        System.out.println(eval.numInstances());
+
         String summary = eval.toSummaryString();
+        System.out.println(eval.numInstances());
+        System.out.println(eval.avgCost());
+        System.out.println(eval.correct());
+        //System.out.println(eval.fMeasure(trainingData.classIndex()-1));
+        System.out.println(eval.incorrect());
+        //System.out.println(eval.correlationCoefficient());
+        System.out.println(eval.errorRate());
+        System.out.println(eval.meanAbsoluteError());
+        System.out.println(eval.totalCost());
+        System.out.println(eval.unclassified());
+        System.out.println(eval.weightedPrecision());
         loadData.saveResultFilter(summary, rf, naiveBayes, dataset);
         return ResponseEntity.ok(rf);
 

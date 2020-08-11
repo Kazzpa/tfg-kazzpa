@@ -8,6 +8,7 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import upo.jml.data.dataset.ClassificationDataset;
 import upo.jml.data.dataset.DatasetUtils;
 import weka.classifiers.Classifier;
@@ -46,7 +47,6 @@ public class LoadDataImpl implements LoadData {
     @Autowired
     public LoadDataImpl(Properties properties) {
         this.fileStorageLocation = Paths.get(properties.getUploadDir())
-                .toAbsolutePath()
                 .normalize();
         try {
             Files.createDirectories(this.fileStorageLocation);
@@ -76,7 +76,7 @@ public class LoadDataImpl implements LoadData {
 
     public Instances getInstancesFromCsvFile(String fileName) throws Exception {
         CSVLoader loader = new CSVLoader();
-        loader.setSource(new File(fileStorageLocation + "/" + fileName));
+        loader.setSource(new File( fileName));
         return loader.getDataSet();
     }
 
@@ -89,7 +89,7 @@ public class LoadDataImpl implements LoadData {
     }
 
     public Instances getInstancesFromArff(String fileName) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(fileStorageLocation + "/" + fileName));
+        BufferedReader reader = new BufferedReader(new FileReader( fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
         data.setClassIndex(data.numAttributes() - 1);
@@ -102,7 +102,7 @@ public class LoadDataImpl implements LoadData {
 
 
     public Instances getInstancesFromArff(String fileName, boolean noClass) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(fileStorageLocation + "/" + fileName));
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
         if (!noClass) {
@@ -119,11 +119,11 @@ public class LoadDataImpl implements LoadData {
     public Instances getInstancesFromJson(String fileName) throws Exception {
         try {
             JSONLoader jsonLoader = new JSONLoader();
-            File file = new File(fileStorageLocation + "/" + fileName);
+            File file = new File( fileName);
             jsonLoader.setSource(file);
             return jsonLoader.getDataSet();
         } catch (IOException ex) {
-            throw new Exception("Archivo no encontrado en:" + fileStorageLocation + "/" + fileName + ex.getMessage());
+            throw new Exception("Archivo no encontrado en:" +fileName + ex.getMessage());
         } catch (NullPointerException ex) {
             throw new Exception("Archivo not found" + ex.getMessage());
         } catch (Exception ex) {
@@ -134,18 +134,23 @@ public class LoadDataImpl implements LoadData {
     public Instances getInstancesFromAnyFile(String fileName) throws Exception {
         try {
             //TODO: FIX LOADING FROM .JSON AND .ARFF
-            File file = new File(fileStorageLocation + "/" + fileName);
+            Dataset dat = dataRepo.findDatasetByFilename(fileName);
+            String filePath = System.getProperty("user.dir") + dat.getFileDownloadUri();
+            System.out.println(filePath);
+            Path path = this.fileStorageLocation.resolve(StringUtils.cleanPath(filePath));
+            System.out.println(path.toString());
+            File file = path.toFile();
             String mimeType = new Tika().detect(file);
 
             switch (mimeType) {
                 case "text/csv":
-                    return getInstancesFromCsvFile(fileName);
+                    return getInstancesFromCsvFile(path.toString());
                 case "application/json":
-                    return getInstancesFromJson(fileName);
+                    return getInstancesFromJson(path.toString());
                 default:
-                    String ext = FilenameUtils.getExtension(fileName);
+                    String ext = FilenameUtils.getExtension(path.toString());
                     if (ext.equals("arff")) {
-                        return getInstancesFromArff(fileName);
+                        return getInstancesFromArff(path.toString());
                     } else {
                         throw new Exception("Unsupported File Type : " + fileName + " Extension:" + ext);
                     }
@@ -158,25 +163,15 @@ public class LoadDataImpl implements LoadData {
     }
 
 
-    public ClassificationDataset getClassDatasetFromArff(String filename) throws Exception {
-        System.out.println(fileStorageLocation + "/" + filename);
-        return DatasetUtils.loadArffDataset(new File(fileStorageLocation + "/" + filename), -1);
+    public ClassificationDataset getClassDatasetFromArff(String fileName) throws Exception {
+        Dataset dat = dataRepo.findDatasetByFilename(fileName);
+        String filePath = System.getProperty("user.dir") + dat.getFileDownloadUri();
+        System.out.println(filePath);
+        Path path = this.fileStorageLocation.resolve(StringUtils.cleanPath(filePath));
+        return DatasetUtils.loadArffDataset(new File( path.toString()), -1);
     }
 
-    public void saveModel(Classifier cls, String name) throws Exception {
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("src/main/resources/models/" + name));
-        objectOutputStream.writeObject(cls);
-        objectOutputStream.flush();
-        objectOutputStream.close();
-    }
 
-    public Classifier getModel(String name) throws Exception {
-        ObjectInputStream oos = new ObjectInputStream(new FileInputStream("src/main/resources/models/" + name));
-        Classifier cls = (Classifier) oos.readObject();
-        oos.close();
-        return cls;
-
-    }
     public ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
         ResultFilter rf = new ResultFilter();
         rf.setAlgorithm(algorithm);
@@ -187,6 +182,7 @@ public class LoadDataImpl implements LoadData {
         }
         return rf;
     }
+
     public ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
 
         String result = IntStream.of(solution)
@@ -199,6 +195,7 @@ public class LoadDataImpl implements LoadData {
         return rf;
 
     }
+
     public ResultFilter saveResultFilter(String summary, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
 
         rf.setJsonAttributes(summary);
@@ -208,6 +205,7 @@ public class LoadDataImpl implements LoadData {
         return rf;
 
     }
+
     public Dataset getDataset(String datasetName) throws Exception {
 
         Dataset dataset = dataRepo.findDatasetByFilename(datasetName);

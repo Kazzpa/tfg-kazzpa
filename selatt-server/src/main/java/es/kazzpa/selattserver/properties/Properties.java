@@ -11,7 +11,6 @@ public class Properties {
     }
 
     public void setUploadDir(String uploadDir) {
-        String path = System.getProperty("user.dir") + uploadDir;
-        this.uploadDir = path;
+        this.uploadDir =  uploadDir;
     }
 }

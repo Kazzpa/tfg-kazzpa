@@ -1,17 +1,27 @@
 <template>
   <v-main>
-    <v-card class="mx-2 my-2">
+    <v-card v-if="currentUser" class="mx-2 my-2">
       <v-card-title>
-        <div class="mx-2">Username: <strong>{{ currentUser.username }}</strong></div>
+        <div class="mx-2"><span>Username:</span><span><strong>{{ currentUser.username }}</strong></span></div>
       </v-card-title>
       <v-card-text>
         <v-icon>mdi-face</v-icon>
-        <div class="mx-2">Correo: {{ currentUser.email }}</div>
+        <div v-if="currentUser.email" class="mx-2">Correo: {{ currentUser.email }}</div>
       </v-card-text>
     </v-card>
-    <v-btn class="mx-2" @click="logOut">LogOut</v-btn>
+    <v-btn class="error mx-2 my-2" @click="logOut">LogOut</v-btn>
+    <v-btn class="mx-2 my-2" v-on:click="goToDatasets">Datasets</v-btn>
+    <v-btn class="mx-2 my-2" v-on:click="goToResult">
+      <v-badge
+          color="green"
+          content="6">
+        Results
+      </v-badge>
+    </v-btn>
+    <v-btn class="mx-2 my-2" v-on:click="goToAlgorithm">
+      Algoritmos
+    </v-btn>
 
-    <v-btn class="mx-2" v-on:click="goToAlgorithm">Algoritmos</v-btn>
   </v-main>
 </template>
 
@@ -23,6 +33,8 @@ Vue.use(VueRouter);
 
 
 const login_path = process.env.VUE_APP_LOGIN_PATH;
+const result_path = process.env.VUE_APP_RESULTS_PATH;
+const dataset_path = process.env.VUE_APP_DATASETS_PATH;
 const algorithm_path = process.env.VUE_APP_ALGORITHM_PATH;
 
 export default {
@@ -41,6 +53,12 @@ export default {
     goToAlgorithm() {
       this.$router.push(algorithm_path);
     },
+  goToResult() {
+    this.$router.push(result_path);
+  },
+  goToDatasets() {
+    this.$router.push(dataset_path);
+  },
     logOut() {
       this.$store.dispatch("auth/logout", this.user).then(
           () => {

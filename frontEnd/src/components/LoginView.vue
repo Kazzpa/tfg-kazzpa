@@ -33,11 +33,10 @@
               role="alert"
           >Password is required!
           </div>
-          <v-btn class="mx-2" color="primary" type="submit" :disabled="loading">
-            <span v-show="loading" class="spinner-border spinner-border-sm"></span>
+          <v-btn class="mx-2" color="primary" type="submit" :loading="loading">
             <span>Login</span>
           </v-btn>
-          <v-btn class="mx-2" v-on:click="goToRegister">Registro</v-btn>
+          <v-btn class="secondary mx-2" v-on:click="goToRegister">Registro</v-btn>
           <v-alert v-if="message" class="alert alert-danger" role="alert">{{ message }}</v-alert>
         </v-form>
       </v-col>

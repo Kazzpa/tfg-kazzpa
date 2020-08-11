@@ -1,6 +1,7 @@
 <template>
   <v-main>
-    <div>
+    <!-- TODO: REMOVE IN PROD-->
+    <div> size:
       <div class="d-sm-none d-flex">xs</div>
       <div class="d-none d-sm-flex d-md-none">sm</div>
       <div class="d-none d-md-flex d-lg-none">md</div>
@@ -17,15 +18,17 @@
           <v-file-input v-model="inputFile" type="file" dense multiple label="uploadDataset">
 
           </v-file-input>
-          <v-btn v-if="inputFile != null" type="submit" rounded>Subir</v-btn>
+          <v-btn v-if="inputFile != null" class="secondary" type="submit" rounded>Subir</v-btn>
           <v-alert type="info" v-if="responseFileUpload" dense>{{ responseFileUpload }}
           </v-alert>
         </v-form>
-        <h3>Seleccionar un dataset cargado previamente:</h3>
-        <v-combobox
-            :items="datasets"
-            prepend-icon="mdi-file" dense v-model="inputFileNameProcess"
-            label="Dataset a procesar"/>
+        <div v-if="this.datasets">
+          <h3>Seleccionar un dataset cargado previamente:</h3>
+          <v-combobox
+              :items="datasets"
+              prepend-icon="mdi-file" dense v-model="inputFileNameProcess"
+              label="Dataset a procesar"/>
+        </div>
         <v-btn
             color="primary"
             @click="e1 = 2"
@@ -97,7 +100,7 @@
     <br/>
 
 
-    <!-- DISABLED ATM-->
+    <!--  TODO: FIX SOMEDAY DISABLED ATM-->
     Working on it: Descargar dataset filtrado
     <v-form disabled v-on:submit.prevent="retrieveFile">
       <v-text-field dense prepend-icon="mdi-file"
@@ -124,6 +127,7 @@ const server_url = process.env.VUE_APP_API_SERVER_URL;
 
 require('axios-debug-log');
 localStorage.debug = "axios";
+
 export default {
   name: 'AlgorithmsView',
   data: () => ({
@@ -156,7 +160,8 @@ export default {
     tab() {
       this.algorithm = null;
     },
-  }, computed: {
+  },
+  computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
     }

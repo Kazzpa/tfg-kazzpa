@@ -57,7 +57,6 @@
 </template>
 <script>
 import {mapGetters, mapActions} from 'vuex'
-import routes from "./routes";
 import axios from 'axios';
 import * as config from '../config.js';
 import {ApplicationSettings} from "@nativescript/core"
@@ -167,13 +166,13 @@ export default {
       }
     },
     goToProfile() {
-      this.$navigateTo(routes.ProfileView, {clearHistory: true});
+      this.$navigator.navigate('profile', {clearHistory: true});
     },
     goToResults() {
-      this.$navigateTo(routes.ResultsView, {clearHistory: true});
+      this.$navigator.navigate('results', {clearHistory: true});
     },
     goToApp() {
-      this.$navigateTo(routes.App, {clearHistory: true});
+      this.$navigator.navigate('/', {clearHistory: true});
     },
     loggedIn() {
       return this.getUser != null;

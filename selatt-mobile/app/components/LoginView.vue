@@ -26,13 +26,11 @@
 </template>
 <script>
 import User from "../models/user";
-import routes from "./routes";
 import {ApplicationSettings} from "@nativescript/core";
 import axios from 'axios';
 import {mapGetters, mapActions} from 'vuex';
 
 import * as config from '../config.js';
-import user from "../models/user";
 
 export default {
   data() {
@@ -93,7 +91,7 @@ export default {
               "userData",
               JSON.stringify(this.user)
           );
-          this.$navigateTo(routes.ProfileView,{clearHistory: true});
+          this.$navigator.navigate('profile',{clearHistory: true});
         }).catch(error => {
           console.log(error);
           this.loading = false;

@@ -72,7 +72,7 @@
 <script>
 
 import {mapGetters, mapActions} from 'vuex'
-import routes from "./routes";
+import routes from "../routes";
 import * as config from '../config.js';
 import axios from 'axios';
 
@@ -105,11 +105,11 @@ export default {
       this.resultChosen = item;
     },
     goToLogin() {
-      this.$navigateTo(routes.LoginView,{clearHistory: true});
+      this.$navigator.navigate('login',{clearHistory: true});
     },
     on_load() {
       if (!this.loggedIn) {
-        this.$navigateTo(routes.LoginView);
+        this.$navigator.navigate('login',{clearHistory: true});
       } else {
         let url = config.BACKEND + "/featureSelection/resultsByUser/";
         axios.get(url,

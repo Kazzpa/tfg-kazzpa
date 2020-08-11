@@ -28,7 +28,6 @@
 </template>
 <script>
 import {mapActions, mapGetters} from 'vuex';
-import routes from "./routes";
 import {ApplicationSettings} from "@nativescript/core";
 
 export default {
@@ -49,28 +48,16 @@ export default {
       logout: 'auth/logout'
     }),
     goToLogin() {
-      this.$navigateTo(routes.LoginView, {clearHistory: true}).catch(error => {
-
-        console.log(error);
-      });
+      this.$navigator.navigate('login', {clearHistory: true});
     },
     goToAlgorithms() {
-      this.$navigateTo(routes.AlgorithmsView, {clearHistory: true}).catch(error => {
-
-        console.log(error);
-      });
+      this.$navigator.navigate('algorithms', {clearHistory: true});
     },
     goToResults() {
-      this.$navigateTo(routes.ResultsView, {clearHistory: true}).catch(error => {
-
-        console.log(error);
-      });
+      this.$navigator.navigate('results', {clearHistory: true});
     },
     goToApp() {
-      this.$navigateTo(routes.App, {clearHistory: true}).catch(error => {
-
-        console.log(error);
-      });
+      this.$navigator.navigate('/', {clearHistory: true});
     },
     log_out() {
       this.logout();
@@ -82,10 +69,7 @@ export default {
           console.log("Flushing appsettings");
           ApplicationSettings.flush();
           console.log("Navigating to Login View");
-          this.$navigateTo(routes.LoginView, {clearHistory: true}).catch(error => {
-
-            console.log(error);
-          });
+          this.$navigator.navigate('login', {clearHistory: true});
         }
       } catch (error) {
         console.log("check2error");

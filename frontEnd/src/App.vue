@@ -1,6 +1,12 @@
 <template>
   <v-app>
 
+    <div>
+      <vue-headful
+          title="SelAtt"
+          description="Aplicación para la selección de atributos"      />
+
+    </div>
     <v-app-bar
         app
         color="primary"
@@ -175,6 +181,10 @@ export default {
     //
     drawer: null,
   }),
+  created (){
+    console.log(process.env.NODE_ENV);
+    console.log(process.env.VUE_APP_API_SERVER_URL);
+  },
   methods: {
     goToLogin() {
       router.push(login_path);

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import upo.jml.data.dataset.ClassificationDataset;
 import upo.jml.data.dataset.DatasetUtils;
-import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
@@ -30,13 +29,15 @@ import java.util.stream.IntStream;
 @Service("loadData")
 public class LoadDataImpl implements LoadData {
     @Autowired
-    private ResultRepository resultRepo;
+    private ClassifierResultRepository resultRepo;
     @Autowired
     private AlgorithmRepository algoRepo;
     @Autowired
     private DatasetRepository dataRepo;
     @Autowired
-    private ResultRepository resRepo;
+    private ClassifierResultRepository clasRepo;
+    @Autowired
+    private FeatureResultRepository featureRepo;
     @Autowired
     private AppUserRepository appUserRepository;
     @Autowired
@@ -172,37 +173,45 @@ public class LoadDataImpl implements LoadData {
     }
 
 
-    public ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
-        ResultFilter rf = new ResultFilter();
+    public ClassifierResult checkIfClassifierAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
+        ClassifierResult rf = new ClassifierResult();
         rf.setAlgorithm(algorithm);
         rf.setPerformed(dataset);
-        ResultFilter alreadyPerformed = resRepo.findResultFilterByPerformedAndAlgorithm(dataset, algorithm);
+        ClassifierResult alreadyPerformed = clasRepo.findClassifierResultByPerformedAndAlgorithm(dataset, algorithm);
         if (alreadyPerformed != null) {
             return alreadyPerformed;
         }
         return rf;
     }
 
-    public ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
+    public FeatureResult checkIfFeatureAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
+        FeatureResult rf = new FeatureResult();
+        rf.setAlgorithm(algorithm);
+        rf.setPerformed(dataset);
+        FeatureResult alreadyPerformed = featureRepo.findByAlgorithmAndPerformed(algorithm,dataset);
+        if (alreadyPerformed != null) {
+            return alreadyPerformed;
+        }
+        return rf;
+    }
+    public ClassifierResult saveClassifierResult(ClassifierResult rf) throws Exception {
 
-        String result = IntStream.of(solution)
-                .mapToObj(Integer::toString)
-                .collect(Collectors.joining(", "));
-        rf.setJsonAttributes(result);
         Date now = new Date();
         rf.setFinishedDate(now);
-        resRepo.save(rf);
+        clasRepo.save(rf);
         return rf;
 
     }
 
-    public ResultFilter saveResultFilter(String summary, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception {
-
-        rf.setJsonAttributes(summary);
+    public FeatureResult saveFeatureSelectionResult(FeatureResult fsr, int [] solution) throws Exception {
+        String result = IntStream.of(solution)
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining(", "));
+        fsr.setAttributesSelected(result);
         Date now = new Date();
-        rf.setFinishedDate(now);
-        resRepo.save(rf);
-        return rf;
+        fsr.setFinishedDate(now);
+        featureRepo.save(fsr);
+        return fsr;
 
     }
 

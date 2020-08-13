@@ -2,7 +2,8 @@ package es.kazzpa.selattserver.services;
 
 import es.kazzpa.selattserver.models.Algorithm;
 import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.ClassifierResult;
+import es.kazzpa.selattserver.models.FeatureResult;
 import upo.jml.data.dataset.ClassificationDataset;
 import weka.core.Instances;
 
@@ -17,11 +18,11 @@ public interface LoadData {
 
     ClassificationDataset getClassDatasetFromArff(String filename) throws Exception;
 
-    ResultFilter checkIfAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
+    ClassifierResult checkIfClassifierAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
+    FeatureResult checkIfFeatureAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
 
-    ResultFilter saveResultFilter(int[] solution, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception;
-
-    ResultFilter saveResultFilter(String summary, ResultFilter rf, Algorithm algorithm, Dataset dataset) throws Exception;
+    FeatureResult saveFeatureSelectionResult(FeatureResult fsr, int [] solution) throws Exception;
+    ClassifierResult saveClassifierResult( ClassifierResult rf) throws Exception;
 
     Dataset getDataset(String datasetName) throws Exception;
 

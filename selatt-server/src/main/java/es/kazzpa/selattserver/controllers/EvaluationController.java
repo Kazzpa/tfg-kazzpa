@@ -1,6 +1,6 @@
 package es.kazzpa.selattserver.controllers;
 
-import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.ClassifierResult;
 import es.kazzpa.selattserver.services.EvaluationService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class EvaluationController {
     }
 
     @GetMapping(path = "naivebayes/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResultFilter> handleNaiveBayesEvaluation(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<ClassifierResult> handleNaiveBayesEvaluation(@PathVariable String datasetName) throws Exception {
         return evaluationService.handleNaiveBayes(datasetName);
     }
 }

@@ -1,10 +1,10 @@
 package es.kazzpa.selattserver.services;
 
-import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.ClassifierResult;
 import org.springframework.http.ResponseEntity;
 import weka.core.Instances;
 
 public interface EvaluationService {
-    ResponseEntity<ResultFilter> handleNaiveBayes(String fileName) throws Exception;
-    ResponseEntity<ResultFilter> applyNaiveBayes (String filename,Instances trainingData) throws Exception;
+    ResponseEntity<ClassifierResult> handleNaiveBayes(String fileName) throws Exception;
+    ResponseEntity<ClassifierResult> applyNaiveBayes (String filename, Instances trainingData) throws Exception;
 }

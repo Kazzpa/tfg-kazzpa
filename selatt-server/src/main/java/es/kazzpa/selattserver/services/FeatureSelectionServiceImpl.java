@@ -33,7 +33,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     private final FileFactory fileFactory;
     @Autowired
-    private final ResultRepository resRepo;
+    private final FeatureResultRepository featureRepo;
     @Autowired
     private final DatasetRepository dataRepo;
     @Autowired
@@ -42,9 +42,9 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     private final AppUserRepository userRepo;
     private final LoadData loadData;
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AppUserRepository userRepo, ResultRepository resRepo) {
+    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AppUserRepository userRepo, FeatureResultRepository resRepo) {
         this.fileFactory = fileFactory;
-        this.resRepo = resRepo;
+        this.featureRepo = resRepo;
         this.dataRepo = dataRepo;
         this.loadData = loadData;
         this.algoRepo = algoRepo;
@@ -55,13 +55,13 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         loadData.loadDefaultDataBase();
     }
 
-    public ResultFilter handlePCAFeatures() throws Exception {
+    public FeatureResult handlePCAFeatures() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
         FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
         return ApplyPCA("CAR", carTrainTest.train);
     }
 
-    public ResponseEntity<ResultFilter> handleVNS(String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleVNS(String datasetName) throws Exception {
 
         ClassificationDataset dataset = loadData.getClassDatasetFromArff(datasetName);
         if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
@@ -71,25 +71,24 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return applyVNS(datasetName, dataset);
     }
 
-    public ResponseEntity<ResultFilter> handleFCBF(String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleFCBF(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyFCBF(datasetName, trainingData);
     }
 
-    public ResponseEntity<ResultFilter> handleScatterSearch(String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleScatterSearch(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyScatterSearch(datasetName, trainingData);
     }
 
     @Override
-    public List<ResultFilter> resultsByUser(Authentication authentication) throws Exception {
+    public List<FeatureResult> resultsByUser(Authentication authentication) throws Exception {
         String username = authentication.getName();
         AppUser appUser = userRepo.findByUsername(username);
-        List<ResultFilter> ret = resRepo.findResultFilterByPerformed_UserUploader(appUser);
-        for (ResultFilter r : ret
+        List<FeatureResult> ret = featureRepo.findFeatureResultByPerformed_UserUploader(appUser);
+        for (FeatureResult r : ret
         ) {
             r.getPerformed().setUserUploader(null);
-            r.setSeen(true);
         }
         return ret;
     }
@@ -107,7 +106,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return ret;
     }
 
-    public ResultFilter handlePCAFeatures(String datasetName) throws Exception {
+    public FeatureResult handlePCAFeatures(String datasetName) throws Exception {
         Dataset data = dataRepo.findDatasetByFilename(datasetName);
         FileFactory.TrainTest dataTrainTest = fileFactory.getInstancesFromFile(data.getFilename(), data.getFileDownloadUri(), new Options());
         return ApplyPCA("datasetName", dataTrainTest.train);
@@ -126,13 +125,13 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
 
-    public ResponseEntity<ResultFilter> applyFCBF(String datasetName, Instances trainingData) throws Exception {
+    public ResponseEntity<FeatureResult> applyFCBF(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
         Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package");
         Dataset dataset = loadData.getDataset(datasetName);
-        ResultFilter rf = loadData.checkIfAlreadyExists(fcbf, dataset);
-        if (rf.getJsonAttributes() != null) {
+        FeatureResult rf = loadData.checkIfFeatureAlreadyExists(fcbf, dataset);
+        if (rf.getFinishedDate() != null) {
             return ResponseEntity.ok(rf);
         }
         //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
@@ -146,19 +145,19 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         eval.buildEvaluator(trainingData);
         FCBFSearch fcbfSearch = new FCBFSearch();
         int[] sol = fcbfSearch.search(eval, trainingData);
-        rf = loadData.saveResultFilter(sol, rf, fcbf, dataset);
+        rf = loadData.saveFeatureSelectionResult(rf,sol);
         return ResponseEntity.ok(rf);
 
     }
 
-    public ResponseEntity<ResultFilter> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
+    public ResponseEntity<FeatureResult> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
 
         Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package");
         Dataset dataset = loadData.getDataset(datasetName);
-        ResultFilter rf = loadData.checkIfAlreadyExists(scatterSearch, dataset);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(scatterSearch, dataset);
 
-        if (rf.getJsonAttributes() != null) {
-            return ResponseEntity.ok(rf);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
         }
 
         CfsSubsetEval eval = new CfsSubsetEval();
@@ -172,18 +171,18 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
         int[] sol = scatterSearchV1.search(eval, trainingData);
         System.out.println(Arrays.toString(sol));
-        rf = loadData.saveResultFilter(sol, rf, scatterSearch, dataset);
-        return ResponseEntity.ok(rf);
+        fr = loadData.saveFeatureSelectionResult(fr,sol);
+        return ResponseEntity.ok(fr);
     }
 
-    public ResponseEntity<ResultFilter> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
+    public ResponseEntity<FeatureResult> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
         //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
         //logger.info(ddataset.toString());
 
         Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
         Dataset dataset1 = loadData.getDataset(dataset.getName());
-        ResultFilter rf = loadData.checkIfAlreadyExists(vns, dataset1);
-        if (rf.getJsonAttributes() != null) {
+        FeatureResult rf = loadData.checkIfFeatureAlreadyExists(vns, dataset1);
+        if (rf.getFinishedDate() != null) {
             return ResponseEntity.ok(rf);
         }
         FSObjectiveFunction of = new CfsEvaluator(dataset.getCategoricalData(), dataset.getLabels());
@@ -202,11 +201,12 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         for (int i = 0; i < solArr.length; i++) {
             solArr[i] = lista.get(i);
         }
-        rf = loadData.saveResultFilter(solArr, rf, vns, dataset1);
+
+        rf = loadData.saveFeatureSelectionResult(rf,solArr);
         return ResponseEntity.ok(rf);
     }
 
-    public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
+    public FeatureResult ApplyPCA(String name, Instances trainingData) throws Exception {
         AttributeSelection selector = new AttributeSelection();
 
         PrincipalComponents principalComponents = new PrincipalComponents();
@@ -219,7 +219,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         selector.setSearch(ranker);
         selector.setEvaluator(principalComponents);
         selector.SelectAttributes(trainingData);
-        ResultFilter rf = new ResultFilter();
+        FeatureResult rf = new FeatureResult();
         Algorithm a = new Algorithm("PCA");
         rf.setAlgorithm(a);
         return rf;
@@ -232,7 +232,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return Filter.useFilter(trainingData, randomProjection);
     }
 
-    public ResultFilter applyPCAFilter(Instances trainingData, int numAttributes) throws Exception {
+    public FeatureResult applyPCAFilter(Instances trainingData, int numAttributes) throws Exception {
         weka.filters.unsupervised.attribute.PrincipalComponents principalComponents = new weka.filters.unsupervised.attribute.PrincipalComponents();
         principalComponents.setMaximumAttributes(numAttributes);
         principalComponents.setInputFormat(trainingData);
@@ -264,10 +264,10 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         }
 
 
-        ResultFilter rf = new ResultFilter();
+        FeatureResult rf = new FeatureResult();
         Algorithm a = new Algorithm("PCA-Filter");
         rf.setAlgorithm(a);
-        resRepo.save(rf);
+        featureRepo.save(rf);
         return rf;
     }
 
@@ -309,7 +309,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         plotRP("RP_census", applyRP(censusTrainTest.train, 2));
     }
 
-    public ResultFilter plotPCA() throws Exception {
+    public FeatureResult plotPCA() throws Exception {
         FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
         //FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
         return applyPCAFilter(carTrainTest.train, 2);

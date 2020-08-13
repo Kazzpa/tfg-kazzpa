@@ -1,7 +1,7 @@
 package es.kazzpa.selattserver.controllers;
 
 import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.ResultFilter;
+import es.kazzpa.selattserver.models.FeatureResult;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -28,27 +28,27 @@ public class FeatureSelectionController {
 
     //TODO: quitar / al principio y crear metodo que cargue dataset de DB.
     @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultFilter handleFeatureReduction(@PathVariable String datasetName) throws Exception {
+    public FeatureResult handleFeatureReduction(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
     @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResultFilter> handleScatterSearch(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleScatterSearch(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleScatterSearch(datasetName);
     }
 
     @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResultFilter> handleFCBF(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleFCBF(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleFCBF(datasetName);
     }
 
     @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResultFilter> handleVNS(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleVNS(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleVNS(datasetName);
     }
 
     @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultFilter handleFeatureReduction() throws Exception {
+    public FeatureResult handleFeatureReduction() throws Exception {
         return featureSelectionService.handlePCAFeatures();
     }
 
@@ -69,12 +69,12 @@ public class FeatureSelectionController {
     }
 
     @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultFilter handlePlotPCA() throws Exception {
+    public FeatureResult handlePlotPCA() throws Exception {
         return featureSelectionService.plotPCA();
     }
 
     @GetMapping("/resultsByUser")
-    public List<ResultFilter> getResultsByUser(Authentication authentication) throws Exception {
+    public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.resultsByUser(authentication);
     }
 

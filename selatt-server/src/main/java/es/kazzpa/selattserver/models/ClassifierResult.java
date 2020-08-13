@@ -5,8 +5,8 @@ import javax.persistence.Entity;
 import java.util.Date;
 
 @Entity
-@Table(name = "result_filter")
-public class ResultFilter extends EntityDatabase{
+@Table(name = "classifierResult")
+public class ClassifierResult extends EntityDatabase{
 
 
     @ManyToOne
@@ -18,26 +18,22 @@ public class ResultFilter extends EntityDatabase{
 
     private boolean seen;
 
-    @Column(length = 1024)
-    private String jsonAttributes;
     private long scoreVNS;
+    //eval.numInstances()
+    private Double numInstances;
+    //eval.correct()
+    private Double correctlyClassified;
+
+    //eval.meanAbsoluteError()
+    private Double meanAbsoluteError;
 
 
-    public ResultFilter() {
+    public ClassifierResult() {
     }
 
-    public ResultFilter(Algorithm algorithm, Dataset performed) {
+    public ClassifierResult(Algorithm algorithm, Dataset performed) {
         this.algorithm = algorithm;
         this.performed = performed;
-    }
-
-
-    public String getJsonAttributes() {
-        return jsonAttributes;
-    }
-
-    public void setJsonAttributes(String jsonAttributes) {
-        this.jsonAttributes = jsonAttributes;
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -79,5 +75,29 @@ public class ResultFilter extends EntityDatabase{
 
     public void setSeen(boolean seen) {
         this.seen = seen;
+    }
+
+    public Double getNumInstances() {
+        return numInstances;
+    }
+
+    public void setNumInstances(Double numInstances) {
+        this.numInstances = numInstances;
+    }
+
+    public Double getCorrectlyClassified() {
+        return correctlyClassified;
+    }
+
+    public void setCorrectlyClassified(Double correctlyClassified) {
+        this.correctlyClassified = correctlyClassified;
+    }
+
+    public Double getMeanAbsoluteError() {
+        return meanAbsoluteError;
+    }
+
+    public void setMeanAbsoluteError(Double meanAbsoluteError) {
+        this.meanAbsoluteError = meanAbsoluteError;
     }
 }

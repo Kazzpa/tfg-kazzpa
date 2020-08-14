@@ -4,7 +4,7 @@
     <div>
       <vue-headful
           title="SelAtt"
-          description="Aplicación para la selección de atributos"      />
+          description="Aplicación para la selección de atributos"/>
 
     </div>
     <v-app-bar
@@ -13,7 +13,7 @@
         dark
     >
       <v-btn @click="goToHome" text class="d-flex">
-        <v-img contain :src="require('./assets/tipografia2.png')" max-height="120" max-width="120"></v-img>
+        <v-img class="shadow" contain :src="require('./assets/tipografia2.png')" max-height="120" max-width="120"></v-img>
       </v-btn>
 
       <v-spacer/>
@@ -41,7 +41,8 @@
             <v-icon>mdi-profile</v-icon>
           </v-btn>
           <v-btn class="mx-2" v-on:click="goToAlgorithm">
-            Algoritmos</v-btn>
+            Algoritmos
+          </v-btn>
 
         </div>
       </div>
@@ -168,7 +169,7 @@ const router = new VueRouter({
     {path: dataset_path, component: DatasetsView},
     {path: mobile_path, component: MobileDocView},
     {path: api_path, component: ApiDocView},
-    {path: web_doc_path,component: WebDocView},
+    {path: web_doc_path, component: WebDocView},
     //SET NEW VIEWS BEFORE LANDING PAGE
     {path: landing_path, component: LandingView},
   ]
@@ -181,7 +182,7 @@ export default {
     //
     drawer: null,
   }),
-  created (){
+  created() {
     console.log(process.env.NODE_ENV);
     console.log(process.env.VUE_APP_API_SERVER_URL);
   },
@@ -210,4 +211,8 @@ export default {
 
 </script>
 <style scoped>
+
+.shadow {
+  filter: drop-shadow(2px 2px 3px black);
+}
 </style>

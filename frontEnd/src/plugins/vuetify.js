@@ -1,9 +1,8 @@
 import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
-/*
-import es from 'vuetify/src/locale/es'
-import en from 'vuetify/src/locale/en'
- */
+import es from 'vuetify/es5/locale/es'
+import en from 'vuetify/es5/locale/en'
+
 Vue.use(Vuetify);
 
 export default new Vuetify({
@@ -20,11 +19,9 @@ export default new Vuetify({
                     success: '#8bc34a'
                 }
         }
-    }
-    /*
+    },
     lang: {
         locales: { es, en },
         current: 'es',
     },
-     */
 })

@@ -4,13 +4,36 @@ import axios from 'axios';
 class ProcessService {
 
     sendRequest(payload) {
-        let usuario = payload[0];
+        let user = payload[0];
         let filename = payload[1];
         let url = payload[2];
         return axios
-            .get(url+"/"+filename, {
+            .get(url + "/" + filename, {
                 headers: {
-                    "Authorization": "Bearer " + usuario.token,
+                    "Authorization": "Bearer " + user.token,
+                }
+            })
+            .then(response => {
+                return response.data;
+            });
+    }
+
+    sendFilteredRequest(payload) {
+        let user = payload[0];
+        let file = payload[1];
+        console.log(file);
+        delete(file.value);
+        delete(file.text);
+        let url = payload[2];
+        return axios
+            .post(url, {
+                performed: file.performed,
+                attributesSelected: file.attributesSelected,
+                algorithm: file.algorithm,
+            }, {
+
+                headers: {
+                    "Authorization": "Bearer " + user.token,
                 }
             })
             .then(response => {

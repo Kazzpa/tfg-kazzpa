@@ -42,7 +42,7 @@ public interface FeatureSelectionService {
 
     void plotRP() throws Exception;
 
-    public List<FeatureResult> resultsByUser(Authentication authentication) throws Exception;
+    List<FeatureResult> resultsByUser(Authentication authentication) throws Exception;
 
     List<Dataset> datasetsByUser(Authentication authentication) throws Exception;
 

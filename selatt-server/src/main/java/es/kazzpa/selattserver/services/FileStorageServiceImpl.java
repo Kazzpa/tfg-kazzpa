@@ -56,8 +56,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         String path = uploadDir + "\\" + format.format(now) + "_" + file.getOriginalFilename();
         String filePath = StringUtils.cleanPath(System.getProperty("user.dir") + path);
-        System.out.println(filePath);
-        System.out.println(path);
 
         if (filePath.contains("..")) {
             return ResponseEntity.badRequest().body("Ruta de archivo invalida");
@@ -85,7 +83,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
 
         String fileDownloadUri = path;
-        System.out.println(filePath);
         AppUser appUser = appUserRepository.findByUsername(authentication.getName());
         Dataset dataset = new Dataset(file.getOriginalFilename(), fileDownloadUri, mimeType, file.getSize(), appUser);
         datasetRepository.save(dataset);

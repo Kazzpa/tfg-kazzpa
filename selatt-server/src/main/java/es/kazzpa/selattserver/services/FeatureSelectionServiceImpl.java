@@ -170,7 +170,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
         ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
         int[] sol = scatterSearchV1.search(eval, trainingData);
-        System.out.println(Arrays.toString(sol));
         fr = loadData.saveFeatureSelectionResult(fr,sol);
         return ResponseEntity.ok(fr);
     }
@@ -180,9 +179,12 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         //logger.info(ddataset.toString());
 
         Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
-        Dataset dataset1 = loadData.getDataset(dataset.getName());
+        Dataset dataset1 = loadData.getDataset(datasetName);
         FeatureResult rf = loadData.checkIfFeatureAlreadyExists(vns, dataset1);
         if (rf.getFinishedDate() != null) {
+            Dataset aux = rf.getPerformed();
+            aux.setUserUploader(null);
+            rf.setPerformed(aux);
             return ResponseEntity.ok(rf);
         }
         FSObjectiveFunction of = new CfsEvaluator(dataset.getCategoricalData(), dataset.getLabels());

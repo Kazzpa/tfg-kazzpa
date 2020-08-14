@@ -18,7 +18,7 @@ public interface LoadData {
 
     ClassificationDataset getClassDatasetFromArff(String filename) throws Exception;
 
-    ClassifierResult checkIfClassifierAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
+    ClassifierResult checkIfClassifierResultAlreadyExists(Algorithm algorithm, Dataset dataset, FeatureResult feature) throws Exception;
     FeatureResult checkIfFeatureAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception;
 
     FeatureResult saveFeatureSelectionResult(FeatureResult fsr, int [] solution) throws Exception;

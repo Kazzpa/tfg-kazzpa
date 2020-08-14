@@ -56,4 +56,14 @@ public class FeatureResult extends EntityDatabase{
     public void setFinishedDate(Date finishedDate) {
         this.finishedDate = finishedDate;
     }
+
+    @Override
+    public String toString() {
+        return "FeatureResult{" +
+                "algorithm=" + algorithm +
+                ", performed=" + performed +
+                ", attributesSelected='" + attributesSelected + '\'' +
+                ", finishedDate=" + finishedDate +
+                '}';
+    }
 }

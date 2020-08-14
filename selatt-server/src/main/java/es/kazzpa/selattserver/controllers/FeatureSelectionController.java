@@ -82,7 +82,6 @@ public class FeatureSelectionController {
     @GetMapping("/filesByUser")
     public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.datasetsByUser(authentication);
-
     }
 
     @Bean

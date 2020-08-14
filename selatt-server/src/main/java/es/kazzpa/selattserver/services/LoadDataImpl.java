@@ -77,7 +77,7 @@ public class LoadDataImpl implements LoadData {
 
     public Instances getInstancesFromCsvFile(String fileName) throws Exception {
         CSVLoader loader = new CSVLoader();
-        loader.setSource(new File( fileName));
+        loader.setSource(new File(fileName));
         return loader.getDataSet();
     }
 
@@ -90,7 +90,7 @@ public class LoadDataImpl implements LoadData {
     }
 
     public Instances getInstancesFromArff(String fileName) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader( fileName));
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
         ArffLoader.ArffReader arff = new ArffLoader.ArffReader(reader, 100000);
         Instances data = arff.getStructure();
         data.setClassIndex(data.numAttributes() - 1);
@@ -120,11 +120,11 @@ public class LoadDataImpl implements LoadData {
     public Instances getInstancesFromJson(String fileName) throws Exception {
         try {
             JSONLoader jsonLoader = new JSONLoader();
-            File file = new File( fileName);
+            File file = new File(fileName);
             jsonLoader.setSource(file);
             return jsonLoader.getDataSet();
         } catch (IOException ex) {
-            throw new Exception("Archivo no encontrado en:" +fileName + ex.getMessage());
+            throw new Exception("Archivo no encontrado en:" + fileName + ex.getMessage());
         } catch (NullPointerException ex) {
             throw new Exception("Archivo not found" + ex.getMessage());
         } catch (Exception ex) {
@@ -137,9 +137,7 @@ public class LoadDataImpl implements LoadData {
             //TODO: FIX LOADING FROM .JSON AND .ARFF
             Dataset dat = dataRepo.findDatasetByFilename(fileName);
             String filePath = System.getProperty("user.dir") + dat.getFileDownloadUri();
-            System.out.println(filePath);
             Path path = this.fileStorageLocation.resolve(StringUtils.cleanPath(filePath));
-            System.out.println(path.toString());
             File file = path.toFile();
             String mimeType = new Tika().detect(file);
 
@@ -158,8 +156,6 @@ public class LoadDataImpl implements LoadData {
             }
         } catch (IOException ex) {
             throw new Exception("File not found:" + fileName + " " + ex.getMessage());
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
         }
     }
 
@@ -167,19 +163,28 @@ public class LoadDataImpl implements LoadData {
     public ClassificationDataset getClassDatasetFromArff(String fileName) throws Exception {
         Dataset dat = dataRepo.findDatasetByFilename(fileName);
         String filePath = System.getProperty("user.dir") + dat.getFileDownloadUri();
-        System.out.println(filePath);
         Path path = this.fileStorageLocation.resolve(StringUtils.cleanPath(filePath));
-        return DatasetUtils.loadArffDataset(new File( path.toString()), -1);
+        return DatasetUtils.loadArffDataset(new File(path.toString()), -1);
     }
 
 
-    public ClassifierResult checkIfClassifierAlreadyExists(Algorithm algorithm, Dataset dataset) throws Exception {
+    public ClassifierResult checkIfClassifierResultAlreadyExists(Algorithm algorithm, Dataset dataset, FeatureResult feature) throws Exception {
         ClassifierResult rf = new ClassifierResult();
         rf.setAlgorithm(algorithm);
         rf.setPerformed(dataset);
-        ClassifierResult alreadyPerformed = clasRepo.findClassifierResultByPerformedAndAlgorithm(dataset, algorithm);
-        if (alreadyPerformed != null) {
-            return alreadyPerformed;
+        if (feature == null) {
+
+            ClassifierResult alreadyPerformed =
+                    clasRepo.findClassifierResultByPerformedAndAlgorithm(dataset, algorithm);
+            if (alreadyPerformed != null) {
+                return alreadyPerformed;
+            }
+        }else{
+            ClassifierResult alreadyPerformed =
+                    clasRepo.findClassifierResultByPerformedAndAlgorithmAndFeatureAlgorithm(dataset,algorithm,feature.getAlgorithm());
+            if(alreadyPerformed !=null){
+                return alreadyPerformed;
+            }
         }
         return rf;
     }
@@ -188,14 +193,14 @@ public class LoadDataImpl implements LoadData {
         FeatureResult rf = new FeatureResult();
         rf.setAlgorithm(algorithm);
         rf.setPerformed(dataset);
-        FeatureResult alreadyPerformed = featureRepo.findByAlgorithmAndPerformed(algorithm,dataset);
+        FeatureResult alreadyPerformed = featureRepo.findByAlgorithmAndPerformed(algorithm, dataset);
         if (alreadyPerformed != null) {
             return alreadyPerformed;
         }
         return rf;
     }
-    public ClassifierResult saveClassifierResult(ClassifierResult rf) throws Exception {
 
+    public ClassifierResult saveClassifierResult(ClassifierResult rf) throws Exception {
         Date now = new Date();
         rf.setFinishedDate(now);
         clasRepo.save(rf);
@@ -203,7 +208,7 @@ public class LoadDataImpl implements LoadData {
 
     }
 
-    public FeatureResult saveFeatureSelectionResult(FeatureResult fsr, int [] solution) throws Exception {
+    public FeatureResult saveFeatureSelectionResult(FeatureResult fsr, int[] solution) throws Exception {
         String result = IntStream.of(solution)
                 .mapToObj(Integer::toString)
                 .collect(Collectors.joining(", "));

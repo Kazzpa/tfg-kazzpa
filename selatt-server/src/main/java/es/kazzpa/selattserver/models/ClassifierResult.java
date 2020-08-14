@@ -6,7 +6,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "classifierResult")
-public class ClassifierResult extends EntityDatabase{
+public class ClassifierResult extends EntityDatabase {
 
 
     @ManyToOne
@@ -18,7 +18,9 @@ public class ClassifierResult extends EntityDatabase{
 
     private boolean seen;
 
-    private long scoreVNS;
+    @ManyToOne
+    private Algorithm featureAlgorithm;
+
     //eval.numInstances()
     private Double numInstances;
     //eval.correct()
@@ -42,14 +44,6 @@ public class ClassifierResult extends EntityDatabase{
 
     public void setPerformed(Dataset performed) {
         this.performed = performed;
-    }
-
-    public long getScoreVNS() {
-        return scoreVNS;
-    }
-
-    public void setScoreVNS(long scoreVNS) {
-        this.scoreVNS = scoreVNS;
     }
 
     public Algorithm getAlgorithm() {
@@ -95,6 +89,14 @@ public class ClassifierResult extends EntityDatabase{
 
     public Double getMeanAbsoluteError() {
         return meanAbsoluteError;
+    }
+
+    public Algorithm getFeatureAlgorithm() {
+        return featureAlgorithm;
+    }
+
+    public void setFeatureAlgorithm(Algorithm featureAlgorithm) {
+        this.featureAlgorithm = featureAlgorithm;
     }
 
     public void setMeanAbsoluteError(Double meanAbsoluteError) {

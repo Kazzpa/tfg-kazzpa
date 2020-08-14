@@ -1,9 +1,6 @@
 package es.kazzpa.selattserver.repositories;
 
-import es.kazzpa.selattserver.models.Algorithm;
-import es.kazzpa.selattserver.models.AppUser;
-import es.kazzpa.selattserver.models.Dataset;
-import es.kazzpa.selattserver.models.ClassifierResult;
+import es.kazzpa.selattserver.models.*;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +12,5 @@ import java.util.List;
 public interface ClassifierResultRepository extends CrudRepository<ClassifierResult, Integer> {
     List<ClassifierResult> findClassifierResultByPerformed_UserUploader(AppUser appUser);
     ClassifierResult findClassifierResultByPerformedAndAlgorithm(Dataset performed, Algorithm algorithm);
+    ClassifierResult findClassifierResultByPerformedAndAlgorithmAndFeatureAlgorithm(Dataset performed,Algorithm algorithm, Algorithm featureAlgorithm);
 }

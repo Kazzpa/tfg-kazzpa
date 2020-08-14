@@ -80,4 +80,15 @@ public class Dataset extends EntityDatabase {
         this.userUploader = userUploader;
     }
 
+    @Override
+    public String toString() {
+        return "Dataset{" +
+                "filename='" + filename + '\'' +
+                ", name='" + name + '\'' +
+                ", fileDownloadUri='" + fileDownloadUri + '\'' +
+                ", fileType='" + fileType + '\'' +
+                ", userUploader=" + userUploader +
+                ", size=" + size +
+                '}';
+    }
 }

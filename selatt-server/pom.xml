@@ -18,6 +18,7 @@
         <spring.framework.version>2.2.2.RELEASE</spring.framework.version>
         <spring-cloud.version>Hoxton.SR2</spring-cloud.version>
         <java.version>1.8</java.version>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
     <profiles>
         <profile>
@@ -75,7 +76,6 @@
 
 
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -83,6 +83,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -156,10 +160,6 @@
             <version>1.0.4</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
@@ -222,11 +222,14 @@
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId><configuration>
-                <profiles>
-                    <profile>test</profile>
-                </profiles>
-            </configuration>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <profiles>
+                        <profile>test</profile>
+                        <profile>default</profile>
+                    </profiles>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
             </plugin>
 
         </plugins>

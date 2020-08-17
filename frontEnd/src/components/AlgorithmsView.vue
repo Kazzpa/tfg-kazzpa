@@ -20,7 +20,7 @@
             color="primary"
             @click="e1 = 2"
             v-if="algorithmTypeChosen"
-            :loading="this.datasetsLoaded<2"
+            :loading="!this.datasetsLoaded"
         >
           Continue
         </v-btn>
@@ -156,7 +156,7 @@ export default {
     responseProcessStatus: "success",
     algorithm: null,
     algorithmTypeChosen: false,
-    datasetsLoaded: 0,
+    datasetsLoaded: false,
     featureDatasets: null,
     classifierDatasets: null,
     tab: null,
@@ -166,7 +166,7 @@ export default {
       {text: "Variable neighbourhood search", value: "VNS"},
       {text: "Scatter Search", value: "Scs"},
     ],
-    algorithmsDict: {
+    algDict: {
       "FastCorrelationBasedFilter": "FCBF",
       "Naive Bayes": "NvB",
       "ScatterSearchV1": "Scs",
@@ -196,8 +196,7 @@ export default {
   },
   methods: {
     loadDatasets() {
-      //TODO: NEST AXIOS.GET CALLS AND CONVERT DATASETSLOADED TO BOOLEAN
-      if (this.datasetsLoaded < 2) {
+      if (!this.datasetsLoaded) {
         let url = server_url + "/featureSelection/filesByUser/";
         axios.get(url,
             {
@@ -207,12 +206,35 @@ export default {
               }
             })
             .then(response => {
+
+              url = server_url + "/evaluate/filesByUser/";
+              axios.get(url,
+                  {
+                    headers: {
+                      "Content-Type": "multipart/form-data",
+                      "Authorization": "Bearer " + this.$store.state.auth.user.token,
+                    }
+                  })
+                  .then(response => {
+                    response.data.forEach(elem => {
+                      elem.value = elem.performed.filename + "-" + this.algDict[elem.algorithm.name];
+                      elem.text = elem.performed.filename + "-" + this.algDict[elem.algorithm.name];
+                    });
+                    console.log(response.data);
+                    this.classifierDatasets = response.data;
+                    this.datasetsLoaded = true;
+
+
+                  })
+                  .catch(error => {
+                    console.log(error.response);
+
+                  });
               response.data.forEach(elem => {
                 elem.value = elem.filename;
                 elem.text = elem.filename;
               });
               this.featureDatasets = response.data;
-              this.datasetsLoaded++;
 
 
             })
@@ -221,29 +243,6 @@ export default {
 
             });
 
-        url = server_url + "/evaluate/filesByUser/";
-        axios.get(url,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-                "Authorization": "Bearer " + this.$store.state.auth.user.token,
-              }
-            })
-            .then(response => {
-              response.data.forEach(elem => {
-                elem.value = elem.performed.filename + "-" + this.algorithmsDict[elem.algorithm.name];
-                elem.text = elem.performed.filename + "-" + this.algorithmsDict[elem.algorithm.name];
-              });
-              console.log(response.data);
-              this.classifierDatasets = response.data;
-              this.datasetsLoaded++;
-
-
-            })
-            .catch(error => {
-              console.log(error.response);
-
-            });
       }
     },
     uploadFile() {
@@ -325,18 +324,19 @@ export default {
           return null;
       }
       let url = server_url + process_path;
-      let usuario = this.$store.state.auth.user;
+      let user = this.$store.state.auth.user;
       let isFeatureResult = this.algorithms.some(elem => {
         return this.filenameProcess.value.includes(elem.value);
       });
       if (isFeatureResult) {
         console.log("is feature result");
         url += "_filtered";
-        let data = [usuario, this.filenameProcess, url];
+        let data = [user, this.filenameProcess, url];
         console.log(this.filenameProcess);
         this.$store.dispatch("process/sendFilteredRequest", data).then(
             (response) => {
-              this.responseProcess = "Tasa de acierto : " + (response.correctlyClassified / response.numInstances) + "%";
+              this.responseProcess = "Tasa de acierto : "
+                  + (response.correctlyClassified / response.numInstances) + "%";
 
               this.responseProcessStatus = "success";
             },
@@ -350,11 +350,12 @@ export default {
         );
       } else {
         let filename = this.filenameProcess.value;
-        let data = [usuario, filename, url];
+        let data = [user, filename, url];
         this.$store.dispatch("process/sendRequest", data).then(
             (response) => {
               if (process_path.includes("evaluate")) {
-                this.responseProcess = "Tasa de acierto : " + (response.correctlyClassified / response.numInstances) + "%";
+                this.responseProcess = "Tasa de acierto : " +
+                    (response.correctlyClassified / response.numInstances) + "%";
               } else {
                 this.responseProcess = "Ejecucion Atributos seleccionados: " + response.attributesSelected;
               }

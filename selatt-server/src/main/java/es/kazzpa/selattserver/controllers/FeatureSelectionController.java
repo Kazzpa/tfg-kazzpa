@@ -73,7 +73,7 @@ public class FeatureSelectionController {
         return featureSelectionService.plotPCA();
     }
 
-    @GetMapping("/resultsByUser")
+    @GetMapping("/results")
     public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.resultsByUser(authentication);
     }

@@ -38,9 +38,18 @@ public class EvaluationController {
         return evaluationService.handleNaiveBayes(dataset);
     }
 
-    @GetMapping("/resultsByUser")
+    @PostMapping(path= "result_seen/")
+    public void handleResultSeen(@RequestBody ClassifierResult classifierResult)throws Exception{
+        evaluationService.setResultSeen(classifierResult);
+    }
+
+    @GetMapping("/results")
     public List<ClassifierResult> getResultsByUser(Authentication authentication) throws Exception {
         return evaluationService.getResultsByUser(authentication);
+    }
+    @GetMapping("/results/new")
+    public List<ClassifierResult> getNewResultsByUser(Authentication authentication) throws Exception {
+        return evaluationService.getNewResultsByUser(authentication);
     }
 
     @GetMapping("/filesByUser")

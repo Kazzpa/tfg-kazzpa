@@ -21,9 +21,6 @@ class ProcessService {
     sendFilteredRequest(payload) {
         let user = payload[0];
         let file = payload[1];
-        console.log(file);
-        delete(file.value);
-        delete(file.text);
         let url = payload[2];
         return axios
             .post(url, {

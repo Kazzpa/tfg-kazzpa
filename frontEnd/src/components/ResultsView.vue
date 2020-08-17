@@ -139,7 +139,7 @@ export default {
     if (!this.loggedIn) {
       this.$router.push(login_path);
     } else {
-      let url = server_url + "/featureSelection/resultsByUser/";
+      let url = server_url + "/featureSelection/results/";
       axios.get(url,
           {
             headers: {
@@ -171,7 +171,7 @@ export default {
 
           });
 
-      url = server_url + "/evaluate/resultsByUser/";
+      url = server_url + "/evaluate/results/";
       axios.get(url,
           {
             headers: {

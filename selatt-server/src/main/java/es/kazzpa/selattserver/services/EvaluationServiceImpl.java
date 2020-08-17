@@ -62,8 +62,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         Remove removeFilter = new Remove();
         String[] attributes = attributesSelected.split(",");
         int[] indices = new int[attributes.length];
-        for (int i = 0; i < attributes.length;) {
-            if(!attributes[i].trim().isEmpty()){
+        for (int i = 0; i < attributes.length; ) {
+            if (!attributes[i].trim().isEmpty()) {
                 indices[i] = Integer.parseInt(attributes[i].trim());
             }
             i++;
@@ -128,6 +128,18 @@ public class EvaluationServiceImpl implements EvaluationService {
     }
 
     @Override
+    public List<ClassifierResult> getNewResultsByUser(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        AppUser appUser = userRepo.findByUsername(username);
+        List<ClassifierResult> ret = classifierRepo.findClassifierResultByPerformed_UserUploaderAndSeenFalse(appUser);
+        for (ClassifierResult r : ret
+        ) {
+            r.getPerformed().setUserUploader(null);
+        }
+        return ret;
+    }
+
+    @Override
     public List<FeatureResult> datasetsByUser(Authentication authentication) throws Exception {
         String username = authentication.getName();
         AppUser appUser = userRepo.findByUsername(username);
@@ -140,5 +152,11 @@ public class EvaluationServiceImpl implements EvaluationService {
             f.setPerformed(data);
         }
         return ret;
+    }
+
+    @Override
+    public void setResultSeen(ClassifierResult classifierResult) throws Exception {
+        classifierResult.setSeen(true);
+        classifierRepo.save(classifierResult);
     }
 }

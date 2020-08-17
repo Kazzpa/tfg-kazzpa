@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface ClassifierResultRepository extends CrudRepository<ClassifierResult, Integer> {
     List<ClassifierResult> findClassifierResultByPerformed_UserUploader(AppUser appUser);
+    List<ClassifierResult> findClassifierResultByPerformed_UserUploaderAndSeenFalse(AppUser appUser);
     ClassifierResult findClassifierResultByPerformedAndAlgorithm(Dataset performed, Algorithm algorithm);
     ClassifierResult findClassifierResultByPerformedAndAlgorithmAndFeatureAlgorithm(Dataset performed,Algorithm algorithm, Algorithm featureAlgorithm);
 }

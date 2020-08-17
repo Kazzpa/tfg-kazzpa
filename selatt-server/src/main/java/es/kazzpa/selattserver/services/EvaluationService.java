@@ -13,6 +13,8 @@ public interface EvaluationService {
     ResponseEntity<ClassifierResult> handleNaiveBayes(FeatureResult dataset) throws Exception;
     ResponseEntity<ClassifierResult> applyNaiveBayes (ClassifierResult rf,String filename, Instances trainingData) throws Exception;
     List<ClassifierResult> getResultsByUser(Authentication authentication) throws Exception;
+    List<ClassifierResult> getNewResultsByUser(Authentication authentication) throws Exception;
     List<FeatureResult> datasetsByUser(Authentication authentication) throws Exception;
+    void setResultSeen(ClassifierResult classifierResult) throws Exception;
 
 }

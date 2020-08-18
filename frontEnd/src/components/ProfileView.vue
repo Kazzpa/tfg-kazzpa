@@ -9,16 +9,12 @@
         <div v-if="currentUser.email" class="mx-2">Correo: {{ currentUser.email }}</div>
       </v-card-text>
     </v-card>
-    <v-btn class="error mx-2 my-2" @click="logOut">LogOut</v-btn>
-    <v-btn class="mx-2 my-2" v-on:click="goToDatasets">Datasets</v-btn>
-    <v-btn class="mx-2 my-2" v-on:click="goToResult">
-      <v-badge
-          color="green"
-          content="6">
-        Results
-      </v-badge>
+    <v-btn class="primaryAccent white--text mx-2 my-2" @click="logOut">LogOut</v-btn>
+    <v-btn class="primary mx-2 my-2" v-on:click="goToDatasets">Datasets</v-btn>
+    <v-btn class="primary mx-2 my-2" v-on:click="goToResult">
+      Resultados
     </v-btn>
-    <v-btn class="mx-2 my-2" v-on:click="goToAlgorithm">
+    <v-btn class="primary mx-2 my-2" v-on:click="goToAlgorithm">
       Algoritmos
     </v-btn>
 

@@ -75,7 +75,7 @@
             headers: [
                 {text: "Dataset", align: "start", value: "name"},
                 {text: "Nombre archivo", value: "filename"},
-                {text: "Tamaño del dataset(bytes)", value: "size"},
+                {text: "Tamaño del dataset", value: "size"},
                 {text: 'Tipo archivo', value: 'fileType', sortable: true},
             ],
             inputFile: null,

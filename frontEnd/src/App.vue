@@ -1,6 +1,5 @@
 <template>
     <v-app>
-
         <div>
             <vue-headful
                     title="SelAtt"
@@ -9,7 +8,7 @@
         </div>
         <v-app-bar
                 app
-                color="primary"
+                color="background"
                 dark
         >
             <v-btn @click="goToHome" text class="d-flex">
@@ -24,28 +23,24 @@
                 <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
             </div>
             <div class="d-none d-md-flex">
-                <v-btn v-if="this.$store.state.auth.user == null" v-on:click="goToLogin">
+                <v-btn class="secondaryAccent" v-if="this.$store.state.auth.user == null" v-on:click="goToLogin">
                     Login
                     <v-icon>mdi-login</v-icon>
                 </v-btn>
                 <div v-else>
-                    <v-btn class="mx-2" v-on:click="goToDatasets">Datasets</v-btn>
+                    <v-btn class="secondary mx-2" v-on:click="goToDatasets">Datasets</v-btn>
                     <v-menu offset-y>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn class="mx-2"
-
-                                   dark
-                                   v-bind="attrs"
-                                   v-on="on"
-                            >
-
-                                Results
+                            <v-btn class="secondary mx-2" dark v-bind="attrs" v-on="on">
+                                <v-badge color="success" :content="new_results_num" :value="new_results_num">
+                                    Results
+                                </v-badge>
                             </v-btn>
                         </template>
                         <v-list>
                             <v-list-item>
-                                <v-btn @click="goToResult">
-                                    Comprobar resultados anteriores
+                                <v-btn text @click="goToResult">
+                                    Resultados anteriores
                                 </v-btn>
                             </v-list-item>
                             <v-list-item v-if="this.new_results==null">
@@ -53,43 +48,30 @@
                             </v-list-item>
                             <div v-else v-for="(result, index) in this.new_results" :key="index">
                                 <v-list-item>
-                                    <v-list-item-title>{{ result.performed.filename }}
-                                        {{ Math.round(((result.correctlyClassified/result.numInstances) +
+                                    <v-list-item-title v-if="result.correctlyClassified != null">{{
+                                        result.performed.filename }} - Clasificado:
+                                        {{ Math.round(((result.correctlyClassified / result.numInstances) +
                                         Number.EPSILON) *
-                                        100) / 100 }}% acierto
+                                        10000) / 100 }}%
+                                    </v-list-item-title>
+                                    <v-list-item-title v-else>
+                                        {{ result.performed.filename }} -
+                                        {{ result.algorithm.name}} Filtrado
                                     </v-list-item-title>
                                     <v-list-item-action>
-                                        <v-btn small>
-                                            <v-icon>mdi-close</v-icon>
-                                        </v-btn>
+                                        <v-icon>mdi-close</v-icon>
                                     </v-list-item-action>
                                 </v-list-item>
                             </div>
                         </v-list>
                     </v-menu>
-                    <v-menu>
-                        <template v-slot:activator="{ on,attrs }">
-                            <!--v-on:click="goToResult"-->
-                            <v-btn class="mx-2">
-                                <v-badge
-                                        color="green"
-                                        content="6"
-                                        v-bind="attrs"
-                                        v-on="on">
-                                    Results
-                                </v-badge>
-                            </v-btn>
-                        </template>
-
-                    </v-menu>
-                    <v-btn class="mx-2" v-on:click="goToProfile">
-                        Profile
-                        <v-icon>mdi-profile</v-icon>
-                    </v-btn>
-                    <v-btn class="mx-2" v-on:click="goToAlgorithm">
+                    <v-btn class="secondary mx-2" v-on:click="goToAlgorithm">
                         Algoritmos
                     </v-btn>
-
+                    <v-btn class="secondaryAccent mx-2" v-on:click="goToProfile">
+                        {{ this.$store.state.auth.user.username}}
+                        <v-icon>mdi-account-box</v-icon>
+                    </v-btn>
                 </div>
             </div>
         </v-app-bar>
@@ -99,17 +81,14 @@
                 absolute
                 temporary
         >
-            <v-list-item
-                    background-color="light-blue">
-                <v-list-item-content>
-                    <v-list-item-title class="title">
-                        SelAtt
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                        Navegación
-                    </v-list-item-subtitle>
-                </v-list-item-content>
-            </v-list-item>
+            <v-img src="@/assets/backgroundDrawer.jpg" >
+                <v-row align="end" class="lightbox white--text pa-2 fill-height">
+                    <v-col>
+                        <div class="text-h3">SelAtt</div>
+                        <div class="body-1">Navegación</div>
+                    </v-col>
+                </v-row>
+            </v-img>
             <v-divider></v-divider>
             <v-list>
                 <div v-if="this.$store.state.auth.user == null">
@@ -123,41 +102,43 @@
                     </v-list-item>
                 </div>
                 <div v-else>
-                    <v-list-item>
+
+                    <v-list-item v-on:click="goToProfile">
                         <v-list-item-icon>
-                            <v-icon>mdi-archive</v-icon>
+                            <v-icon>mdi-account-box</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content class="mx-2" v-on:click="goToDatasets">
-                            Datasets
+                        <v-list-item-content text class="mx-2" >
+                            Perfil
                         </v-list-item-content>
                     </v-list-item>
-
-                    <v-list-item>
+                    <v-divider inset></v-divider>
+                    <v-list-item v-on:click="goToAlgorithm">
                         <v-list-item-icon>
-                            <v-icon>mdi-login</v-icon>
+                            <v-icon>mdi-chevron-right</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content class="mx-2" v-on:click="goToAlgorithm">
+                        <v-list-item-content text class="mx-2" >
                             Algoritmos
                         </v-list-item-content>
                     </v-list-item>
                     <v-divider inset></v-divider>
-                    <v-list-item>
+                    <v-list-item v-on:click="goToResult">
                         <v-list-item-icon>
-                            <v-icon>mdi-login</v-icon>
+                            <v-icon>mdi-chevron-right</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content class="mx-2" v-on:click="goToResult">
+                        <v-list-item-content text class="mx-2" >
                             Resultados
                         </v-list-item-content>
                     </v-list-item>
                     <v-divider inset></v-divider>
-                    <v-list-item>
+                    <v-list-item v-on:click="goToDatasets">
                         <v-list-item-icon>
-                            <v-icon>mdi-login</v-icon>
+                            <v-icon>mdi-chevron-right</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content class="mx-2" v-on:click="goToProfile">
-                            Perfil
+                        <v-list-item-content text class="mx-2" >
+                            Datasets
                         </v-list-item-content>
                     </v-list-item>
+                    <v-divider inset></v-divider>
                 </div>
             </v-list>
 
@@ -231,11 +212,12 @@
             new_results: null,
             new_results_num: 0,
             drawer: null,
+            delay_newResults: 5000,
         }),
         created() {
             console.log(process.env.NODE_ENV);
             console.log(process.env.VUE_APP_API_SERVER_URL);
-            this.interval = setInterval(() => this.checkNewResults(), 10000);
+            this.interval = setInterval(() => this.checkNewResults(), this.delay_newResults);
 
         },
         methods: {
@@ -272,8 +254,30 @@
                                 console.log(response.data);
                                 this.new_results = response.data;
                                 this.new_results_num = response.data.length;
+
+                                url = process.env.VUE_APP_API_SERVER_URL + "/featureSelection/results/new";
+                                axios.get(url,
+                                    {
+                                        headers: {
+                                            "Content-Type": "multipart/form-data",
+                                            "Authorization": "Bearer " + this.$store.state.auth.user.token,
+                                        }
+                                    })
+                                    .then(response => {
+                                            console.log(response.data);
+                                            this.new_results.push.apply(this.new_results, response.data);
+                                            this.new_results_num += response.data.length;
+                                            if (this.delay_newResults == 5000) {
+                                                this.delay_newResults = 100000;
+                                                clearInterval(this.interval);
+                                                this.interval = setInterval(() => this.checkNewResults(), this.delay_newResults);
+                                            }
+
+                                        }
+                                    );
                             }
                         );
+
                 }
             }
 

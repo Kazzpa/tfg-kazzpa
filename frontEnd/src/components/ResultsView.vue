@@ -116,7 +116,6 @@
             headers: [
                 {text: "Dataset", align: "start", value: "performed.filename"},
                 {text: "Algoritmo seleccionado", value: "algorithm.name"},
-                {text: "Tamaño del dataset(bytes)", value: "performed.size"},
                 {text: 'Fecha', value: 'finishedDate', sortable: true},
                 {text: 'Attributos seleccionados', value: 'actions', sortable: false},
             ],

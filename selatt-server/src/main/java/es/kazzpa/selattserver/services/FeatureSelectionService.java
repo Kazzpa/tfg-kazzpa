@@ -1,5 +1,6 @@
 package es.kazzpa.selattserver.services;
 
+import es.kazzpa.selattserver.models.ClassifierResult;
 import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.FeatureResult;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,9 @@ public interface FeatureSelectionService {
 
     void plotRP() throws Exception;
 
-    List<FeatureResult> resultsByUser(Authentication authentication) throws Exception;
+    List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception;
+    List<FeatureResult> getNewResultsByUser(Authentication authentication) throws Exception;
+    void setResultSeen(FeatureResult featureResult) throws Exception;
 
     List<Dataset> datasetsByUser(Authentication authentication) throws Exception;
 

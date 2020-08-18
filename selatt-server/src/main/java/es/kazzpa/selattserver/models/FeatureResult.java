@@ -25,6 +25,8 @@ public class FeatureResult extends EntityDatabase{
 
     private Date finishedDate;
 
+    private boolean seen;
+
     public Dataset getPerformed() {
         return performed;
     }
@@ -55,6 +57,14 @@ public class FeatureResult extends EntityDatabase{
 
     public void setFinishedDate(Date finishedDate) {
         this.finishedDate = finishedDate;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 
     @Override

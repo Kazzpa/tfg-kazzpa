@@ -14,4 +14,5 @@ public interface FeatureResultRepository extends CrudRepository<FeatureResult,St
 
     FeatureResult findByAlgorithmAndPerformed(Algorithm algorithm, Dataset original);
     List<FeatureResult> findFeatureResultByPerformed_UserUploader(AppUser appUser);
+    List<FeatureResult> findFeatureResultByPerformed_UserUploaderAndSeenFalse(AppUser appUser);
 }

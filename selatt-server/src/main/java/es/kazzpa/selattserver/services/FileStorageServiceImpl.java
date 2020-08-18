@@ -15,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -84,7 +83,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         String fileDownloadUri = path;
         AppUser appUser = appUserRepository.findByUsername(authentication.getName());
-        Dataset dataset = new Dataset(file.getOriginalFilename(), fileDownloadUri, mimeType, file.getSize(), appUser);
+        long mbSize = file.getSize()/ (1024);
+        Dataset dataset = new Dataset(file.getOriginalFilename(), fileDownloadUri, mimeType, mbSize, appUser);
         datasetRepository.save(dataset);
 
         return ResponseEntity.ok(dataset);

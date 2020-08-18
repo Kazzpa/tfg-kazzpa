@@ -82,7 +82,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     }
 
     @Override
-    public List<FeatureResult> resultsByUser(Authentication authentication) throws Exception {
+    public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
         String username = authentication.getName();
         AppUser appUser = userRepo.findByUsername(username);
         List<FeatureResult> ret = featureRepo.findFeatureResultByPerformed_UserUploader(appUser);
@@ -91,6 +91,23 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             r.getPerformed().setUserUploader(null);
         }
         return ret;
+    }
+
+    @Override
+    public List<FeatureResult> getNewResultsByUser(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        AppUser appUser = userRepo.findByUsername(username);
+        List<FeatureResult> ret = featureRepo.findFeatureResultByPerformed_UserUploaderAndSeenFalse(appUser);
+        for (FeatureResult r : ret
+        ) {
+            r.getPerformed().setUserUploader(null);
+        }
+        return ret;
+    }
+
+    public void setResultSeen(FeatureResult featureResult) throws Exception {
+        featureResult.setSeen(true);
+        featureRepo.save(featureResult);
     }
 
     @Override
@@ -145,7 +162,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         eval.buildEvaluator(trainingData);
         FCBFSearch fcbfSearch = new FCBFSearch();
         int[] sol = fcbfSearch.search(eval, trainingData);
-        rf = loadData.saveFeatureSelectionResult(rf,sol);
+        rf = loadData.saveFeatureSelectionResult(rf, sol);
         return ResponseEntity.ok(rf);
 
     }
@@ -170,7 +187,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
         ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
         int[] sol = scatterSearchV1.search(eval, trainingData);
-        fr = loadData.saveFeatureSelectionResult(fr,sol);
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
         return ResponseEntity.ok(fr);
     }
 
@@ -204,7 +221,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
             solArr[i] = lista.get(i);
         }
 
-        rf = loadData.saveFeatureSelectionResult(rf,solArr);
+        rf = loadData.saveFeatureSelectionResult(rf, solArr);
         return ResponseEntity.ok(rf);
     }
 
@@ -355,9 +372,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         }
         return newFirst;
     }
-
-
-
 
 
 }

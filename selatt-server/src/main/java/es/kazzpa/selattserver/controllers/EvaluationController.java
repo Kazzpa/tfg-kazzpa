@@ -52,7 +52,7 @@ public class EvaluationController {
         return evaluationService.getNewResultsByUser(authentication);
     }
 
-    @GetMapping("/filesByUser")
+    @GetMapping("/datasets")
     public List<FeatureResult> getDatasetsByUser(Authentication authentication) throws Exception {
         return evaluationService.datasetsByUser(authentication);
     }

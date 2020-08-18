@@ -18,6 +18,7 @@ import weka.filters.unsupervised.attribute.Remove;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class EvaluationServiceImpl implements EvaluationService {
@@ -104,7 +105,8 @@ public class EvaluationServiceImpl implements EvaluationService {
         classifier.buildClassifier(trainingData);
 
         Evaluation eval = new Evaluation(trainingData);
-        eval.evaluateModel(classifier, trainingData);
+
+        eval.crossValidateModel(classifier, trainingData,10,new Random());
 
         rf.setNumInstances(eval.numInstances());
         rf.setCorrectlyClassified(eval.correct());

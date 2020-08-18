@@ -1,5 +1,6 @@
 package es.kazzpa.selattserver.controllers;
 
+import es.kazzpa.selattserver.models.ClassifierResult;
 import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.FeatureResult;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
@@ -73,15 +74,24 @@ public class FeatureSelectionController {
         return featureSelectionService.plotPCA();
     }
 
-    @GetMapping("/results")
+    @GetMapping("results")
     public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
-        return featureSelectionService.resultsByUser(authentication);
+        return featureSelectionService.getResultsByUser(authentication);
+    }
+    @GetMapping("results/new")
+    public List<FeatureResult> getNewResultsByUser(Authentication authentication) throws Exception {
+        return featureSelectionService.getNewResultsByUser(authentication);
     }
 
 
-    @GetMapping("/filesByUser")
+    @GetMapping("/datasets")
     public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.datasetsByUser(authentication);
+    }
+
+    @PostMapping(path= "result_seen/")
+    public void handleResultSeen(@RequestBody FeatureResult featureResult)throws Exception{
+        featureSelectionService.setResultSeen(featureResult);
     }
 
     @Bean

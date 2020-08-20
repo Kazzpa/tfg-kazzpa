@@ -229,14 +229,15 @@ public class LoadDataImpl implements LoadData {
         return dataset;
     }
 
-    public Algorithm getAlgorithm(String algorithm, String language) throws Exception {
-        Algorithm algorithm1 = algoRepo.findAlgorithmByName(algorithm);
-        if (algorithm1 == null) {
-            algorithm1 = new Algorithm();
-            algorithm1.setLanguage(language);
-            algorithm1.setName(algorithm);
-            algoRepo.save(algorithm1);
+    public Algorithm getAlgorithm(String algorithm_name, String language,String type) throws Exception {
+        Algorithm algorithm = algoRepo.findAlgorithmByName(algorithm_name);
+        if (algorithm == null) {
+            algorithm = new Algorithm();
+            algorithm.setLanguage(language);
+            algorithm.setName(algorithm_name);
+            algorithm.setType(type);
+            algoRepo.save(algorithm);
         }
-        return algorithm1;
+        return algorithm;
     }
 }

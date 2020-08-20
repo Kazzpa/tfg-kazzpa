@@ -33,7 +33,7 @@ public class FeatureSelectionController {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @GetMapping(path = "Scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<FeatureResult> handleScatterSearch(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleScatterSearch(datasetName);
     }
@@ -41,6 +41,21 @@ public class FeatureSelectionController {
     @GetMapping(path = "fcbf/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<FeatureResult> handleFCBF(@PathVariable String datasetName) throws Exception {
         return featureSelectionService.handleFCBF(datasetName);
+    }
+
+    @GetMapping(path = "ranker/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FeatureResult> handleRanker(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleRanker(datasetName);
+    }
+
+    @GetMapping(path = "bestfirst/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FeatureResult> handleBestFirst(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleBestFirst(datasetName);
+    }
+
+    @GetMapping(path = "exhaustive/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FeatureResult> handleExhaustive(@PathVariable String datasetName) throws Exception {
+        return featureSelectionService.handleExhaustive(datasetName);
     }
 
     @GetMapping(path = "vns/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,7 +68,7 @@ public class FeatureSelectionController {
         return featureSelectionService.handlePCAFeatures();
     }
 
-    @GetMapping(path = "/rp", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "rp", produces = MediaType.APPLICATION_JSON_VALUE)
     public String handleRP() throws Exception {
         return featureSelectionService.handleRandomizedProjectionFeatures();
     }
@@ -78,19 +93,19 @@ public class FeatureSelectionController {
     public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.getResultsByUser(authentication);
     }
+
     @GetMapping("results/new")
     public List<FeatureResult> getNewResultsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.getNewResultsByUser(authentication);
     }
-
 
     @GetMapping("/datasets")
     public List<Dataset> getDatasetsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.datasetsByUser(authentication);
     }
 
-    @PostMapping(path= "result_seen/")
-    public void handleResultSeen(@RequestBody FeatureResult featureResult)throws Exception{
+    @PostMapping(path = "result_seen/")
+    public void handleResultSeen(@RequestBody FeatureResult featureResult) throws Exception {
         featureSelectionService.setResultSeen(featureResult);
     }
 

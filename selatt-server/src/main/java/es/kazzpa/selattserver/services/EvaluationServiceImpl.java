@@ -45,7 +45,7 @@ public class EvaluationServiceImpl implements EvaluationService {
     @Override
     public ResponseEntity<ClassifierResult> handleNaiveBayes(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
-        Algorithm naiveBayes = loadData.getAlgorithm("Naive Bayes", "Weka Package");
+        Algorithm naiveBayes = loadData.getAlgorithm("Naive Bayes", "Weka Package","Classifier");
         Dataset dataset2 = loadData.getDataset(datasetName);
         ClassifierResult rf = loadData.checkIfClassifierResultAlreadyExists(naiveBayes, dataset2, null);
         if (rf.getFinishedDate() != null) {
@@ -72,7 +72,7 @@ public class EvaluationServiceImpl implements EvaluationService {
         removeFilter.setAttributeIndicesArray(indices);
         removeFilter.setInputFormat(trainingData);
         Instances newData = Filter.useFilter(trainingData, removeFilter);
-        Algorithm naiveBayes = loadData.getAlgorithm("Naive Bayes", "Weka Package");
+        Algorithm naiveBayes = loadData.getAlgorithm("Naive Bayes", "Weka Package","Classifier");
         Dataset dataset2 = loadData.getDataset(datasetName);
         ClassifierResult rf = loadData.checkIfClassifierResultAlreadyExists(naiveBayes, dataset2, dataset);
         if (rf.getFeatureAlgorithm() != null) {

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import upo.jcu.math.set.Subset;
 import weka.attributeSelection.*;
 import weka.core.Instances;
+import weka.core.SelectedTag;
+import weka.core.Tag;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
 import weka.filters.unsupervised.attribute.RandomProjection;
@@ -41,6 +43,17 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     @Autowired
     private final AppUserRepository userRepo;
     private final LoadData loadData;
+    /** search direction: backward */
+    protected static final int SELECTION_BACKWARD = 0;
+    /** search direction: forward */
+    protected static final int SELECTION_FORWARD = 1;
+    /** search direction: bidirectional */
+    protected static final int SELECTION_BIDIRECTIONAL = 2;
+    /** search directions */
+    public static final Tag[] TAGS_SELECTION = {
+            new Tag(SELECTION_BACKWARD, "Backward"),
+            new Tag(SELECTION_FORWARD, "Forward"),
+            new Tag(SELECTION_BIDIRECTIONAL, "Bi-directional"), };
 
     public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AppUserRepository userRepo, FeatureResultRepository resRepo) {
         this.fileFactory = fileFactory;
@@ -79,6 +92,20 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     public ResponseEntity<FeatureResult> handleScatterSearch(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         return applyScatterSearch(datasetName, trainingData);
+    }
+
+    public ResponseEntity<FeatureResult> handleRanker(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        return applyRanker(datasetName, trainingData);
+    }
+
+    public ResponseEntity<FeatureResult> handleBestFirst(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        return applyBestFirst(datasetName, trainingData);
+    }
+    public ResponseEntity<FeatureResult> handleExhaustive(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        return applyExhaustive(datasetName, trainingData);
     }
 
     @Override
@@ -145,7 +172,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     public ResponseEntity<FeatureResult> applyFCBF(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
-        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package");
+        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package","Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult rf = loadData.checkIfFeatureAlreadyExists(fcbf, dataset);
         if (rf.getFinishedDate() != null) {
@@ -169,7 +196,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     public ResponseEntity<FeatureResult> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
 
-        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package");
+        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package","Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult fr = loadData.checkIfFeatureAlreadyExists(scatterSearch, dataset);
 
@@ -191,11 +218,100 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return ResponseEntity.ok(fr);
     }
 
-    public ResponseEntity<FeatureResult> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
-        //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
-        //logger.info(ddataset.toString());
+    public ResponseEntity<FeatureResult> applyRanker(String datasetName, Instances trainingData) throws Exception {
 
-        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
+        //Check if the resultfilter has been processed before
+        Algorithm ranker = loadData.getAlgorithm("Ranker", "Weka package","Feature Selection");
+        Dataset dataset = loadData.getDataset(datasetName);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(ranker, dataset);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
+        }
+        //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
+        //utiliza: simuncertAttributeSetEval
+        CorrelationAttributeEval eval = new CorrelationAttributeEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+        Ranker rankerAlg = new Ranker();
+        rankerAlg.setThreshold(0.20);
+        int[] sol = rankerAlg.search(eval, trainingData);
+        String aux = "[";
+        double[][] rankedAttr = rankerAlg.rankedAttributes();
+        for (double[] row : rankedAttr) {
+            aux += "\n(";
+            for (double elem : row) {
+                aux += "," + elem;
+            }
+            aux += ")";
+        }
+        aux += "]";
+        System.out.println(aux);
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
+
+    }
+
+    public ResponseEntity<FeatureResult> applyBestFirst(String datasetName, Instances trainingData) throws Exception {
+
+        //TODO: FIX WORKING IT GIVES FULL ATTRIBUTES AS SELECTED
+        //Check if the resultfilter has been processed before
+        Algorithm bestFirst = loadData.getAlgorithm("Best First", "Weka package","Feature Selection");
+        Dataset dataset = loadData.getDataset(datasetName);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(bestFirst, dataset);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
+        }
+        WrapperSubsetEval eval = new WrapperSubsetEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+        BestFirst bestFirstSearch = new BestFirst();
+        bestFirstSearch.setStartSet("1-" + trainingData.numAttributes());
+        bestFirstSearch.setSearchTermination(trainingData.numAttributes()/2);
+        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD,TAGS_SELECTION));
+        int[] sol = bestFirstSearch.search(eval, trainingData);
+
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
+
+    }
+    public ResponseEntity<FeatureResult> applyExhaustive(String datasetName, Instances trainingData) throws Exception {
+
+        //Check if the resultfilter has been processed before
+        Algorithm exhaustive = loadData.getAlgorithm("Exhaustive Search", "Weka package","Feature Selection");
+        Dataset dataset = loadData.getDataset(datasetName);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(exhaustive, dataset);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
+        }
+        WrapperSubsetEval eval = new WrapperSubsetEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+        BestFirst bestFirstSearch = new BestFirst();
+        bestFirstSearch.setStartSet("1-" + (trainingData.numAttributes()-1));
+        bestFirstSearch.setSearchTermination(trainingData.numAttributes()/2);
+        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD,TAGS_SELECTION));
+        int[] sol = bestFirstSearch.search(eval, trainingData);
+
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
+
+    }
+
+    public ResponseEntity<FeatureResult> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
+
+        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published","Feature Selection");
         Dataset dataset1 = loadData.getDataset(datasetName);
         FeatureResult rf = loadData.checkIfFeatureAlreadyExists(vns, dataset1);
         if (rf.getFinishedDate() != null) {

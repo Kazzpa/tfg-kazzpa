@@ -23,6 +23,12 @@ public interface FeatureSelectionService {
 
     ResponseEntity<FeatureResult> handleScatterSearch(String datasetName) throws Exception;
 
+    ResponseEntity<FeatureResult> handleRanker(String datasetName) throws Exception;
+
+    ResponseEntity<FeatureResult> handleBestFirst(String datasetName) throws Exception;
+
+    ResponseEntity<FeatureResult> handleExhaustive(String datasetName) throws Exception;
+
     ResponseEntity<FeatureResult> handleVNS(String datasetName) throws Exception;
 
     FeatureResult ApplyPCA(String name, Instances trainingData) throws Exception;
@@ -36,6 +42,12 @@ public interface FeatureSelectionService {
     ResponseEntity<FeatureResult> applyFCBF(String name, Instances trainingData) throws Exception;
 
     ResponseEntity<FeatureResult> applyScatterSearch(String fileName, Instances trainingData) throws Exception;
+
+    ResponseEntity<FeatureResult> applyRanker(String fileName, Instances trainingData) throws Exception;
+
+    ResponseEntity<FeatureResult> applyBestFirst(String fileName, Instances trainingData) throws Exception;
+
+    ResponseEntity<FeatureResult> applyExhaustive(String fileName, Instances trainingData) throws Exception;
 
     ResponseEntity<FeatureResult> applyVNS(String filename, ClassificationDataset dataset) throws Exception;
 

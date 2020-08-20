@@ -26,5 +26,6 @@ public interface LoadData {
 
     Dataset getDataset(String datasetName) throws Exception;
 
-    Algorithm getAlgorithm(String algorithm, String language) throws Exception;
+    Algorithm getAlgorithm(String algorithm, String language,String type) throws Exception;
+
 }

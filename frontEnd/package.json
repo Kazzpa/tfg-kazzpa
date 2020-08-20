@@ -10,8 +10,10 @@
   "dependencies": {
     "axios": "^0.19.2",
     "axios-debug-log": "^0.7.0",
+    "copy-webpack-plugin": "^6.0.3",
     "core-js": "^3.6.5",
     "papaparse": "^5.2.0",
+    "serialize-javascript": "^4.0.0",
     "streamsaver": "^2.0.4",
     "vee-validate": "^2.2.15",
     "vue": "^2.6.11",

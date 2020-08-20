@@ -81,7 +81,7 @@
                 absolute
                 temporary
         >
-            <v-img src="@/assets/backgroundDrawer.jpg" >
+            <v-img src="@/assets/backgroundDrawer.jpg">
                 <v-row align="end" class="lightbox white--text pa-2 fill-height">
                     <v-col>
                         <div class="text-h3">SelAtt</div>
@@ -107,7 +107,7 @@
                         <v-list-item-icon>
                             <v-icon>mdi-account-box</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content text class="mx-2" >
+                        <v-list-item-content text class="mx-2">
                             Perfil
                         </v-list-item-content>
                     </v-list-item>
@@ -116,7 +116,7 @@
                         <v-list-item-icon>
                             <v-icon>mdi-chevron-right</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content text class="mx-2" >
+                        <v-list-item-content text class="mx-2">
                             Algoritmos
                         </v-list-item-content>
                     </v-list-item>
@@ -125,7 +125,7 @@
                         <v-list-item-icon>
                             <v-icon>mdi-chevron-right</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content text class="mx-2" >
+                        <v-list-item-content text class="mx-2">
                             Resultados
                         </v-list-item-content>
                     </v-list-item>
@@ -134,7 +134,7 @@
                         <v-list-item-icon>
                             <v-icon>mdi-chevron-right</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content text class="mx-2" >
+                        <v-list-item-content text class="mx-2">
                             Datasets
                         </v-list-item-content>
                     </v-list-item>
@@ -143,8 +143,33 @@
             </v-list>
 
         </v-navigation-drawer>
-        ¡
         <router-view></router-view>
+        <v-bottom-sheet
+                bottom
+                v-model="cookiesLaw"
+                timeout="-1"
+        >
+            <v-sheet class="text-center py-5"
+                    min-height="150px">
+                <div class="py-3">Las cookies se utilizan para mejorar la experiencia de uso de la aplicación, pero no son necesarias.
+                </div>
+                <div class="py-1">
+                    <v-btn
+                            small
+                            class="primary mx-2"
+                            @click="acceptCookies"
+                    >
+                        Aceptar
+                    </v-btn>
+                    <v-btn
+                            small
+                            class="secondary mx-2"
+                            @click="cancelCookies"
+                    >
+                        Cancelar
+                    </v-btn></div>
+            </v-sheet>
+        </v-bottom-sheet>
         <v-footer class="text-center">
             <v-col class="text-center">
                 <a href="https://github.com/Kazzpa/tfg-kazzpa">
@@ -189,7 +214,6 @@
     const router = new VueRouter({
         mode: "history",
         routes: [
-            // dynamic segments start with a colon
             {path: login_path, component: LoginView},
             {path: profile_path, component: ProfileView},
             {path: algorithm_path, component: AlgorithmsView},
@@ -220,6 +244,12 @@
             this.interval = setInterval(() => this.checkNewResults(), this.delay_newResults);
 
         },
+        computed: {
+            cookiesLaw() {
+                return true;
+                //return !this.$store.state.cookielaw.set;
+            }
+        },
         methods: {
             goToLogin() {
                 router.push(login_path);
@@ -229,8 +259,7 @@
             },
             goToHome() {
                 router.push(landing_path);
-            }
-            ,
+            },
             goToResult() {
                 router.push(result_path);
             },
@@ -238,9 +267,15 @@
                 router.push(dataset_path);
             },
             goToAlgorithm() {
-                this.$router.push(algorithm_path);
+                router.push(algorithm_path);
             },
-            checkNewResults() {
+            acceptCookies() {
+                this.$store.dispatch("cookielaw/acceptcookies");
+            },
+            cancelCookies() {
+                this.$store.dispatch("cookielaw/cancelcookies");
+            }
+            , checkNewResults() {
                 if (this.$store.state.auth.user != null) {
                     let url = process.env.VUE_APP_API_SERVER_URL + "/evaluate/results/new";
                     axios.get(url,

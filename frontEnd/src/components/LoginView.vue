@@ -3,9 +3,9 @@
         <v-row>
             <v-col></v-col>
             <v-col>
-                <v-layout justify-space-around>
+                <div class="d-flex justify-space-around">
                     <v-img :src="require('../assets/logo.png')" max-height="120" max-width="120"></v-img>
-                </v-layout>
+                </div>
                 <v-form name="form" @submit.prevent="handleLogin">
                     <v-text-field
                             v-model="user.username"

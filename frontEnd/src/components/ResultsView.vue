@@ -16,10 +16,6 @@
                 </v-btn>
             </v-card-actions>
         </v-card>
-        <!--
-
-                        {text: 'Instancias correctamente clasificadas', value: 'correctlyClassified', sortable: true},
-                        {text: 'Mediana de error absoluto', value: 'meanAbsoluteError', sortable: true},-->
         <v-card class="mx-2 my-2" v-if="classifierChosen" v-model="classifierChosen">
             <v-card-title>
                 Clasificador {{ classifierChosen.algorithm.name }}
@@ -36,61 +32,83 @@
             </v-card-actions>
         </v-card>
         <v-card class="mx-2 my-2">
-            <v-card-title>
-                Resultados de ejecuciones previos
-            </v-card-title>
-            <v-spacer/>
-            <v-text-field
-                    v-model="search"
-                    append-icon="mdi-filter-variant"
-                    label="Filtrar"
-                    single-line
-                    hide-details
-            />
-            <v-data-table v-if="results != null" :headers="headers"
-                          :items="results"
-                          :search="search">
-                <template v-slot:item.actions="{ item }">
-                    <v-icon
-                            small
-                            class="mr-2"
-                            @click="viewFeature(item)"
-                    >
-                        mdi-file-chart
-                    </v-icon>
-                </template>
-            </v-data-table>
-        </v-card>
-        <v-card class="mx-2 my-2">
-            <v-card-title>
-                Clasificaciones previas
-            </v-card-title>
-            <v-spacer/>
-            <v-text-field
-                    v-model="classifierSearch"
-                    append-icon="mdi-filter-variant"
-                    label="Filtrar"
-                    single-line
-                    hide-details
-            />
-            <v-data-table v-if="classifierResults != null" :headers="classifierHeaders"
-                          :items="classifierResults"
-                          :search="classifierSearch">
 
-                <template v-slot:item.percentage="{ item }">
-                    {{item.percentage}}%
-                </template>
-                <template v-slot:item.actions="{ item }">
-                    <v-icon
-                            small
-                            class="mr-2"
-                            @click="viewClassifier(item)"
-                    >
-                        mdi-file-chart
-                    </v-icon>
-                </template>
-            </v-data-table>
+            <v-toolbar flat color="primary" dark>
+                <v-toolbar-title>Resultados</v-toolbar-title>
+            </v-toolbar>
+            <v-tabs vertical
+                    background-color="primary">
+                <v-divider/>
+                <v-tab>
+                    <div class="shadow">Selección de Atributos</div>
+                    <v-spacer/>
+                    <v-icon left>mdi-arrow-right</v-icon>
+                </v-tab>
+                <v-divider/>
+                <v-tab>
+                    <div class="shadow">Clasificadores</div>
+                    <v-spacer/>
+                    <v-icon left>mdi-arrow-right</v-icon>
+                </v-tab>
+                <v-divider/>
+                <v-tab-item>
+                    <div class="mx-2 my-2">
+                        <v-text-field
+                                v-model="search"
+                                append-icon="mdi-filter-variant"
+                                label="Filtrar"
+                                single-line
+                                hide-details
+                        />
+                        <v-data-table v-if="results != null" :headers="headers"
+                                      items-per-page=5
+                                      :items="results"
+                                      :search="search">
+                            <template v-slot:item.actions="{ item }">
+                                <v-icon
+                                        small
+                                        class="mr-2"
+                                        @click="viewFeature(item)"
+                                >
+                                    mdi-file-chart
+                                </v-icon>
+                            </template>
+                        </v-data-table>
+                    </div>
 
+                </v-tab-item>
+                <v-tab-item>
+
+                    <div class="mx-2 my-2">
+                        <v-text-field
+                                v-model="classifierSearch"
+                                append-icon="mdi-filter-variant"
+                                label="Filtrar"
+                                single-line
+                                hide-details
+                        />
+                        <v-data-table v-if="classifierResults != null" :headers="classifierHeaders"
+                                      items-per-page=5
+                                      :items="classifierResults"
+                                      :search="classifierSearch">
+
+                            <template v-slot:item.percentage="{ item }">
+                                {{item.percentage}}%
+                            </template>
+                            <template v-slot:item.actions="{ item }">
+                                <v-icon
+                                        small
+                                        class="mr-2"
+                                        @click="viewClassifier(item)"
+                                >
+                                    mdi-file-chart
+                                </v-icon>
+                            </template>
+                        </v-data-table>
+
+                    </div>
+                </v-tab-item>
+            </v-tabs>
         </v-card>
     </v-main>
 </template>
@@ -156,17 +174,17 @@
                 const data = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", data);
-                link.setAttribute("download", this.resultChosen.performed.filename+".csv");
+                link.setAttribute("download", this.resultChosen.performed.filename + ".csv");
                 link.click();
             },
-            setSeenClassifier(item){
+            setSeenClassifier(item) {
                 let url = server_url + "/evaluate/result_seen";
-                axios.post(url,{
-                    "id" : item.id,
-                    "algorithm" : item.algorithm,
-                    "performed" : item.performed,
-                    "seen" : item.seen,
-                },{
+                axios.post(url, {
+                    "id": item.id,
+                    "algorithm": item.algorithm,
+                    "performed": item.performed,
+                    "seen": item.seen,
+                }, {
                     headers: {
                         "Authorization": "Bearer " + this.$store.state.auth.user.token,
                     }
@@ -197,7 +215,7 @@
                             second: 'numeric',
                             hour12: false
                         };
-                        response.data.forEach(elem=>{
+                        response.data.forEach(elem => {
                             elem.finishedDate = Intl.DateTimeFormat("es-ES", options).format(new Date(elem.finishedDate));
                         })
 
@@ -254,5 +272,7 @@
 </script>
 
 <style scoped>
-
+    .shadow {
+        filter: drop-shadow(2px 2px 3px black);
+    }
 </style>

@@ -40,7 +40,7 @@
                 <div v-if="this.featureDatasets">
                     <h3>Seleccionar un dataset cargado previamente:</h3>
                     <div v-if="this.algorithmType ==='true'">
-                        <v-combobox
+                        <v-combobox class="d-inline-flex"
                                 :items="featureDatasets"
                                 prepend-icon="mdi-file" dense v-model="filenameProcess"
                                 label="Dataset a procesar"/>
@@ -158,12 +158,15 @@
                 {text: "Fast Correlation Based Filter", value: "FCBF"},
                 {text: "Variable neighbourhood search", value: "VNS"},
                 {text: "Scatter Search", value: "Scs"},
+                {text: "Ranker", value: "Ranker"},
+                {text: "Best First", value: "BestFirst"},
             ],
             algDict: {
                 "FastCorrelationBasedFilter": "FCBF",
                 "Naive Bayes": "NvB",
                 "ScatterSearchV1": "Scs",
                 "VariableNeighbourhoodSearch": "VNS",
+                "BestFirst" : "BestFirst",
             }
             ,
             classifierAlgorithms: [
@@ -261,7 +264,7 @@
                         this.featureDatasets.push.apply(this.featureDatasets, [
                             {
                                 "value": this.inputFile[i].name,
-                                "text": this.inputFile[i].name
+                                "text": this.inputFile[i].name,
                             }]);
 
                     })
@@ -281,7 +284,13 @@
                         process_path = "/featureSelection/vns";
                         break;
                     case "Scs":
-                        process_path = "/featureSelection/Scs";
+                        process_path = "/featureSelection/scs";
+                        break;
+                    case "Ranker":
+                        process_path = "/featureSelection/ranker";
+                        break;
+                    case "BestFirst":
+                        process_path = "/featureSelection/bestfirst";
                         break;
                     case "NvB":
                         process_path = "/evaluate/naivebayes";
@@ -297,7 +306,6 @@
                 if (isFeatureResult) {
                     url += "_filtered";
                     let data = [user, this.filenameProcess, url];
-                    console.log(this.filenameProcess);
                     this.$store.dispatch("process/sendFilteredRequest", data).then(
                         (response) => {
                             this.responseProcess = "Tasa de acierto : "
@@ -317,6 +325,7 @@
                     );
                 } else {
                     let filename = this.filenameProcess.value;
+                    console.log(filename)
                     let data = [user, filename, url];
                     this.$store.dispatch("process/sendRequest", data).then(
                         (response) => {
@@ -326,10 +335,14 @@
                                         Number.EPSILON) *
                                         10000) / 100 + "%";
                             } else {
+                                console.log(response);
                                 this.responseProcess = "Ejecucion Atributos seleccionados: " + response.attributesSelected;
                                 this.classifierDatasets.push.apply(this.classifierDatasets,[{
                                     "value": filename+"-"+this.algorithm.value,
-                                    "text": filename+"-"+this.algorithm.value
+                                    "text": filename+"-"+this.algorithm.value,
+                                    "performed": response.performed,
+                                    "attributesSelected" : response.attributesSelected,
+                                    "algorithm" : response.algorithm,
                                 }]);
                             }
                             this.responseProcessStatus = "success";

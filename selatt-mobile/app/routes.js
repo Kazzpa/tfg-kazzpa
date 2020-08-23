@@ -3,6 +3,7 @@ import ProfileView from "./components/ProfileView";
 import LandingView from "./components/LandingView";
 import AlgorithmsView from "./components/AlgorithmsView";
 import ResultsView from "./components/ResultsView";
+import DatasetsView from "./components/DatasetsView";
 
 export const routes = {
     'login': {
@@ -19,5 +20,8 @@ export const routes = {
     },
     'results': {
         component: ResultsView
+    },
+    'datasets': {
+        component: DatasetsView
     }
 }

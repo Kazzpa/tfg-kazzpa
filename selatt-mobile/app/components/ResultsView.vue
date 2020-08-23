@@ -1,16 +1,15 @@
 <template>
   <Page @loaded="on_load">
     <ActionBar>
-      <GridLayout width="100%" columns="auto, *">
-        <Label text="MENU" @tap="$refs.drawer.nativeView.showDrawer()" col="0"/>
-        <Label class="title" text="Home" col="1"/>
-      </GridLayout>
+      <NavigationButton text="Nav" android.systemIcon="ic_menu_more" @tap="$refs.drawer.nativeView.showDrawer()"/>
+      <Label class="title" text="SelAtt - Auth" />
     </ActionBar>
 
     <RadSideDrawer ref="drawer">
       <StackLayout ~drawerContent backgroundColor="#ffffff">
-        <Label class="drawer-header" text="Drawer"/>
-
+        <StackLayout class="drawer-header">
+          <Label color="white" text="SelAtt"/>
+        </StackLayout>
         <Label class="drawer-item" text="Login" @tap="goToLogin"/>
         <Label class="drawer-item" text="Item 2"/>
         <Label class="drawer-item" text="Item 3"/>
@@ -57,7 +56,7 @@
         <Label v-if="resultChosen" v-model="resultChosen">
           <StackLayout>
             <Label>
-              {{ this.resultChosen.jsonAttributes }}
+              {{ resultChosen.jsonAttributes }}
             </Label>
             <Button @tap="resultChosen = null">
               Cerrar
@@ -71,7 +70,7 @@
 </template>
 <script>
 
-import {mapGetters, mapActions} from 'vuex'
+import {mapGetters, mapActions} from 'vuex';
 import routes from "../routes";
 import * as config from '../config.js';
 import axios from 'axios';
@@ -83,7 +82,6 @@ export default {
       headers: [
         {text: "Dataset", align: "start", value: "performed.filename"},
         {text: "Algoritmo seleccionado", value: "algorithm.name"},
-        {text: "Tamaño del dataset(bytes)", value: "performed.size"},
         {text: 'Finished Date', value: 'finishedDate', sortable: true},
         {text: 'Attributos seleccionados', value: 'actions', sortable: false},
       ],
@@ -111,7 +109,7 @@ export default {
       if (!this.loggedIn) {
         this.$navigator.navigate('login',{clearHistory: true});
       } else {
-        let url = config.BACKEND + "/featureSelection/resultsByUser/";
+        let url = config.BACKEND + "/featureSelection/results/";
         axios.get(url,
             {
               headers: {
@@ -157,7 +155,9 @@ export default {
   padding: 50 16 16 16;
   margin-bottom: 16;
   font-size: 24;
-  background: #2196f3
+  background: #2196f3;
+  background-image: url("~/assets/images/backgroundDrawer.jpg");
+  background-size: cover;
 }
 
 .drawer-item {

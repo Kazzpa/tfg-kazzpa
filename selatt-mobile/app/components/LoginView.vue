@@ -1,27 +1,44 @@
 <template>
   <Page @loaded="on_load">
-    <StackLayout>
-      <Image class="nt-form__logo" height="10%" src="~/assets/images/NativeScript-Vue.png"/>
-      <StackLayout class="input-field">
-        <TextField hint="Usuario" autocorrect="false" autocapitalizationType="none"
-                   v-model="user.username"
-                   class="input"
-        />
+    <ActionBar>
+        <NavigationButton text="Nav" android.systemIcon="ic_menu_more" @tap="$refs.drawer.nativeView.showDrawer()"/>
+        <Label class="title" text="SelAtt - Auth" />
+    </ActionBar>
+
+    <RadSideDrawer ref="drawer">
+      <StackLayout ~drawerContent backgroundColor="#ffffff">
+        <StackLayout class="drawer-header">
+          <Label color="white" text="SelAtt"/>
+        </StackLayout>
       </StackLayout>
-      <StackLayout class="input">
-        <TextField
-            hint="Contraseña" secure="true" autocorrect="false" autocapitalizationType="none"
-            v-model="user.password"
-            class="input"
-        />
-      </StackLayout>
-      <Label v-if="message">{{ message }}</Label>
-      <Button :isEnabled="!this.loading" class="btn btn-primary -primary" @tap="handleLogin">
-        <ActivityIndicator :busy="loading"></ActivityIndicator>
-        <span>Login</span>
-      </Button>
-      <Button>Registro</Button>
-    </StackLayout>
+
+      <GridLayout ~mainContent columns="*" rows="*">
+        <StackLayout>
+          <Image class="nt-form__logo" height="10%" src="~/assets/images/logotipo.png"/>
+          <StackLayout class="input-field">
+            <TextField hint="Usuario" autocorrect="false" autocapitalizationType="none"
+                       v-model="user.username"
+                       class="input"
+            />
+          </StackLayout>
+          <StackLayout class="input">
+            <TextField
+                    hint="Contraseña" secure="true" autocorrect="false" autocapitalizationType="none"
+                    v-model="user.password"
+                    class="input"
+            />
+          </StackLayout>
+          <Label v-if="message">{{ message }}</Label>
+          <Button :isEnabled="!loading" class="btn btn-primary -primary" @tap="handleLogin">
+            <ActivityIndicator :busy="loading"></ActivityIndicator>
+            <span>Login</span>
+          </Button>
+          <Button>Registro</Button>
+        </StackLayout>
+      </GridLayout>
+    </RadSideDrawer>
+
+
   </Page>
 </template>
 <script>

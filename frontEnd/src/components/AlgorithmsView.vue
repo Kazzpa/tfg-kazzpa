@@ -25,7 +25,8 @@
                     Continue
                 </v-btn>
             </v-stepper-content>
-            <v-stepper-step editable :complete="e1 > 2" step="2">Selección de dataset</v-stepper-step>
+            <v-stepper-step :editable="algorithmTypeChosen" :complete="e1 > 2" step="2">Selección de dataset
+            </v-stepper-step>
             <v-stepper-content step="2">
 
                 <h3>Subir un dataset:</h3>
@@ -34,16 +35,16 @@
 
                     </v-file-input>
                     <v-btn v-if="inputFile != null" class="secondary" type="submit" rounded>Subir</v-btn>
-                    <v-alert  class="mx-2 my-2" type="info" v-if="responseFileUpload" dense>{{ responseFileUpload }}
+                    <v-alert class="mx-2 my-2" type="info" v-if="responseFileUpload" dense>{{ responseFileUpload }}
                     </v-alert>
                 </v-form>
                 <div v-if="this.featureDatasets">
                     <h3>Seleccionar un dataset cargado previamente:</h3>
                     <div v-if="this.algorithmType ==='true'">
                         <v-combobox class="d-inline-flex"
-                                :items="featureDatasets"
-                                prepend-icon="mdi-file" dense v-model="filenameProcess"
-                                label="Dataset a procesar"/>
+                                    :items="featureDatasets"
+                                    prepend-icon="mdi-file" dense v-model="filenameProcess"
+                                    label="Dataset a procesar"/>
                     </div>
                     <div v-else>
                         <v-combobox
@@ -102,10 +103,12 @@
                             </v-col>
 
                         </v-row>
-                        <v-btn v-if="classifierAlgorithms" type="submit" rounded>Evaluar</v-btn>
+                        <v-btn v-if="classifierAlgorithms" :disabled="processing" :loading="processing" type="submit"
+                               rounded>Evaluar
+                        </v-btn>
                         <v-btn text @click="e1 = 1">Cancelar</v-btn>
                     </div>
-                    <v-alert class="mx-2 my-2" v-bind:type="responseProcessStatus" v-if="responseProcess" dense>
+                    <v-alert class=" mx-2 my-2" v-bind:type="responseProcessStatus" v-if="responseProcess" dense>
                         {{ responseProcess }}
                     </v-alert>
                 </v-form>
@@ -131,7 +134,7 @@
     const login_path = process.env.VUE_APP_LOGIN_PATH;
     const server_url = process.env.VUE_APP_API_SERVER_URL;
 
-    if(process.env.NODE_ENV==="development"){
+    if (process.env.NODE_ENV === "development") {
         require('axios-debug-log');
         localStorage.debug = "axios";
     }
@@ -150,6 +153,7 @@
             algorithm: null,
             algorithmTypeChosen: false,
             datasetsLoaded: false,
+            processing: false,
             featureDatasets: null,
             classifierDatasets: null,
             tab: null,
@@ -160,18 +164,27 @@
                 {text: "Scatter Search", value: "Scs"},
                 {text: "Ranker", value: "Ranker"},
                 {text: "Best First", value: "BestFirst"},
+                {text: "Exhaustive", value: "Exhaustive"},
             ],
             algDict: {
                 "FastCorrelationBasedFilter": "FCBF",
                 "Naive Bayes": "NvB",
                 "ScatterSearchV1": "Scs",
                 "VariableNeighbourhoodSearch": "VNS",
-                "BestFirst" : "BestFirst",
-            }
-            ,
+                "Best First": "BestFirst",
+                "Ranker": "Ranker",
+                "Exhaustive": "exhaustive",
+                "Ibk": "Ibk",
+                "BayesNet": "bayesNet",
+                "Hidden Naive Bayes": "hnb",
+                "MultiLayer Perceptron": "hnb",
+            },
             classifierAlgorithms: [
-
                 {text: "Naive Bayes", value: "NvB"},
+                {text: "Ibk", value: "Ibk"},
+                {text: "BayesNet", value: "bayesNet"},
+                {text: "Hidden Naive Bayes", value: "hnb"},
+                {text: "MultiLayer Perceptron", value: "mlp"},
             ]
         }),
 
@@ -214,6 +227,9 @@
                                     response.data.forEach(elem => {
                                         elem.value = elem.performed.filename + "-" + this.algDict[elem.algorithm.name];
                                         elem.text = elem.performed.filename + "-" + this.algDict[elem.algorithm.name];
+                                        if(!this.algDict[elem.algorithm.name]){
+                                            console.log(elem.algorithm.name);
+                                        }
                                     });
                                     console.log(response.data);
                                     this.classifierDatasets = response.data;
@@ -260,7 +276,7 @@
                         }
                     })
                     .then(response => {
-                        this.responseFileUpload = "Subido archivo " + response.data.filename+" tamaño: "+response.data.size;
+                        this.responseFileUpload = "Subido archivo " + response.data.filename + " tamaño: " + response.data.size;
                         this.featureDatasets.push.apply(this.featureDatasets, [
                             {
                                 "value": this.inputFile[i].name,
@@ -275,6 +291,7 @@
 
             },
             processAlgorithm() {
+                this.processing = true;
                 let process_path = null;
                 switch (this.algorithm.value) {
                     case "FCBF":
@@ -292,10 +309,28 @@
                     case "BestFirst":
                         process_path = "/featureSelection/bestfirst";
                         break;
+                    case "Exhaustive":
+                        process_path = "/featureSelection/exhaustive";
+                        break;
                     case "NvB":
                         process_path = "/evaluate/naivebayes";
                         break;
+                    case "Ibk":
+                        process_path = "/evaluate/ibk";
+                        break;
+                    case "bayesNet":
+                        process_path = "/evaluate/bayesnet";
+                        break;
+                    case "hnb":
+                        process_path = "/evaluate/hnb";
+                        break;
+                    case "mlp":
+                        process_path = "/evaluate/mlp";
+                        break;
                     default:
+                        this.responseProcess = "Error en la solicitud";
+                        this.processing = false;
+                        this.responseProcessStatus = "warning";
                         return null;
                 }
                 let url = server_url + process_path;
@@ -304,10 +339,11 @@
                     return this.filenameProcess.value.includes(elem.value);
                 });
                 if (isFeatureResult) {
-                    url += "_filtered";
+                    url += "/filtered";
                     let data = [user, this.filenameProcess, url];
                     this.$store.dispatch("process/sendFilteredRequest", data).then(
                         (response) => {
+                            this.processing = false;
                             this.responseProcess = "Tasa de acierto : "
                                 + Math.round(((response.correctlyClassified / response.numInstances) +
                                     Number.EPSILON) *
@@ -316,8 +352,8 @@
                             this.responseProcessStatus = "success";
                         },
                         error => {
+                            this.processing = false;
                             console.log(error.response);
-                            this.loading = false;
                             this.responseProcessStatus = "warning";
                             this.responseProcess =
                                 error.message;
@@ -329,6 +365,7 @@
                     let data = [user, filename, url];
                     this.$store.dispatch("process/sendRequest", data).then(
                         (response) => {
+                            this.processing = false;
                             if (process_path.includes("evaluate")) {
                                 this.responseProcess = "Tasa de acierto : "
                                     + Math.round(((response.correctlyClassified / response.numInstances) +
@@ -337,19 +374,19 @@
                             } else {
                                 console.log(response);
                                 this.responseProcess = "Ejecucion Atributos seleccionados: " + response.attributesSelected;
-                                this.classifierDatasets.push.apply(this.classifierDatasets,[{
-                                    "value": filename+"-"+this.algorithm.value,
-                                    "text": filename+"-"+this.algorithm.value,
+                                this.classifierDatasets.push.apply(this.classifierDatasets, [{
+                                    "value": filename + "-" + this.algorithm.value,
+                                    "text": filename + "-" + this.algorithm.value,
                                     "performed": response.performed,
-                                    "attributesSelected" : response.attributesSelected,
-                                    "algorithm" : response.algorithm,
+                                    "attributesSelected": response.attributesSelected,
+                                    "algorithm": response.algorithm,
                                 }]);
                             }
                             this.responseProcessStatus = "success";
                         },
                         error => {
+                            this.processing = false;
                             console.log(error.response);
-                            this.loading = false;
                             this.responseProcessStatus = "warning";
                             this.responseProcess =
                                 error.message;

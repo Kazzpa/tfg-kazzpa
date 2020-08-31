@@ -11,7 +11,6 @@ import java.util.Date;
 public class FeatureResult extends EntityDatabase{
 
 
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Algorithm algorithm;
@@ -31,8 +30,8 @@ public class FeatureResult extends EntityDatabase{
         return performed;
     }
 
-    public void setPerformed(Dataset originalDataset) {
-        this.performed = originalDataset;
+    public void setPerformed(Dataset performed) {
+        this.performed = performed;
     }
 
     public String getAttributesSelected() {

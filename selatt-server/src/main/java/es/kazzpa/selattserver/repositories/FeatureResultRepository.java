@@ -10,9 +10,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FeatureResultRepository extends CrudRepository<FeatureResult,String> {
+public interface FeatureResultRepository extends CrudRepository<FeatureResult, String> {
+    FeatureResult findFeatureResultById(String id);
 
     FeatureResult findByAlgorithmAndPerformed(Algorithm algorithm, Dataset original);
+
     List<FeatureResult> findFeatureResultByPerformed_UserUploader(AppUser appUser);
+
     List<FeatureResult> findFeatureResultByPerformed_UserUploaderAndSeenFalse(AppUser appUser);
 }

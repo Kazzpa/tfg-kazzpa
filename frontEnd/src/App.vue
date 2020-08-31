@@ -29,7 +29,8 @@
                 </v-btn>
                 <div v-else>
                     <v-btn class="secondary mx-2" v-on:click="goToDatasets">Datasets</v-btn>
-                    <v-menu offset-y>
+                    <v-menu
+                            :close-on-content-click="false" offset-y>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn class="secondary mx-2" dark v-bind="attrs" v-on="on">
                                 <v-badge color="success" :content="new_results_num" :value="new_results_num">
@@ -58,7 +59,12 @@
                                         {{ result.performed.filename }} -
                                         {{ result.algorithm.name}} Filtrado
                                     </v-list-item-title>
-                                    <v-list-item-action>
+                                    <v-list-item-action v-if="result.correctlyClassified != null"
+                                                        @click="setSeenResult(result,'/evaluate')">
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-list-item-action>
+
+                                    <v-list-item-action v-else @click="setSeenResult(result,'/featureSelection')">
                                         <v-icon>mdi-close</v-icon>
                                     </v-list-item-action>
                                 </v-list-item>
@@ -150,8 +156,9 @@
                 timeout="-1"
         >
             <v-sheet class="text-center py-5"
-                    min-height="150px">
-                <div class="py-3">Las cookies se utilizan para mejorar la experiencia de uso de la aplicación, pero no son necesarias.
+                     min-height="150px">
+                <div class="py-3">Las cookies se utilizan para mejorar la experiencia de uso de la aplicación, pero no
+                    son necesarias.
                 </div>
                 <div class="py-1">
                     <v-btn
@@ -167,7 +174,8 @@
                             @click="cancelCookies"
                     >
                         Cancelar
-                    </v-btn></div>
+                    </v-btn>
+                </div>
             </v-sheet>
         </v-bottom-sheet>
         <v-footer class="text-center">
@@ -199,6 +207,8 @@
     import axios from "axios";
 
     Vue.use(VueRouter);
+
+    const server_url = process.env.VUE_APP_API_SERVER_URL;
     const profile_path = process.env.VUE_APP_PROFILE_PATH;
     const register_path = process.env.VUE_APP_REGISTER_PATH;
     const algorithm_path = process.env.VUE_APP_ALGORITHM_PATH;
@@ -232,7 +242,6 @@
         router,
 
         data: () => ({
-            //
             new_results: null,
             new_results_num: 0,
             drawer: null,
@@ -242,13 +251,12 @@
             console.log(process.env.NODE_ENV);
             console.log(process.env.VUE_APP_API_SERVER_URL);
             this.interval = setInterval(() => this.checkNewResults(), this.delay_newResults);
-
         },
         computed: {
             cookiesLaw() {
                 return true;
                 //return !this.$store.state.cookielaw.set;
-            }
+            },
         },
         methods: {
             goToLogin() {
@@ -274,6 +282,22 @@
             },
             cancelCookies() {
                 this.$store.dispatch("cookielaw/cancelcookies");
+            },
+            setSeenResult(item, type) {
+                this.new_results_num -=1;
+                let index = this.new_results.indexOf(item);
+                this.new_results.splice(index,1);
+                let url = server_url + type + "/result/seen";
+                axios.post(url, {
+                    "id": item.id,
+                    "algorithm": item.algorithm,
+                    "performed": item.performed,
+                    "seen": item.seen,
+                }, {
+                    headers: {
+                        "Authorization": "Bearer " + this.$store.state.auth.user.token,
+                    }
+                })
             }
             , checkNewResults() {
                 if (this.$store.state.auth.user != null) {

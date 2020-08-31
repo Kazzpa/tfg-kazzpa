@@ -1,6 +1,6 @@
 <template>
     <v-main>
-        <v-row class="py-5">
+        <v-row class="py-5 mx-2">
 
             <v-img contain max-height="50vh" fixed-ratio="16/9" :src="require('../assets/logotipo-texto.png')">
             </v-img>
@@ -8,7 +8,7 @@
         <v-row class="justify-center">
             <div class="text-h2 text-center">SelAtt</div>
         </v-row>
-        <v-row class="justify-center py-4">
+        <v-row class="justify-center py-4 mx-2">
 
             <div class="font-weight-light text--lighten-2">Aplicación de data mining especializada en selección de
                 atributos a servicio mediante

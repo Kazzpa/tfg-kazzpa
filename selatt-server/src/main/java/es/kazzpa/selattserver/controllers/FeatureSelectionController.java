@@ -1,6 +1,5 @@
 package es.kazzpa.selattserver.controllers;
 
-import es.kazzpa.selattserver.models.ClassifierResult;
 import es.kazzpa.selattserver.models.Dataset;
 import es.kazzpa.selattserver.models.FeatureResult;
 import es.kazzpa.selattserver.services.FeatureSelectionService;
@@ -24,13 +23,6 @@ public class FeatureSelectionController {
 
     public FeatureSelectionController(FeatureSelectionService featureSelectionService) {
         this.featureSelectionService = featureSelectionService;
-    }
-
-
-    //TODO: quitar / al principio y crear metodo que cargue dataset de DB.
-    @GetMapping(path = "pca/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public FeatureResult handleFeatureReduction(@PathVariable String datasetName) throws Exception {
-        return featureSelectionService.handlePCAFeatures();
     }
 
     @GetMapping(path = "scs/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,32 +55,6 @@ public class FeatureSelectionController {
         return featureSelectionService.handleVNS(datasetName);
     }
 
-    @GetMapping(path = "pca", produces = MediaType.APPLICATION_JSON_VALUE)
-    public FeatureResult handleFeatureReduction() throws Exception {
-        return featureSelectionService.handlePCAFeatures();
-    }
-
-    @GetMapping(path = "rp", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleRP() throws Exception {
-        return featureSelectionService.handleRandomizedProjectionFeatures();
-    }
-
-
-    @GetMapping(path = "cfs", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleCfsSubsetEval() throws Exception {
-        return featureSelectionService.handleCFSSubsetEval();
-    }
-
-    @GetMapping(path = "rp/plot", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void handlePlotRp() throws Exception {
-        featureSelectionService.plotRP();
-    }
-
-    @GetMapping(path = "pca/plot", produces = MediaType.APPLICATION_JSON_VALUE)
-    public FeatureResult handlePlotPCA() throws Exception {
-        return featureSelectionService.plotPCA();
-    }
-
     @GetMapping("results")
     public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
         return featureSelectionService.getResultsByUser(authentication);
@@ -104,7 +70,7 @@ public class FeatureSelectionController {
         return featureSelectionService.datasetsByUser(authentication);
     }
 
-    @PostMapping(path = "result_seen/")
+    @PostMapping(path = "result/seen")
     public void handleResultSeen(@RequestBody FeatureResult featureResult) throws Exception {
         featureSelectionService.setResultSeen(featureResult);
     }

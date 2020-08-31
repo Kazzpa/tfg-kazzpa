@@ -13,12 +13,6 @@ import java.util.List;
 public interface FeatureSelectionService {
     void handleLoadDefaultData();
 
-    FeatureResult handlePCAFeatures() throws Exception;
-
-    String handleRandomizedProjectionFeatures() throws Exception;
-
-    String handleCFSSubsetEval() throws Exception;
-
     ResponseEntity<FeatureResult> handleFCBF(String datasetName) throws Exception;
 
     ResponseEntity<FeatureResult> handleScatterSearch(String datasetName) throws Exception;
@@ -30,14 +24,6 @@ public interface FeatureSelectionService {
     ResponseEntity<FeatureResult> handleExhaustive(String datasetName) throws Exception;
 
     ResponseEntity<FeatureResult> handleVNS(String datasetName) throws Exception;
-
-    FeatureResult ApplyPCA(String name, Instances trainingData) throws Exception;
-
-    Instances applyRP(Instances trainingData, int numAttributes) throws Exception;
-
-    FeatureResult applyPCAFilter(Instances trainingData, int numAttributes) throws Exception;
-
-    String applyCfsSubsetEval(Instances data) throws Exception;
 
     ResponseEntity<FeatureResult> applyFCBF(String name, Instances trainingData) throws Exception;
 
@@ -51,9 +37,6 @@ public interface FeatureSelectionService {
 
     ResponseEntity<FeatureResult> applyVNS(String filename, ClassificationDataset dataset) throws Exception;
 
-    FeatureResult plotPCA() throws Exception;
-
-    void plotRP() throws Exception;
 
     List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception;
     List<FeatureResult> getNewResultsByUser(Authentication authentication) throws Exception;

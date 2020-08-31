@@ -30,16 +30,57 @@ public class EvaluationController {
     }
 
     @GetMapping(path = "naivebayes/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClassifierResult> handleNaiveBayesEvaluation(@PathVariable String datasetName) throws Exception {
+    public ResponseEntity<ClassifierResult> handleNaiveBayes(@PathVariable String datasetName) throws Exception {
         return evaluationService.handleNaiveBayes(datasetName);
     }
-    @PostMapping(path = "naivebayes_filtered", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClassifierResult> handleNaiveBayesEvaluation(@RequestBody FeatureResult dataset) throws Exception {
+
+    @PostMapping(path = "naivebayes/filtered", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleNaiveBayesFiltered(@RequestBody FeatureResult dataset) throws Exception {
         return evaluationService.handleNaiveBayes(dataset);
     }
 
-    @PostMapping(path= "result_seen/")
-    public void handleResultSeen(@RequestBody ClassifierResult classifierResult)throws Exception{
+    @GetMapping(path = "bayesnet/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleBayesNet(@PathVariable String datasetName) throws Exception {
+        return evaluationService.handleBayesNet(datasetName);
+    }
+
+    @PostMapping(path = "bayesnet/filtered", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleBayesNetFiltered(@RequestBody FeatureResult dataset) throws Exception {
+        return evaluationService.handleBayesNet(dataset);
+    }
+
+    @GetMapping(path = "hnb/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleHiddenNaiveBayes(@PathVariable String datasetName) throws Exception {
+        return evaluationService.handleHiddenNaiveBayes(datasetName);
+    }
+
+    @PostMapping(path = "hnb/filtered", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleHNBFiltered(@RequestBody FeatureResult dataset) throws Exception {
+        return evaluationService.handleHiddenNaiveBayes(dataset);
+    }
+
+    @GetMapping(path = "ibk/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleIbk(@PathVariable String datasetName) throws Exception {
+        return evaluationService.handleIbk(datasetName);
+    }
+
+    @PostMapping(path = "ibk/filtered", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleIbkFiltered(@RequestBody FeatureResult dataset) throws Exception {
+        return evaluationService.handleIbk(dataset);
+    }
+
+    @GetMapping(path = "mlp/{datasetName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleMultiLayerPerceptron(@PathVariable String datasetName) throws Exception {
+        return evaluationService.handleMlp(datasetName);
+    }
+
+    @PostMapping(path = "mlp/filtered", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClassifierResult> handleMlpFiltered(@RequestBody FeatureResult dataset) throws Exception {
+        return evaluationService.handleMlp(dataset);
+    }
+
+    @PostMapping(path = "result/seen")
+    public void handleResultSeen(@RequestBody ClassifierResult classifierResult) throws Exception {
         evaluationService.setResultSeen(classifierResult);
     }
 
@@ -47,6 +88,7 @@ public class EvaluationController {
     public List<ClassifierResult> getResultsByUser(Authentication authentication) throws Exception {
         return evaluationService.getResultsByUser(authentication);
     }
+
     @GetMapping("/results/new")
     public List<ClassifierResult> getNewResultsByUser(Authentication authentication) throws Exception {
         return evaluationService.getNewResultsByUser(authentication);

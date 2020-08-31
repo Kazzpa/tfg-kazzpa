@@ -1,10 +1,15 @@
 <template>
   <v-main>
-      <h1>
+      <div class="text-h4">
         Instalacion de apk:
-      </h1>
-      <v-img class="my-2 mx-2" max-height="75%" max-width="75%"
-             src="https://images.pexels.com/photos/34407/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"></v-img>
+      </div>
+    <v-container>
+    <v-layout justify-center>
+      <v-img class="my-2 mx-2" max-width="60vh" aspect-ratio="16/9"
+             src="https://images.pexels.com/photos/34407/pexels-photo.jpg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260">
+
+      </v-img>
+    </v-layout></v-container>
       <v-dialog v-model="dialog" persistent max-width="290">
         <template v-slot:activator="{ on, attrs }">
           <v-btn class="mx-2 my-2"
@@ -16,7 +21,7 @@
             Tutorial externo
           </v-btn>
         </template>
-        <v-card class="mx-2 my-2">
+        <v-card>
           <v-card-title class="headline">Atención</v-card-title>
           <v-card-text>Va a acceder a una pagina externa a SelAtt, verifique la url previamente.</v-card-text>
           <v-card-actions>

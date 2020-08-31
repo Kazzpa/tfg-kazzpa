@@ -17,7 +17,6 @@
     <v-btn class="primary mx-2 my-2" v-on:click="goToAlgorithm">
       Algoritmos
     </v-btn>
-
   </v-main>
 </template>
 

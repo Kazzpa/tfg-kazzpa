@@ -159,6 +159,12 @@
             <artifactId>LibSVM</artifactId>
             <version>1.0.4</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/hiddenNaiveBayes -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>hiddenNaiveBayes</artifactId>
+            <version>1.0.2</version>
+        </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -226,7 +232,6 @@
                 <configuration>
                     <profiles>
                         <profile>test</profile>
-                        <profile>default</profile>
                     </profiles>
                     <includeSystemScope>true</includeSystemScope>
                 </configuration>

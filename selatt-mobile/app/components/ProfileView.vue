@@ -2,7 +2,7 @@
     <Page>
         <ActionBar>
             <NavigationButton text="Nav" android.systemIcon="ic_menu_more" @tap="$refs.drawer.nativeView.showDrawer()"/>
-            <Label class="title" text="SelAtt - Profile" />
+            <Label class="title" text="SelAtt - Profile"/>
         </ActionBar>
 
         <RadSideDrawer ref="drawer">
@@ -10,7 +10,6 @@
                 <StackLayout class="drawer-header">
                     <Label color="white" text="SelAtt"/>
                 </StackLayout>
-                <Label class="drawer-item" text="Login" @tap="goToLogin"/>
                 <Label class="drawer-item" text="Datasets" @tap="goToDatasets"/>
                 <Label class="drawer-item" text="Home" @tap="goToApp"/>
                 <Label class="drawer-item" text="Results" @tap="goToResults"/>
@@ -67,21 +66,31 @@
                 this.$navigator.navigate('/', {clearHistory: true});
             },
             log_out() {
-                this.logout();
-                try {
-
-                    if (ApplicationSettings.hasKey("userData")) {
-                        console.log("Removing appsettings");
-                        ApplicationSettings.remove("userData");
-                        console.log("Flushing appsettings");
-                        ApplicationSettings.flush();
-                        console.log("Navigating to Login View");
-                        this.$navigator.navigate('login', {clearHistory: true});
+                confirm({
+                    title: "Confirme",
+                    message: "Desea cerrar la sesión",
+                    okButtonText: "Sí",
+                    cancelButtonText: "Cancelar"
+                }).then(result => {
+                    if (!result) {
+                        return;
                     }
-                } catch (error) {
-                    console.log("check2error");
-                    console.log(error);
-                }
+                    this.logout();
+                    try {
+
+                        if (ApplicationSettings.hasKey("userData")) {
+                            console.log("Removing appsettings");
+                            ApplicationSettings.remove("userData");
+                            console.log("Flushing appsettings");
+                            ApplicationSettings.flush();
+                            console.log("Navigating to Login View");
+                            this.$navigator.navigate('login', {clearHistory: true});
+                        }
+                    } catch (error) {
+                        console.log("check2error");
+                        console.log(error);
+                    }
+                });
             }
         }
     }

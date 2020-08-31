@@ -22,6 +22,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -155,7 +156,9 @@ public class LoadDataImpl implements LoadData {
                     }
             }
         } catch (IOException ex) {
-            throw new Exception("File not found:" + fileName + " " + ex.getMessage());
+            return null;
+        }catch(NullPointerException ex){
+            return null;
         }
     }
 
@@ -173,16 +176,15 @@ public class LoadDataImpl implements LoadData {
         rf.setAlgorithm(algorithm);
         rf.setPerformed(dataset);
         if (feature == null) {
-
             ClassifierResult alreadyPerformed =
-                    clasRepo.findClassifierResultByPerformedAndAlgorithm(dataset, algorithm);
+                    clasRepo.findClassifierResultByPerformedAndAlgorithmAndFeatureAlgorithmIsNull(dataset, algorithm);
             if (alreadyPerformed != null) {
                 return alreadyPerformed;
             }
-        }else{
+        } else {
             ClassifierResult alreadyPerformed =
-                    clasRepo.findClassifierResultByPerformedAndAlgorithmAndFeatureAlgorithm(dataset,algorithm,feature.getAlgorithm());
-            if(alreadyPerformed !=null){
+                    clasRepo.findClassifierResultByPerformedAndAlgorithmAndFeatureAlgorithm(dataset, algorithm, feature.getAlgorithm());
+            if (alreadyPerformed != null) {
                 return alreadyPerformed;
             }
         }
@@ -204,11 +206,15 @@ public class LoadDataImpl implements LoadData {
         Date now = new Date();
         rf.setFinishedDate(now);
         clasRepo.save(rf);
+        Dataset performed = rf.getPerformed();
+        performed.setUserUploader(null);
+        rf.setPerformed(performed);
         return rf;
 
     }
 
     public FeatureResult saveFeatureSelectionResult(FeatureResult fsr, int[] solution) throws Exception {
+        Arrays.sort(solution);
         String result = IntStream.of(solution)
                 .mapToObj(Integer::toString)
                 .collect(Collectors.joining(", "));
@@ -216,6 +222,9 @@ public class LoadDataImpl implements LoadData {
         Date now = new Date();
         fsr.setFinishedDate(now);
         featureRepo.save(fsr);
+        Dataset performed = fsr.getPerformed();
+        performed.setUserUploader(null);
+        fsr.setPerformed(performed);
         return fsr;
 
     }
@@ -229,7 +238,7 @@ public class LoadDataImpl implements LoadData {
         return dataset;
     }
 
-    public Algorithm getAlgorithm(String algorithm_name, String language,String type) throws Exception {
+    public Algorithm getAlgorithm(String algorithm_name, String language, String type) throws Exception {
         Algorithm algorithm = algoRepo.findAlgorithmByName(algorithm_name);
         if (algorithm == null) {
             algorithm = new Algorithm();

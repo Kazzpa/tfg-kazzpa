@@ -53,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public static final String TOKEN_TYPE = "JWT";
     public static final String TOKEN_ISSUER = "secure-api";
     public static final String TOKEN_AUDIENCE = "secure-app";
-    public static final int EXPIRATION_TIME = 1 * 60 * 60;
+    public static final int EXPIRATION_TIME = 24 * 60 * 60;
 
 
     @Override

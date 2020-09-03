@@ -42,7 +42,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         this.uploadDir = properties.getUploadDir();
         try {
             Files.createDirectories(this.fileStorageLocation);
-
         } catch (Exception ex) {
             System.out.println("Error al crear el directorio" + fileStorageLocation);
         }
@@ -55,7 +54,10 @@ public class FileStorageServiceImpl implements FileStorageService {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         String path = uploadDir + "\\" + format.format(now) + "_" + file.getOriginalFilename();
         String filePath = StringUtils.cleanPath(System.getProperty("user.dir") + path);
-
+        Dataset saved = datasetRepository.findDatasetByFilename(file.getOriginalFilename());
+        if(saved!=null){
+            return ResponseEntity.ok(saved);
+        }
         if (filePath.contains("..")) {
             return ResponseEntity.badRequest().body("Ruta de archivo invalida");
         }
@@ -88,21 +90,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         datasetRepository.save(dataset);
 
         return ResponseEntity.ok(dataset);
-    }
-
-    @Override
-    public Resource loadFileAsResource(String fileName) throws Exception {
-        try {
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists()) {
-                return resource;
-            } else {
-                throw new Exception("Resource not found " + fileName);
-            }
-        } catch (Exception ex) {
-            throw new Exception("Error: " + ex.getMessage());
-        }
     }
 
 

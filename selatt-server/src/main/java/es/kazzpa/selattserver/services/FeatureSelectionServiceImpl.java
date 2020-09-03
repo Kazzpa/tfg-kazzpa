@@ -33,34 +33,38 @@ import java.util.*;
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
-    private final FileFactory fileFactory;
     @Autowired
     private final FeatureResultRepository featureRepo;
     @Autowired
     private final DatasetRepository dataRepo;
     @Autowired
-    private final AlgorithmRepository algoRepo;
-    @Autowired
     private final AppUserRepository userRepo;
     private final LoadData loadData;
-    /** search direction: backward */
+    /**
+     * search direction: backward
+     */
     protected static final int SELECTION_BACKWARD = 0;
-    /** search direction: forward */
+    /**
+     * search direction: forward
+     */
     protected static final int SELECTION_FORWARD = 1;
-    /** search direction: bidirectional */
+    /**
+     * search direction: bidirectional
+     */
     protected static final int SELECTION_BIDIRECTIONAL = 2;
-    /** search directions */
+    /**
+     * search directions
+     */
     public static final Tag[] TAGS_SELECTION = {
             new Tag(SELECTION_BACKWARD, "Backward"),
             new Tag(SELECTION_FORWARD, "Forward"),
-            new Tag(SELECTION_BIDIRECTIONAL, "Bi-directional"), };
+            new Tag(SELECTION_BIDIRECTIONAL, "Bi-directional"),};
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AppUserRepository userRepo, FeatureResultRepository resRepo) {
-        this.fileFactory = fileFactory;
+    public FeatureSelectionServiceImpl(DatasetRepository dataRepo, LoadData loadData, AppUserRepository userRepo,
+                                       FeatureResultRepository resRepo) {
         this.featureRepo = resRepo;
         this.dataRepo = dataRepo;
         this.loadData = loadData;
-        this.algoRepo = algoRepo;
         this.userRepo = userRepo;
     }
 
@@ -109,6 +113,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         }
         return applyBestFirst(datasetName, trainingData);
     }
+
     public ResponseEntity<FeatureResult> handleExhaustive(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
         if (trainingData == null) {
@@ -164,7 +169,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     public ResponseEntity<FeatureResult> applyFCBF(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
-        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package","Feature Selection");
+        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult rf = loadData.checkIfFeatureAlreadyExists(fcbf, dataset);
         if (rf.getFinishedDate() != null) {
@@ -188,7 +193,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     public ResponseEntity<FeatureResult> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
 
-        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package","Feature Selection");
+        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult fr = loadData.checkIfFeatureAlreadyExists(scatterSearch, dataset);
 
@@ -213,7 +218,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
     public ResponseEntity<FeatureResult> applyRanker(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
-        Algorithm ranker = loadData.getAlgorithm("Ranker", "Weka package","Feature Selection");
+        Algorithm ranker = loadData.getAlgorithm("Ranker", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult fr = loadData.checkIfFeatureAlreadyExists(ranker, dataset);
         if (fr.getFinishedDate() != null) {
@@ -231,17 +236,6 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         Ranker rankerAlg = new Ranker();
         rankerAlg.setThreshold(0.20);
         int[] sol = rankerAlg.search(eval, trainingData);
-        String aux = "[";
-        double[][] rankedAttr = rankerAlg.rankedAttributes();
-        for (double[] row : rankedAttr) {
-            aux += "\n(";
-            for (double elem : row) {
-                aux += "," + elem;
-            }
-            aux += ")";
-        }
-        aux += "]";
-        System.out.println(aux);
         fr = loadData.saveFeatureSelectionResult(fr, sol);
         return ResponseEntity.ok(fr);
 
@@ -251,7 +245,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
         //TODO: FIX WORKING IT GIVES FULL ATTRIBUTES AS SELECTED
         //Check if the resultfilter has been processed before
-        Algorithm bestFirst = loadData.getAlgorithm("Best First", "Weka package","Feature Selection");
+        Algorithm bestFirst = loadData.getAlgorithm("Best First", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult fr = loadData.checkIfFeatureAlreadyExists(bestFirst, dataset);
         if (fr.getFinishedDate() != null) {
@@ -266,18 +260,19 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         eval.buildEvaluator(trainingData);
         BestFirst bestFirstSearch = new BestFirst();
         bestFirstSearch.setStartSet("1-" + trainingData.numAttributes());
-        bestFirstSearch.setSearchTermination(trainingData.numAttributes()/2);
-        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD,TAGS_SELECTION));
+        bestFirstSearch.setSearchTermination(trainingData.numAttributes() / 2);
+        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD, TAGS_SELECTION));
         int[] sol = bestFirstSearch.search(eval, trainingData);
 
         fr = loadData.saveFeatureSelectionResult(fr, sol);
         return ResponseEntity.ok(fr);
 
     }
+
     public ResponseEntity<FeatureResult> applyExhaustive(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
-        Algorithm exhaustive = loadData.getAlgorithm("Exhaustive Search", "Weka package","Feature Selection");
+        Algorithm exhaustive = loadData.getAlgorithm("Exhaustive Search", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
         FeatureResult fr = loadData.checkIfFeatureAlreadyExists(exhaustive, dataset);
         if (fr.getFinishedDate() != null) {
@@ -291,9 +286,9 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         }
         eval.buildEvaluator(trainingData);
         BestFirst bestFirstSearch = new BestFirst();
-        bestFirstSearch.setStartSet("1-" + (trainingData.numAttributes()-1));
-        bestFirstSearch.setSearchTermination(trainingData.numAttributes()/2);
-        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD,TAGS_SELECTION));
+        bestFirstSearch.setStartSet("1-" + (trainingData.numAttributes() - 1));
+        bestFirstSearch.setSearchTermination(trainingData.numAttributes() / 2);
+        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD, TAGS_SELECTION));
         int[] sol = bestFirstSearch.search(eval, trainingData);
 
         fr = loadData.saveFeatureSelectionResult(fr, sol);
@@ -303,7 +298,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
     public ResponseEntity<FeatureResult> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
 
-        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published","Feature Selection");
+        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published", "Feature Selection");
         Dataset dataset1 = loadData.getDataset(datasetName);
         FeatureResult rf = loadData.checkIfFeatureAlreadyExists(vns, dataset1);
         if (rf.getFinishedDate() != null) {

@@ -36,16 +36,13 @@ public class EvaluationServiceImpl implements EvaluationService {
     @Autowired
     private final FeatureResultRepository featureRepo;
     @Autowired
-    private final AlgorithmRepository algoRepo;
-    @Autowired
     private final LoadData loadData;
 
-    public EvaluationServiceImpl(AlgorithmRepository algoRepo, FeatureResultRepository featureRepo, ClassifierResultRepository classifierRepo, LoadData loadData, AppUserRepository userRepo) {
+    public EvaluationServiceImpl(FeatureResultRepository featureRepo, ClassifierResultRepository classifierRepo, LoadData loadData, AppUserRepository userRepo) {
         this.userRepo = userRepo;
         this.loadData = loadData;
         this.classifierRepo = classifierRepo;
         this.featureRepo = featureRepo;
-        this.algoRepo = algoRepo;
     }
 
     @Override

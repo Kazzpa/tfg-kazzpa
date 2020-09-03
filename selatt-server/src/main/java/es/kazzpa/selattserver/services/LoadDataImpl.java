@@ -134,9 +134,10 @@ public class LoadDataImpl implements LoadData {
     }
 
     public Instances getInstancesFromAnyFile(String fileName) throws Exception {
+        Dataset dat = null;
         try {
             //TODO: FIX LOADING FROM .JSON AND .ARFF
-            Dataset dat = dataRepo.findDatasetByFilename(fileName);
+            dat = dataRepo.findDatasetByFilename(fileName);
             String filePath = System.getProperty("user.dir") + dat.getFileDownloadUri();
             Path path = this.fileStorageLocation.resolve(StringUtils.cleanPath(filePath));
             File file = path.toFile();
@@ -156,8 +157,10 @@ public class LoadDataImpl implements LoadData {
                     }
             }
         } catch (IOException ex) {
+            System.out.println(System.getProperty("user.dir") + dat.getFileDownloadUri());
             return null;
         }catch(NullPointerException ex){
+            System.out.println(System.getProperty("user.dir") + dat.getFileDownloadUri());
             return null;
         }
     }

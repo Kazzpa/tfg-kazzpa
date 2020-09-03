@@ -2,21 +2,20 @@
   <v-main>
     <v-card v-if="currentUser" class="mx-2 my-2">
       <v-card-title>
+        <v-icon>mdi-face</v-icon>
         <div class="mx-2"><span>Username:</span><span><strong>{{ currentUser.username }}</strong></span></div>
       </v-card-title>
       <v-card-text>
-        <v-icon>mdi-face</v-icon>
-        <div v-if="currentUser.email" class="mx-2">Correo: {{ currentUser.email }}</div>
+        Comience subiendo un dataset de los archivos soportados:<br/>
+        <ul>
+          <li>JSON para weka</li>
+          <li>arff</li>
+          <li>csv</li>
+        </ul>
+        <v-btn class="mx-2 my-2 primary" @click="goToDatasets">Subir Archivo</v-btn>
       </v-card-text>
     </v-card>
     <v-btn class="primaryAccent white--text mx-2 my-2" @click="logOut">LogOut</v-btn>
-    <v-btn class="primary mx-2 my-2" v-on:click="goToDatasets">Datasets</v-btn>
-    <v-btn class="primary mx-2 my-2" v-on:click="goToResult">
-      Resultados
-    </v-btn>
-    <v-btn class="primary mx-2 my-2" v-on:click="goToAlgorithm">
-      Algoritmos
-    </v-btn>
   </v-main>
 </template>
 
@@ -48,12 +47,12 @@ export default {
     goToAlgorithm() {
       this.$router.push(algorithm_path);
     },
-  goToResult() {
-    this.$router.push(result_path);
-  },
-  goToDatasets() {
-    this.$router.push(dataset_path);
-  },
+    goToResult() {
+      this.$router.push(result_path);
+    },
+    goToDatasets() {
+      this.$router.push(dataset_path);
+    },
     logOut() {
       this.$store.dispatch("auth/logout", this.user).then(
           () => {

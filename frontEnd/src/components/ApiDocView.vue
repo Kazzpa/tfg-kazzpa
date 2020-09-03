@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="md-2 d-sm-none d-md-flex"></v-col>
       <v-col cols="md-8">
-        <div class="text-h3 mb-6">API REST PÚBLICA SEL-ATT
+        <div class="text-h3 mb-6">API REST PÚBLICA SELATT
         </div>
         <p>
           SelAtt proporciona servicio mediante una API RESTFul pública a que puede acceder cualquier persona registrada,

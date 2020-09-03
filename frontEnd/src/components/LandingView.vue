@@ -6,7 +6,7 @@
             </v-img>
         </v-row>
         <v-row class="justify-center">
-            <div class="text-h2 text-center">SelAtt</div>
+            <div class="text-h2 text-center">Machine Learning aplicado a datos Biomedicos</div>
         </v-row>
         <v-row class="justify-center py-4 mx-2">
 

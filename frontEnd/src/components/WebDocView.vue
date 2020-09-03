@@ -2,8 +2,8 @@
   <v-main>
 
     <v-row class="mx-10">
-      <v-col></v-col>
-      <v-col class="justify-center">
+      <v-col cols="md-2 d-sm-none d-md-flex"></v-col>
+      <v-col cols="md-8" class="justify-center">
         <div class="text-h3">
           Primeros pasos
         </div>
@@ -62,7 +62,7 @@
         <div class="text-h6">Podra comprobar el resultado en la pantalla de Resultados</div>
         <v-btn class="mx-2 my-2 primary" @click="goToResults">Ir a Resultados</v-btn>
       </v-col>
-      <v-col></v-col>
+      <v-col cols="md-2 d-sm-none d-md-flex"></v-col>
     </v-row>
   </v-main>
 </template>

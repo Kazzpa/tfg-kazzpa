@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import upo.jcu.math.set.Subset;
 import weka.attributeSelection.*;
 import weka.core.Instances;
+import weka.core.SelectedTag;
+import weka.core.Tag;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Add;
 import weka.filters.unsupervised.attribute.RandomProjection;
@@ -31,23 +33,38 @@ import java.util.*;
 @Service("featureSelectionService")
 public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
-    private final FileFactory fileFactory;
     @Autowired
-    private final ResultRepository resRepo;
+    private final FeatureResultRepository featureRepo;
     @Autowired
     private final DatasetRepository dataRepo;
     @Autowired
-    private final AlgorithmRepository algoRepo;
-    @Autowired
     private final AppUserRepository userRepo;
     private final LoadData loadData;
+    /**
+     * search direction: backward
+     */
+    protected static final int SELECTION_BACKWARD = 0;
+    /**
+     * search direction: forward
+     */
+    protected static final int SELECTION_FORWARD = 1;
+    /**
+     * search direction: bidirectional
+     */
+    protected static final int SELECTION_BIDIRECTIONAL = 2;
+    /**
+     * search directions
+     */
+    public static final Tag[] TAGS_SELECTION = {
+            new Tag(SELECTION_BACKWARD, "Backward"),
+            new Tag(SELECTION_FORWARD, "Forward"),
+            new Tag(SELECTION_BIDIRECTIONAL, "Bi-directional"),};
 
-    public FeatureSelectionServiceImpl(FileFactory fileFactory, DatasetRepository dataRepo, LoadData loadData, AlgorithmRepository algoRepo, AppUserRepository userRepo, ResultRepository resRepo) {
-        this.fileFactory = fileFactory;
-        this.resRepo = resRepo;
+    public FeatureSelectionServiceImpl(DatasetRepository dataRepo, LoadData loadData, AppUserRepository userRepo,
+                                       FeatureResultRepository resRepo) {
+        this.featureRepo = resRepo;
         this.dataRepo = dataRepo;
         this.loadData = loadData;
-        this.algoRepo = algoRepo;
         this.userRepo = userRepo;
     }
 
@@ -55,13 +72,7 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         loadData.loadDefaultDataBase();
     }
 
-    public ResultFilter handlePCAFeatures() throws Exception {
-        FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
-        FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        return ApplyPCA("CAR", carTrainTest.train);
-    }
-
-    public ResponseEntity<ResultFilter> handleVNS(String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleVNS(String datasetName) throws Exception {
 
         ClassificationDataset dataset = loadData.getClassDatasetFromArff(datasetName);
         if (!dataset.getDataType().equals(DataType.CATEGORICAL)) {
@@ -71,27 +82,74 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return applyVNS(datasetName, dataset);
     }
 
-    public ResponseEntity<ResultFilter> handleFCBF(String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleFCBF(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        if (trainingData == null) {
+            return ResponseEntity.notFound().build();
+        }
         return applyFCBF(datasetName, trainingData);
     }
 
-    public ResponseEntity<ResultFilter> handleScatterSearch(String datasetName) throws Exception {
+    public ResponseEntity<FeatureResult> handleScatterSearch(String datasetName) throws Exception {
         Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        if (trainingData == null) {
+            return ResponseEntity.notFound().build();
+        }
         return applyScatterSearch(datasetName, trainingData);
     }
 
+    public ResponseEntity<FeatureResult> handleRanker(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        if (trainingData == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return applyRanker(datasetName, trainingData);
+    }
+
+    public ResponseEntity<FeatureResult> handleBestFirst(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        if (trainingData == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return applyBestFirst(datasetName, trainingData);
+    }
+
+    public ResponseEntity<FeatureResult> handleExhaustive(String datasetName) throws Exception {
+        Instances trainingData = loadData.getInstancesFromAnyFile(datasetName);
+        if (trainingData == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return applyExhaustive(datasetName, trainingData);
+    }
+
     @Override
-    public List<ResultFilter> resultsByUser(Authentication authentication) throws Exception {
+    public List<FeatureResult> getResultsByUser(Authentication authentication) throws Exception {
         String username = authentication.getName();
         AppUser appUser = userRepo.findByUsername(username);
-        List<ResultFilter> ret = resRepo.findResultFilterByPerformed_UserUploader(appUser);
-        for (ResultFilter r : ret
+        List<FeatureResult> ret = featureRepo.findFeatureResultByPerformed_UserUploader(appUser);
+        for (FeatureResult r : ret
         ) {
             r.getPerformed().setUserUploader(null);
-            r.setSeen(true);
         }
         return ret;
+    }
+
+    @Override
+    public List<FeatureResult> getNewResultsByUser(Authentication authentication) throws Exception {
+        String username = authentication.getName();
+        AppUser appUser = userRepo.findByUsername(username);
+        List<FeatureResult> ret = featureRepo.findFeatureResultByPerformed_UserUploaderAndSeenFalse(appUser);
+        for (FeatureResult r : ret
+        ) {
+            r.getPerformed().setUserUploader(null);
+        }
+        return ret;
+    }
+
+    public void setResultSeen(FeatureResult featureResult) throws Exception {
+        FeatureResult fr = featureRepo.findFeatureResultById(featureResult.getId());
+        fr.setSeen(true);
+        featureRepo.save(fr);
     }
 
     @Override
@@ -107,32 +165,14 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         return ret;
     }
 
-    public ResultFilter handlePCAFeatures(String datasetName) throws Exception {
-        Dataset data = dataRepo.findDatasetByFilename(datasetName);
-        FileFactory.TrainTest dataTrainTest = fileFactory.getInstancesFromFile(data.getFilename(), data.getFileDownloadUri(), new Options());
-        return ApplyPCA("datasetName", dataTrainTest.train);
-    }
 
-    public String handleRandomizedProjectionFeatures() throws Exception {
-        FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
-        FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        return applyRP(carTrainTest.train, 4).toString() + "\n \n \n \n \n" + applyRP(censusTrainTest.train, 4).toString();
-    }
-
-    public String handleCFSSubsetEval() throws Exception {
-        FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
-        FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        return applyCfsSubsetEval(carTrainTest.train) + " \n \n \n \n" + applyCfsSubsetEval(censusTrainTest.train);
-    }
-
-
-    public ResponseEntity<ResultFilter> applyFCBF(String datasetName, Instances trainingData) throws Exception {
+    public ResponseEntity<FeatureResult> applyFCBF(String datasetName, Instances trainingData) throws Exception {
 
         //Check if the resultfilter has been processed before
-        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package");
+        Algorithm fcbf = loadData.getAlgorithm("FastCorrelationBasedFilter", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
-        ResultFilter rf = loadData.checkIfAlreadyExists(fcbf, dataset);
-        if (rf.getJsonAttributes() != null) {
+        FeatureResult rf = loadData.checkIfFeatureAlreadyExists(fcbf, dataset);
+        if (rf.getFinishedDate() != null) {
             return ResponseEntity.ok(rf);
         }
         //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
@@ -146,19 +186,19 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         eval.buildEvaluator(trainingData);
         FCBFSearch fcbfSearch = new FCBFSearch();
         int[] sol = fcbfSearch.search(eval, trainingData);
-        rf = loadData.saveResultFilter(sol, rf, fcbf, dataset);
+        rf = loadData.saveFeatureSelectionResult(rf, sol);
         return ResponseEntity.ok(rf);
 
     }
 
-    public ResponseEntity<ResultFilter> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
+    public ResponseEntity<FeatureResult> applyScatterSearch(String datasetName, Instances trainingData) throws Exception {
 
-        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package");
+        Algorithm scatterSearch = loadData.getAlgorithm("ScatterSearchV1", "Weka package", "Feature Selection");
         Dataset dataset = loadData.getDataset(datasetName);
-        ResultFilter rf = loadData.checkIfAlreadyExists(scatterSearch, dataset);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(scatterSearch, dataset);
 
-        if (rf.getJsonAttributes() != null) {
-            return ResponseEntity.ok(rf);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
         }
 
         CfsSubsetEval eval = new CfsSubsetEval();
@@ -171,19 +211,100 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
 
         ScatterSearchV1 scatterSearchV1 = new ScatterSearchV1();
         int[] sol = scatterSearchV1.search(eval, trainingData);
-        System.out.println(Arrays.toString(sol));
-        rf = loadData.saveResultFilter(sol, rf, scatterSearch, dataset);
-        return ResponseEntity.ok(rf);
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
     }
 
-    public ResponseEntity<ResultFilter> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
-        //ClassificationDataset ddataset = com.jscilib.math.data.dataset.DatasetUtils.dicretizeViaFayyad(dataset);
-        //logger.info(ddataset.toString());
+    public ResponseEntity<FeatureResult> applyRanker(String datasetName, Instances trainingData) throws Exception {
 
-        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published");
-        Dataset dataset1 = loadData.getDataset(dataset.getName());
-        ResultFilter rf = loadData.checkIfAlreadyExists(vns, dataset1);
-        if (rf.getJsonAttributes() != null) {
+        //Check if the resultfilter has been processed before
+        Algorithm ranker = loadData.getAlgorithm("Ranker", "Weka package", "Feature Selection");
+        Dataset dataset = loadData.getDataset(datasetName);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(ranker, dataset);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
+        }
+        //fcbf heuristico : no generico, cerrado la estrategia de busqueda y evaluacion
+        //utiliza: simuncertAttributeSetEval
+        CorrelationAttributeEval eval = new CorrelationAttributeEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+        Ranker rankerAlg = new Ranker();
+        rankerAlg.setThreshold(0.20);
+        int[] sol = rankerAlg.search(eval, trainingData);
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
+
+    }
+
+    public ResponseEntity<FeatureResult> applyBestFirst(String datasetName, Instances trainingData) throws Exception {
+
+        //TODO: FIX WORKING IT GIVES FULL ATTRIBUTES AS SELECTED
+        //Check if the resultfilter has been processed before
+        Algorithm bestFirst = loadData.getAlgorithm("Best First", "Weka package", "Feature Selection");
+        Dataset dataset = loadData.getDataset(datasetName);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(bestFirst, dataset);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
+        }
+        WrapperSubsetEval eval = new WrapperSubsetEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+        BestFirst bestFirstSearch = new BestFirst();
+        bestFirstSearch.setStartSet("1-" + trainingData.numAttributes());
+        bestFirstSearch.setSearchTermination(trainingData.numAttributes() / 2);
+        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD, TAGS_SELECTION));
+        int[] sol = bestFirstSearch.search(eval, trainingData);
+
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
+
+    }
+
+    public ResponseEntity<FeatureResult> applyExhaustive(String datasetName, Instances trainingData) throws Exception {
+
+        //Check if the resultfilter has been processed before
+        Algorithm exhaustive = loadData.getAlgorithm("Exhaustive Search", "Weka package", "Feature Selection");
+        Dataset dataset = loadData.getDataset(datasetName);
+        FeatureResult fr = loadData.checkIfFeatureAlreadyExists(exhaustive, dataset);
+        if (fr.getFinishedDate() != null) {
+            return ResponseEntity.ok(fr);
+        }
+        WrapperSubsetEval eval = new WrapperSubsetEval();
+        //default class index to last att if undefined
+        //https://weka.sourceforge.io/doc.dev/weka/core/Instances.html
+        if (trainingData.classIndex() < 0) {
+            trainingData.setClassIndex(trainingData.numAttributes() - 1);
+        }
+        eval.buildEvaluator(trainingData);
+        BestFirst bestFirstSearch = new BestFirst();
+        bestFirstSearch.setStartSet("1-" + (trainingData.numAttributes() - 1));
+        bestFirstSearch.setSearchTermination(trainingData.numAttributes() / 2);
+        bestFirstSearch.setDirection(new SelectedTag(SELECTION_BACKWARD, TAGS_SELECTION));
+        int[] sol = bestFirstSearch.search(eval, trainingData);
+
+        fr = loadData.saveFeatureSelectionResult(fr, sol);
+        return ResponseEntity.ok(fr);
+
+    }
+
+    public ResponseEntity<FeatureResult> applyVNS(String datasetName, ClassificationDataset dataset) throws Exception {
+
+        Algorithm vns = loadData.getAlgorithm("VariableNeighbourhoodSearch", "Paper published", "Feature Selection");
+        Dataset dataset1 = loadData.getDataset(datasetName);
+        FeatureResult rf = loadData.checkIfFeatureAlreadyExists(vns, dataset1);
+        if (rf.getFinishedDate() != null) {
+            Dataset aux = rf.getPerformed();
+            aux.setUserUploader(null);
+            rf.setPerformed(aux);
             return ResponseEntity.ok(rf);
         }
         FSObjectiveFunction of = new CfsEvaluator(dataset.getCategoricalData(), dataset.getLabels());
@@ -202,160 +323,9 @@ public class FeatureSelectionServiceImpl implements FeatureSelectionService {
         for (int i = 0; i < solArr.length; i++) {
             solArr[i] = lista.get(i);
         }
-        rf = loadData.saveResultFilter(solArr, rf, vns, dataset1);
+
+        rf = loadData.saveFeatureSelectionResult(rf, solArr);
         return ResponseEntity.ok(rf);
     }
-
-    public ResultFilter ApplyPCA(String name, Instances trainingData) throws Exception {
-        AttributeSelection selector = new AttributeSelection();
-
-        PrincipalComponents principalComponents = new PrincipalComponents();
-        principalComponents.setMaximumAttributeNames(5);
-        principalComponents.setVarianceCovered(.95);
-        principalComponents.buildEvaluator(trainingData);
-
-        Ranker ranker = new Ranker();
-
-        selector.setSearch(ranker);
-        selector.setEvaluator(principalComponents);
-        selector.SelectAttributes(trainingData);
-        ResultFilter rf = new ResultFilter();
-        Algorithm a = new Algorithm("PCA");
-        rf.setAlgorithm(a);
-        return rf;
-    }
-
-    public Instances applyRP(Instances trainingData, int numAttributes) throws Exception {
-        RandomProjection randomProjection = new RandomProjection();
-        randomProjection.setNumberOfAttributes(numAttributes);
-        randomProjection.setInputFormat(trainingData);
-        return Filter.useFilter(trainingData, randomProjection);
-    }
-
-    public ResultFilter applyPCAFilter(Instances trainingData, int numAttributes) throws Exception {
-        weka.filters.unsupervised.attribute.PrincipalComponents principalComponents = new weka.filters.unsupervised.attribute.PrincipalComponents();
-        principalComponents.setMaximumAttributes(numAttributes);
-        principalComponents.setInputFormat(trainingData);
-        Instances trainedData = Filter.useFilter(trainingData, principalComponents);
-        //Comparar los dataset una vez filtrado y sin filtrar
-        //Guardaremos la lista de los atributos
-
-        int ind = 0;
-        double[] ins1 = trainedData.get(1).toDoubleArray();
-        double[] ins2 = trainingData.get(1).toDoubleArray();
-        int size = trainingData.numAttributes();
-        int size2 = trainedData.numAttributes();
-        int[] list = new int[trainedData.numAttributes()];
-        int i = 0;
-        int j = 0;
-        while (i < size2) {
-            boolean enc = false;
-            while (j < size && !enc) {
-                if (ins1[i] == ins2[j]) {
-                    list[i] = j;
-                    i++;
-                    enc = true;
-                } else {
-                }
-                j++;
-            }
-
-            i++;
-        }
-
-
-        ResultFilter rf = new ResultFilter();
-        Algorithm a = new Algorithm("PCA-Filter");
-        rf.setAlgorithm(a);
-        resRepo.save(rf);
-        return rf;
-    }
-
-    public String applyCfsSubsetEval(Instances data) throws Exception {
-        AttributeSelection selector = new AttributeSelection();
-        CfsSubsetEval cfsSubsetEval = new CfsSubsetEval();
-        cfsSubsetEval.buildEvaluator(data);
-
-        GreedyStepwise greedyStepwise = new GreedyStepwise();
-        greedyStepwise.setGenerateRanking(true);
-        greedyStepwise.setNumToSelect(4);
-        selector.setSearch(greedyStepwise);
-        selector.setEvaluator(cfsSubsetEval);
-        selector.SelectAttributes(data);
-
-        return " \n \n Principal Components: \n \n "
-                + cfsSubsetEval.toString() + "\n \n Attribute Selection: \n \n" + selector.toResultsString();
-    }
-
-    private void plotRP(String fileName, Instances data) throws Exception {
-        FileWriter writer = new FileWriter(fileName + ".csv", true);
-        for (int i = 0; i < data.size(); i++) {
-            double[] values = data.get(i).toDoubleArray();
-            writer.append(new Double(values[0]).toString());
-            writer.append(",");
-            writer.append(new Double(values[1]).toString());
-            writer.append(",");
-            writer.append(new Double(data.get(i).classValue()).toString());
-            writer.append("\n");
-        }
-        writer.flush();
-        writer.close();
-    }
-
-    public void plotRP() throws Exception {
-        FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
-        FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        plotRP("RP_car", applyRP(carTrainTest.train, 2));
-        plotRP("RP_census", applyRP(censusTrainTest.train, 2));
-    }
-
-    public ResultFilter plotPCA() throws Exception {
-        FileFactory.TrainTest carTrainTest = fileFactory.getInstancesFromFile(ML.Files.Car, new Options());
-        //FileFactory.TrainTest censusTrainTest = fileFactory.getInstancesFromFile(ML.Files.Census, new Options());
-        return applyPCAFilter(carTrainTest.train, 2);
-        //plotRP("PCA_car", applyPCAFilter(carTrainTest.train, 2));
-        //plotRP("PCA_census", applyPCAFilter(censusTrainTest.train, 2));
-    }
-
-
-    private Instances dropClass(Instances instances) throws Exception {
-        Remove removeFilter = new Remove();
-        String[] options = new String[]{"-R", Integer.toString(instances.numAttributes() - 1)};
-        removeFilter.setOptions(options);
-        removeFilter.setInputFormat(instances);
-        return Filter.useFilter(instances, removeFilter);
-    }
-
-    public Instances reAddClassification(Instances first, Instances second) throws Exception {
-        Add filter = new Add();
-        filter.setAttributeIndex("last");
-        filter.setAttributeName("NewNumeric");
-        filter.setInputFormat(first);
-        Instances newFirst = Filter.useFilter(first, filter);
-        for (int i = 0; i < newFirst.size(); i++) {
-            newFirst.instance(i).setValue(newFirst.numAttributes() - 1, second.instance(i).classValue());
-            newFirst.setClassIndex(newFirst.numAttributes() - 1);
-        }
-        return newFirst;
-    }
-
-    public Instances reAddClassificationNominal(Instances first, Instances second) throws Exception {
-        Add filter = new Add();
-        filter.setAttributeIndex("last");
-        filter.setNominalLabels("0,1");
-        filter.setAttributeName("NewNumeric");
-        filter.setInputFormat(first);
-        Instances newFirst = Filter.useFilter(first, filter);
-
-        for (int i = 0; i < newFirst.size(); i++) {
-            newFirst.instance(i).setValue(newFirst.numAttributes() - 1, second.instance(i).classValue());
-            newFirst.setClassIndex(newFirst.numAttributes() - 1);
-        }
-        return newFirst;
-    }
-
-
-
-
 
 }

@@ -22,6 +22,19 @@ export const process = {
                 }
             );
         },
+        sendFilteredRequest({commit}, payload) {
+            return ProcessService.sendFilteredRequest(payload).then(
+                response => {
+                    commit('requestSuccess');
+                    return Promise.resolve(response);
+
+                },
+                error => {
+                    commit('requestFailure');
+                    return Promise.reject(error);
+                }
+            )
+        }
     },
     mutations: {
         requestSuccess(state, response) {

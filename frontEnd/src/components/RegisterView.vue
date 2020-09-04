@@ -5,7 +5,8 @@
             <v-col>
                 <v-card>
                     <v-card-title>
-                        <v-icon>mdi-account-box</v-icon>Registro
+                        <v-icon>mdi-account-box</v-icon>
+                        Registro
                     </v-card-title>
                     <v-card-text>
                         <v-form name="form" @submit.prevent="handleRegister">
@@ -50,7 +51,8 @@
                                         class="alert-danger"
                                 >{{errors.first('password')}}
                                 </div>
-                                <v-btn color="primary" type="submit">Sign Up</v-btn>
+                                <v-btn class="mx-2 my-2" color="primary" type="submit">Registrarse</v-btn>
+                                <v-btn class="mx-2 my-2" color="secondary" @click="goToLogin">Login</v-btn>
                             </div>
                         </v-form>
 
@@ -94,7 +96,7 @@
             }
         },
         methods: {
-            goToLogin(){
+            goToLogin() {
                 this.$router.push(login_path);
             },
             handleRegister() {
@@ -102,25 +104,20 @@
                 this.submitted = true;
                 this.$validator.validate().then(isValid => {
                     if (isValid) {
-                        console.log("Validacion ok");
                         this.$store.dispatch('auth/register', this.user).then(
-                            data => {
+                            response => {
 
-                                this.message = "Registrado con exito" + data.username;
+                                this.message = "Registrado con exito" + response.data.username;
                                 this.successful = true;
                                 this.goToLogin();
                             },
                             error => {
                                 this.message =
-                                    (error.response && error.response.data) ||
-                                    error.message ||
-                                    error.toString();
+                                    error.response.data.message;
                                 this.successful = false;
                             }
                         );
                     }
-
-                    console.log("Validacion not ok");
                 });
             }
         }

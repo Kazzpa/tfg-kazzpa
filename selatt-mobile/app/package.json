@@ -5,5 +5,8 @@
   },
   "main": "main",
   "name": "selatt-mobile",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "dependencies": {
+    "moment": "^2.27.0"
+  }
 }

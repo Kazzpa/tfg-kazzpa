@@ -2,7 +2,7 @@ import Vue from 'nativescript-vue'
 import App from './components/App'
 import VueDevtools from 'nativescript-vue-devtools'
 
-import store from './store'
+import store from './store';
 
 if (TNS_ENV !== 'production') {
     Vue.use(VueDevtools)
@@ -20,7 +20,10 @@ Vue.registerElement(
     () => require('nativescript-drop-down').DropDown
 )
 
+import Navigator from 'nativescript-vue-navigator'
+import { routes } from './routes';
+Vue.use(Navigator, { routes })
 new Vue({
     store,
-    render: h => h('frame', [h(App)])
+    render: h => h(App),
 }).$start()

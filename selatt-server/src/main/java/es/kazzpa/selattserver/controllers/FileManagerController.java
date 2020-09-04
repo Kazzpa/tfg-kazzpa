@@ -32,46 +32,5 @@ public class FileManagerController {
         return fileStorageService.storeFile(authentication, file);
     }
 
-    @PostMapping("/uploadMultipleFiles")
-    public List<ResponseEntity> uploadMultipleFiles(Authentication authentication, @RequestParam("files") MultipartFile[] files) throws Exception {
-        return Arrays.asList(files)
-                .stream()
-                .map(file -> {
-                    try {
-                        return loadDataset(authentication, file);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                })
-                .collect(Collectors.toList());
-
-    }
-
-
-    @GetMapping("/downloadFile/")
-    public ResponseEntity<Resource> downloadFile(@RequestParam String filename, HttpServletRequest request) throws Exception {
-        //load file as a resource
-        Resource resource = fileStorageService.loadFileAsResource(filename);
-
-        //Try to determine file content type
-        String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException ex) {
-            throw new Exception("Could not determine file type" + filename + ex.getMessage());
-        } catch (NullPointerException ex) {
-            throw new Exception("Couldn't locate the file " + filename + ex.getMessage());
-        }
-
-        if (contentType == null) {
-            contentType = "application/octet-stream";
-        }
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment, filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
-
 
 }

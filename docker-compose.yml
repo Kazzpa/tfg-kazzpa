@@ -1,21 +1,16 @@
 version: '3'
 
 services:
-    db:
-        image: mysql
+    selatt:
+        depends_on:
+            - db
+        image: selatt-server
         restart: always
-        environment:
-            MYSQL_DATABASE: "selatt-db"
-            MYSQL_USER: "selatt-db"
-            MYSQL_PASSWORD: "s3l4tt-db"
-            MYSQL_ROOT_PASSWORD: "example"
-        #volumes:
-          # Montamos un volumen para MySQL para no perder los datos de bd
-          #- ./mysql:/var/lib/mysql
+        build: .
         ports:
-          - 3306:3306
+         - 8082:8082
         expose:
-          - 3306
+         - 8082
     adminer:
         image: adminer
         restart: always
@@ -27,3 +22,18 @@ services:
          - 8080:8080
         expose:
          - 8080
+    db:
+        image: mysql
+        restart: always
+        environment:
+            MYSQL_DATABASE: "selatt-db"
+            MYSQL_USER: "selatt-db"
+            MYSQL_PASSWORD: "s3l4tt-db"
+            MYSQL_ROOT_PASSWORD: "example"
+        volumes:
+          # Montamos un volumen para MySQL para no perder los datos de bd
+          - ./mysql:/var/lib/mysql
+        ports:
+          - 3306:3306
+        expose:
+          - 3306

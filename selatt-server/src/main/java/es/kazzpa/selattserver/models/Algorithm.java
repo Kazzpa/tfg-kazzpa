@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "algorithm")
-public class Algorithm implements Serializable {
+public class  Algorithm implements Serializable {
     @Id
     private String name;
     private String language;

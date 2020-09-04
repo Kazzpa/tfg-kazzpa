@@ -337,7 +337,8 @@ export default {
                             this.new_results_retrieved.push.apply(this.new_results_retrieved, response.data);
                             this.new_results_num += response.data.length;
                             var size = this.new_results_retrieved.length;
-                            for (var i = 0; i < size && i < 5; i++) {
+                            for (var i = 0; i < size && this.new_results.length < 5; i++) {
+                              console.log(i,5);
                               this.new_results.push(this.new_results_retrieved.pop());
                             }
                             if (this.delay_newResults == 5000) {

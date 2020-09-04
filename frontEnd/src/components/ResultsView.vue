@@ -8,7 +8,7 @@
         <v-card-text class="text--primary">
           <p>Dataset: {{ resultChosen.performed.filename }} de {{ resultChosen.performed.size }}
             {{ resultChosen.performed.units }}</p>
-          <p>Atributos: '{{ resultChosen.attributesSelected }}'</p>
+          <p>Numero de atributos Seleccionados:{{ resultChosen.numAttributes}}</p>
         </v-card-text>
         <v-card-actions>
           <v-btn class="secondary" text @click="resultChosen = null">

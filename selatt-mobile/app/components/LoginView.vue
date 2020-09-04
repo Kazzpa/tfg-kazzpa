@@ -14,7 +14,7 @@
 
       <GridLayout ~mainContent columns="*" rows="*">
         <StackLayout>
-          <Image class="nt-form__logo" height="10%" src="~/assets/images/logotipo.png"/>
+          <Image class="nt-form__logo" height="20%" src="~/assets/images/logotipo.png"/>
           <StackLayout class="input-field">
             <TextField hint="Usuario" autocorrect="false" autocapitalizationType="none"
                        v-model="user.username"

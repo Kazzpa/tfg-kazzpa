@@ -116,13 +116,10 @@
                             })
                             console.log(response.data);
                             this.results = response.data;
-                            this.genColumnsData()
-
-
+                            this.genColumnsData();
                         })
                         .catch(error => {
                             console.log(error);
-
                         });
                 }
             },

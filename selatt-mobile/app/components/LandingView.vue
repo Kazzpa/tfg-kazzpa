@@ -32,6 +32,8 @@
                             <span class="text-center" text ="   Spring Boot y VueJs" fontWeight="bold"/>
                         </FormattedString>
                     </Label>
+                  <Button v-if="getUser!=null" class="btn btn-primary text-h3" text="LogIn" @tap="goToLogin"/>
+                  <Button v-else class="h4" text="Ir a algoritmos" @tap="goToAlgorithms"/>
                 </StackLayout>
             </GridLayout>
         </RadSideDrawer>

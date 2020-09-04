@@ -19,8 +19,10 @@ public class FeatureResult extends EntityDatabase{
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Dataset performed;
 
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String attributesSelected;
+
+    private int numAttributes;
 
     private Date finishedDate;
 
@@ -56,6 +58,14 @@ public class FeatureResult extends EntityDatabase{
 
     public void setFinishedDate(Date finishedDate) {
         this.finishedDate = finishedDate;
+    }
+
+    public int getNumAttributes() {
+        return numAttributes;
+    }
+
+    public void setNumAttributes(int numAttributes) {
+        this.numAttributes = numAttributes;
     }
 
     public boolean isSeen() {

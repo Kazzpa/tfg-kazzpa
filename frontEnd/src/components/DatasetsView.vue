@@ -46,7 +46,7 @@
       <v-col>
         <h3>Subir un dataset:</h3>
         <v-form v-on:submit.prevent="uploadFile">
-          <v-file-input v-model="inputFile" type="file" dense multiple label="Seleccionar Archivo">
+          <v-file-input accept="text/csv,.arff,.csv,application/json" v-model="inputFile" type="file" dense multiple label="Seleccionar Archivo">
 
           </v-file-input>
           <v-btn v-if="inputFile != null" :disabled="processing" :loading="processing" class="secondary" type="submit" rounded>Subir</v-btn>

@@ -156,10 +156,7 @@ public class LoadDataImpl implements LoadData {
                         throw new Exception("Unsupported File Type : " + fileName + " Extension:" + ext);
                     }
             }
-        } catch (IOException ex) {
-            System.out.println(System.getProperty("user.dir") + dat.getFileDownloadUri());
-            return null;
-        }catch(NullPointerException ex){
+        } catch (IOException | NullPointerException ex) {
             System.out.println(System.getProperty("user.dir") + dat.getFileDownloadUri());
             return null;
         }
@@ -224,6 +221,7 @@ public class LoadDataImpl implements LoadData {
         fsr.setAttributesSelected(result);
         Date now = new Date();
         fsr.setFinishedDate(now);
+        fsr.setNumAttributes(solution.length);
         featureRepo.save(fsr);
         Dataset performed = fsr.getPerformed();
         performed.setUserUploader(null);

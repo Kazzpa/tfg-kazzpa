@@ -16,12 +16,16 @@
             </StackLayout>
 
             <StackLayout ~mainContent columns="*" rows="*">
-                <Label text="Perfil de:"/>
-                <Label class="h2" :text="username"></Label>
-                <Button text="Ejecuciones" @tap="goToAlgorithms"></Button>
-                <Button class="h3 " @tap="log_out">
+                <Label >
+                  <FormatedString>
+                    <span text="Perfil de:"></span>
+                    <span class="h2" :text="getUsername"></span>
+                  </FormatedString>
+                </Label>
+                <Button class="btn btn-primary" text="Ejecuciones" @tap="goToAlgorithms"></Button>
+                <Button class="btn btn-ruby " @tap="log_out">
                     <FormattedString>
-                        <Span text="LogOut" style="color: red"/>
+                        <Span text="LogOut"  style="color: red"/>
                     </FormattedString>
                 </Button>
             </StackLayout>

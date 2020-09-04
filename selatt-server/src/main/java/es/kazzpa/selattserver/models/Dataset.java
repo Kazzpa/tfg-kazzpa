@@ -14,6 +14,8 @@ public class Dataset extends EntityDatabase {
     private String fileDownloadUri;
     private String fileType;
 
+    private int numAttributes;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private AppUser userUploader;
@@ -78,6 +80,14 @@ public class Dataset extends EntityDatabase {
 
     public void setUserUploader(AppUser userUploader) {
         this.userUploader = userUploader;
+    }
+
+    public int getNumAttributes() {
+        return numAttributes;
+    }
+
+    public void setNumAttributes(int numAttributes) {
+        this.numAttributes = numAttributes;
     }
 
     @Override

@@ -91,7 +91,7 @@
               </v-col>
 
             </v-row>
-            <v-btn v-if="algorithm" :disabled="processing" :loading="processing" type="submit" rounded>Evaluar</v-btn>
+            <v-btn v-if="algorithm" type="submit" rounded>Evaluar</v-btn>
             <v-btn text @click="e1 = 1">Cancelar</v-btn>
           </div>
           <div class="mx-2 my-2" v-else>
@@ -103,8 +103,8 @@
               </v-col>
 
             </v-row>
-            <v-btn v-if="classifierAlgorithms" :disabled="processing" :loading="processing" type="submit"
-                   rounded>Evaluar
+            <v-btn v-if="classifierAlgorithms" type="submit"  rounded>
+              Evaluar
             </v-btn>
             <v-btn text @click="e1 = 1">Cancelar</v-btn>
           </div>

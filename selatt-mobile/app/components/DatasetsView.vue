@@ -20,14 +20,9 @@
                                 <Label :text="item.filename"/>
                                 <Label :text="item.size"/>
                                 <Label :text="item.units"/>
-                                <!--@tap="itemButtonTapped(item)" -->
-                                <Button class="btn" text="Hola"/>
                             </StackLayout>
                         </v-template>
                     </ListView>
-                    <SearchBar
-                            v-model="search"
-                    />
                 </StackLayout>
             </GridLayout>
         </RadSideDrawer>

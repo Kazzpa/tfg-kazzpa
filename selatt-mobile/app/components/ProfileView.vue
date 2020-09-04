@@ -17,10 +17,10 @@
 
             <StackLayout ~mainContent columns="*" rows="*">
                 <Label >
-                  <FormatedString>
+                  <FormattedString>
                     <span text="Perfil de:"></span>
-                    <span class="h2" :text="getUsername"></span>
-                  </FormatedString>
+                    <span class="h2" :text="this.getUsername"></span>
+                  </FormattedString>
                 </Label>
                 <Button class="btn btn-primary" text="Ejecuciones" @tap="goToAlgorithms"></Button>
                 <Button class="btn btn-ruby " @tap="log_out">

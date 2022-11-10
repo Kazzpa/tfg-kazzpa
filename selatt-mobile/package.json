@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@nativescript/theme": "^2.2.1",
-    "@vue/devtools": "^5.3.3",
+    "@vue/devtools": "^6.4.5",
     "axios": "^0.21.1",
     "axios-debug-log": "^0.8.0",
     "nativescript-drop-down": "^5.0.6",
